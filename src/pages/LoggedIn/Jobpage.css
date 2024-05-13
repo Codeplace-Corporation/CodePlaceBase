@@ -1,0 +1,77 @@
+.jobpage-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .jobpage-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .jobpage-button {
+    padding: 8px 15px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+   
+  }
+  
+  .jobpage-button:hover {
+    background-color: #0056b3;
+  }
+  
+  .jobpage-input {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 15px;
+    box-sizing: border-box;
+  }
+  
+  .jobpage-popup {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f9f9f9;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+  }
+  
+  .jobpage-popup-heading {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .jobpage-form-label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .jobpage-date-time-input {
+    width: calc(100% - 18px);
+  }
+  
+  .job {
+    border: 1px solid #ddd;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 5px;
+  }
+  
+  .job h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  
+  .job p {
+    margin: 5px 0;
+  }
+  
+  .job button {
+    margin-top: 10px;
+   
+  }
+  

@@ -1,0 +1,54 @@
+/* Overall container */
+.job-posts-container {
+    padding: 20px;
+  }
+  
+  /* Search and filter inputs */
+  .search-filter-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .filter-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .filter-label {
+    margin-right: 5px;
+  }
+  
+  /* Job list */
+  .jobs-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  
+  /* Individual job item */
+  .job-item {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .job-item h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  .job-item p {
+    font-size: 0.9rem;
+    line-height: 1.5rem;
+  }
+  

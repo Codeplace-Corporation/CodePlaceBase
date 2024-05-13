@@ -1,0 +1,59 @@
+
+
+/*Ttitle Box Code  */
+.about-boxtwo{
+  margin-top: -2%;
+  color: aliceblue;
+  font-family:'Inter';
+  font-weight:200;
+}
+.about-boxtwo h1 {
+  font-weight: 300;
+  font-family:'Inter';
+  font-size: 700%;
+  margin-left: 5%;
+}
+
+.PurpCode{
+  color:#6e5494 ;
+  font-family:'Inter';
+  font-weight: 800;
+}
+.WhiteCode{
+  font-weight: 800;
+}
+
+.about-container {
+
+  font-family:'Inter';
+ margin-top: -3%;
+  display: flex; /* Use flexbox to display items horizontally */
+  justify-content: space-between; /* Distribute items evenly along the main axis */
+  flex-wrap: wrap; /* Allow items to wrap onto the next line if needed */
+}
+.about-boxthree,
+.about-boxfour {
+
+  flex-basis:  calc(50% - 5%); /* Adjust the width of each box */
+  border-radius: 10px;
+  padding: 20px;
+  font-family:'Inter';
+  margin: 1% 2%; /* Adjust the margins between boxes */
+  color: aliceblue;
+  text-align: center;
+  border-color: #6e5494;
+  border: 2px solid #6e5494; 
+
+ 
+}
+
+
+.about-boxthree:hover {
+color:#6e5494 ;
+}
+.about-boxfour:hover {
+  color:#6e5494 ;
+  }
+  .Containertwo-about {
+    color: aliceblue;
+  }
