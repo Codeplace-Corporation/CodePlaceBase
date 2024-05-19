@@ -1,7 +1,5 @@
-// JobPosts.js
 import React, { useState, useEffect } from "react";
 import { firestore } from "../../firebase";
-
 
 const JobPosts = () => {
   const [jobs, setJobs] = useState([]);
@@ -52,8 +50,6 @@ const JobPosts = () => {
     // Return true if the job matches the search query and all applied filters
     return matchesSearchQuery && matchesFilters;
   });
-  
-  
 
   return (
     <div>
@@ -71,6 +67,14 @@ const JobPosts = () => {
             <h2>{job.jobTitle}</h2>
             <p>{job.jobDescription}</p>
             {/* Display other job details */}
+            <p>Type: {job.jobType}</p>
+            <p>Compensation: {job.compensation}</p>
+            <p>Cancel Date and Time: {job.jobCancelDateTime}</p>
+            <p>Starting Bid: {job.startingBid}</p>
+            <p>Auction Start Date and Time: {job.auctionStartDateTime}</p>
+            <p>Auction Stop Date and Time: {job.auctionStopDateTime}</p>
+            <p>Submission Deadline: {job.submissionDeadline}</p>
+            <p>Posted by: {job.userName}</p>
           </div>
         ))}
       </div>

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
-import { app, firestore, auth } from "../../firebase";
+import { addDoc, collection, getDocs, query } from "firebase/firestore";
+import { firestore, auth } from "../../firebase";
 import './Jobpage.css';
 
-const Jobpage = ({ currentUser }) => {
+const Jobpage = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [jobType, setJobType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,7 +35,13 @@ const Jobpage = ({ currentUser }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { currentUser } = auth;
+    const currentUser = auth.currentUser;
+    console.log("Current User:", currentUser); // Log the current user
+
+    if (!currentUser) {
+      console.error("No user is currently logged in.");
+      return;
+    }
 
     const newJob = {
       jobTitle: e.target.jobTitle.value,
@@ -43,6 +49,7 @@ const Jobpage = ({ currentUser }) => {
       jobDescription: e.target.jobDescription.value,
       tags: e.target.tags.value.split(","),
       userId: currentUser.uid,
+      userName: currentUser.displayName || "Anonymous", // Default to "Anonymous" if no display name
     };
 
     // Add additional fields based on job type
@@ -59,8 +66,12 @@ const Jobpage = ({ currentUser }) => {
     }
 
     // Add the new job to the "jobs" collection in Firestore
-    const docRef = await addDoc(collection(firestore, "jobs"), newJob);
-    console.log("Job created with ID:", docRef.id);
+    try {
+      const docRef = await addDoc(collection(firestore, "jobs"), newJob);
+      console.log("Job created with ID:", docRef.id);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
 
     closePopup();
   };
@@ -118,10 +129,10 @@ const Jobpage = ({ currentUser }) => {
           <h1 className="jobpage-popup-heading">Create a New Job</h1>
           <form onSubmit={handleSubmit}>
             <label className="jobpage-form-label" htmlFor="jobTitle">Job Title</label>
-            <input className="jobpage-input" type="text" id="jobTitle" name="jobTitle" />
+            <input className="jobpage-input" type="text" id="jobTitle" name="jobTitle" required />
 
             <label className="jobpage-form-label" htmlFor="jobType">Job Type</label>
-            <select className="jobpage-input" id="jobType" name="jobType" onChange={(e) => setJobType(e.target.value)}>
+            <select className="jobpage-input" id="jobType" name="jobType" onChange={(e) => setJobType(e.target.value)} required>
               <option value="">Select a job type</option>
               <option value="Assist">Assist</option>
               <option value="Bounty">Bounty</option>
@@ -130,52 +141,51 @@ const Jobpage = ({ currentUser }) => {
             </select>
 
             <label className="jobpage-form-label" htmlFor="jobDescription">Job Description</label>
-            <textarea className="jobpage-input" id="jobDescription" name="jobDescription"></textarea>
+            <textarea className="jobpage-input" id="jobDescription" name="jobDescription" required></textarea>
 
             <label className="jobpage-form-label" htmlFor="tags">Tags</label>
-            <input className="jobpage-input" type="text" id="tags" name="tags" placeholder="Enter tags separated by commas" />
+            <input className="jobpage-input" type="text" id="tags" name="tags" placeholder="Enter tags separated by commas" required />
 
             {jobType === "Assist" && (
               <>
                 <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" />
+                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
 
                 <label className="jobpage-form-label" htmlFor="jobCancelDateTime">Job Cancel Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" />
+                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" required />
               </>
             )}
 
             {jobType === "Bounty" && (
               <>
                 <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" />
+                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
 
                 <label className="jobpage-form-label" htmlFor="jobCancelDateTime">Job Cancel Date and Time</label>
-
-                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" />
+                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" required />
               </>
             )}
 
             {jobType === "Auction" && (
               <>
                 <label className="jobpage-form-label" htmlFor="startingBid">Starting Bid</label>
-                <input className="jobpage-input" type="number" id="startingBid" name="startingBid" />
+                <input className="jobpage-input" type="number" id="startingBid" name="startingBid" required />
 
                 <label className="jobpage-form-label" htmlFor="auctionStartDateTime">Auction Start Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStartDateTime" name="auctionStartDateTime" />
+                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStartDateTime" name="auctionStartDateTime" required />
 
                 <label className="jobpage-form-label" htmlFor="auctionStopDateTime">Auction Stop Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStopDateTime" name="auctionStopDateTime" />
+                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStopDateTime" name="auctionStopDateTime" required />
               </>
             )}
 
             {jobType === "Challenge" && (
               <>
                 <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" />
+                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
 
                 <label className="jobpage-form-label" htmlFor="submissionDeadline">Submission Deadline</label>
-                <input className="jobpage-date-time-input" type="date" id="submissionDeadline" name="submissionDeadline" />
+                <input className="jobpage-date-time-input" type="date" id="submissionDeadline" name="submissionDeadline" required />
               </>
             )}
 
@@ -192,12 +202,13 @@ const Jobpage = ({ currentUser }) => {
             <h2>{job.jobTitle}</h2>
             <p>{job.jobDescription}</p>
             <p>Type: {job.jobType}</p>
-            <p>Compensation: {job.compensation}</p>
-            <p>Cancel Date and Time: {job.jobCancelDateTime}</p>
-            <p>Starting Bid: {job.startingBid}</p>
-            <p>Auction Start Date and Time: {job.auctionStartDateTime}</p>
-            <p>Auction Stop Date and Time: {job.auctionStopDateTime}</p>
-            <p>Submission Deadline: {job.submissionDeadline}</p>
+            {job.compensation && <p>Compensation: {job.compensation}</p>}
+            {job.jobCancelDateTime && <p>Cancel Date and Time: {job.jobCancelDateTime}</p>}
+            {job.startingBid && <p>Starting Bid: {job.startingBid}</p>}
+            {job.auctionStartDateTime && <p>Auction Start Date and Time: {job.auctionStartDateTime}</p>}
+            {job.auctionStopDateTime && <p>Auction Stop Date and Time: {job.auctionStopDateTime}</p>}
+            {job.submissionDeadline && <p>Submission Deadline: {job.submissionDeadline}</p>}
+            <p>Posted by: {job.userName}</p>
           </div>
         ))}
       </div>
@@ -206,3 +217,4 @@ const Jobpage = ({ currentUser }) => {
 };
 
 export default Jobpage;
+

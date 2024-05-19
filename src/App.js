@@ -1,7 +1,7 @@
 import './App.css';
 import { getAuth } from "firebase/auth";
 import React, { useState, useEffect } from 'react';
-import Home from './pages/home';
+import Home from './pages/Nologin/homepage/home.jsx';
 import Navbar from './pages/navbar';
 import SearchJob from './pages/Nologin/searchJob';
 import About from './pages/Nologin/about';
