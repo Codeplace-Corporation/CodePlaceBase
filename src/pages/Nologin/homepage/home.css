@@ -1,10 +1,13 @@
+/* src/components/home.css */
 .Starter {
+  margin-top: 10rem;
   font-family: 'inter';
   color: rgb(255, 255, 255);
   text-align: center;
   font-size: 600%;
   font-weight: 400;
 }
+
 .Starter h2 {
   margin-right: 5%;
   margin-left: 5%;
@@ -93,16 +96,16 @@
   flex-wrap: wrap;
   justify-content: space-between;
 }
+
 .box {
   flex: 0 0 calc(48% - 20px);
-
   margin-bottom: 0; /* Remove margin between boxes */
   margin-left: 1.25%;
   margin-top: 2%;
   margin-right: 1.25%;
   background-color: #000000;
   font-size: 25%;
-  border-radius:  17px; /* Remove border radius for all boxes */
+  border-radius: 17px; /* Add border radius for all boxes */
 }
 
 .box:first-child {
@@ -120,10 +123,50 @@
   flex-direction: column;
   padding: 10px;
   border: 1px solid #6e5494;
-  border-radius: 17px 17px 0 0 ; /* Remove border radius for all box sections */
+  border-radius: 17px 17px 0 0; /* Add border radius for box sections */
   margin-bottom: 0; /* Remove margin between sections */
 }
 
+.Starter-middle .box-section:last-child {
+  margin-bottom: 0; /* Remove margin bottom for the last box section */
+}
+
+.job-info, .user-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Align items vertically center */
+}
+
+.job-title, .user-name {
+  font-weight: bold;
+}
+
+.compensation, .monthly-earnings {
+  margin-left: 10px; /* Add some space between job/user title and compensation/earnings */
+}
+
+.poster-info {
+  margin-top: 5px; /* Add some space between job info and poster info */
+  font-size: 14px;
+  color: #666;
+  text-align: left;
+}
+
+/* Two side-by-side boxes */
+.side-by-side-boxes {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 20px;
+}
+
+.side-box {
+  flex: 0 0 45%;
+  background-color: #6e5494;
+  color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
 .Starter-middle .box-section:last-child {
   margin-bottom: 0; /* Remove margin bottom for the last box section */
 }

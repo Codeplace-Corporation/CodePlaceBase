@@ -54,6 +54,10 @@ export default function Home() {
           <button>Get Started</button>
         </a>
       </div>
+      <div className='side-by-side-boxes'>
+          <div className='side-box'>hello</div>
+          <div className='side-box'>world</div>
+        </div>
       <div className='Starter-middle'>
         <div className="box-container">
           <div className="box">
