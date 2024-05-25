@@ -1,4 +1,11 @@
-/* src/components/home.css */
+/* CSS for Home Component */
+
+/* Adjust margins on the left and right edges */
+.content-container {
+  margin: 0 4rem;
+}
+
+/* Styling for the Starter section */
 .Starter {
   margin-top: 10rem;
   font-family: 'inter';
@@ -6,6 +13,8 @@
   text-align: center;
   font-size: 600%;
   font-weight: 400;
+  margin-left: 2%;
+  margin-right: 2%;
 }
 
 .Starter h2 {
@@ -15,28 +24,17 @@
 
 .Starter-p2 {
   font-family: 'inter';
-  color: rgb(255, 255, 255);
+  color: rgb(161, 159, 161);
   text-align: center;
   font-size: 50%;
   font-weight: 200;
   margin: -2% 2%;
+  margin-right: 20%;
+  margin-left: 20%;
+
 }
 
-.Starter button {
-  font-family: 'inter';
-  font-size: 24%;
-  color: rgb(255, 255, 255);
-  background-color: #6e5494;
-  border-radius: 8px;
-  border-color: #6e5494;
-  width: 8%;
-  outline: none;
-  cursor: pointer;
-  border: none;
-  padding: .5%;
-  margin-top: 3%;
-}
-
+/* Styling for the list items */
 .listo li {
   font-family: 'inter';
   text-align: left;
@@ -54,6 +52,7 @@
   font-weight: 200;
 }
 
+/* Styling for the Developer Subsection */
 .DevSub {
   font-family: 'inter';
   color: rgb(255, 255, 255);
@@ -63,6 +62,7 @@
   font-size: 80%;
 }
 
+/* Styling for the Post Subsection */
 .PostSub {
   font-family: 'inter';
   color: rgb(255, 255, 255);
@@ -72,6 +72,7 @@
   font-size: 80%;
 }
 
+/* Styling for the Code Logo */
 .codelogo {
   float: right;
   position: relative;
@@ -79,115 +80,189 @@
   margin-right: 20%;
   margin-top: 5%;
   margin-bottom: 0%;
-  scale: 200%;
+  transform: scale(2);
+  transform-origin: center;
   border-radius: 3%;
 }
 
+/* Styling for the code examples */
 .codeexample {
-  position: relative;
-  margin: 15%;
-  margin-top: 2%;
-  float: left;
+  width: 100%;
   border-radius: 3%;
+  transition: transform 0.3s ease-in-out;
 }
 
+/* Hover effect on code examples */
+.codeexample:hover {
+  transform: scale(1.1);
+  filter: blur(2px);
+}
+
+/* Styling for the box container */
 .box-container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
 }
 
+/* Styling for the individual boxes */
 .box {
   flex: 0 0 calc(48% - 20px);
-  margin-bottom: 0; /* Remove margin between boxes */
+  margin-bottom: 0;
   margin-left: 1.25%;
   margin-top: 2%;
   margin-right: 1.25%;
   background-color: #000000;
   font-size: 25%;
-  border-radius: 17px; /* Add border radius for all boxes */
+  border-radius: 20px; /* Larger border radius */
 }
 
+/* Styling for the first box */
 .box:first-child {
-  border-bottom-left-radius: 8px; /* Add border radius only to the bottom left corner of the first box */
-  border-bottom-right-radius: 8px; /* Add border radius only to the bottom right corner of the first box */
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
 }
 
+/* Styling for the last box */
 .box:last-child {
-  border-top-left-radius: 8px; /* Add border radius only to the top left corner of the last box */
-  border-top-right-radius: 8px; /* Add border radius only to the top right corner of the last box */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
 }
 
+/* Styling for the box sections */
 .box-section {
   display: flex;
   flex-direction: column;
   padding: 10px;
   border: 1px solid #6e5494;
-  border-radius: 17px 17px 0 0; /* Add border radius for box sections */
-  margin-bottom: 0; /* Remove margin between sections */
+  border-radius: 17px 17px 0 0;
+  margin-bottom: 0;
 }
 
+/* Styling for the last box section in Starter-middle */
 .Starter-middle .box-section:last-child {
-  margin-bottom: 0; /* Remove margin bottom for the last box section */
+  margin-bottom: 0;
 }
 
+/* Styling for job and user information */
 .job-info, .user-info {
   display: flex;
   justify-content: space-between;
-  align-items: center; /* Align items vertically center */
+  align-items: center;
 }
 
+/* Styling for job titles and user names */
 .job-title, .user-name {
   font-weight: bold;
 }
 
+/* Styling for compensations and monthly earnings */
 .compensation, .monthly-earnings {
-  margin-left: 10px; /* Add some space between job/user title and compensation/earnings */
+  margin-left: 10px;
 }
 
+/* Styling for poster information */
 .poster-info {
-  margin-top: 5px; /* Add some space between job info and poster info */
+  margin-top: 5px;
   font-size: 14px;
   color: #666;
   text-align: left;
 }
 
-/* Two side-by-side boxes */
+/* Styling for side-by-side boxes */
 .side-by-side-boxes {
   display: flex;
   justify-content: space-around;
-  margin-top: 20px;
+  margin-top: 50px; /* Adjusted to reduce vertical distance */
 }
 
+/* Styling for individual side boxes */
 .side-box {
-  flex: 0 0 45%;
-  background-color: #6e5494;
-  color: #ffffff;
-  padding: 20px;
+  position: relative;
+  flex: 0 0 30%;
+  padding: 0;
   border-radius: 8px;
-  text-align: center;
-}
-.Starter-middle .box-section:last-child {
-  margin-bottom: 0; /* Remove margin bottom for the last box section */
-}
-
-.job-info, .user-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center; /* Align items vertically center */
+  overflow: hidden;
+  margin: 20px;
+  transition: transform 0.3s ease-in-out; /* Add transition here for smooth effect */
 }
 
-.job-title, .user-name {
+/* Styling for box titles */
+.side-box:nth-child(1) .box-title {
+  color: #ffffff; 
+}
+
+/* Styling for box titles in the second box */
+.side-box:nth-child(2) .box-title {
+  color: #ffffff; /* Neon purple color */
+}
+
+/* Styling for box titles in the third box */
+.side-box:nth-child(3) .box-title {
+  color: #7f4dca; /* White color */
+}
+
+/* Styling for box titles */
+.box-title {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
   font-weight: bold;
+  color: #ffffff;
+  z-index: 2;
 }
 
-.compensation, .monthly-earnings {
-  margin-left: 10px; /* Add some space between job/user title and compensation/earnings */
+/* Styling for image containers */
+.img-container {
+  width: 100%;
+  height: 200px;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.3s ease-in-out;
 }
 
-.poster-info {
-  margin-top: 5px; /* Add some space between job info and poster info */
-  font-size: 14px;
-  color: #666;
-  text-align: left;
+/* Styling for side box images */
+.side-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease-in-out;
+  display: block;
+  border-radius: 12px;
+}
+
+/* Hover effect on side boxes */
+.side-box:hover img {
+  transform: scale(1.1);
+  filter: blur(2px);
+}
+
+/* Styling for the text inside image boxes */
+.box-text {
+  position: absolute;
+  top: 35%;
+  left: 10%;
+  right: 10%;
+  transform: translateY(-50%);
+  font-size: 50px;
+  color: white;
+  text-align: center;
+  transition: font-size 0.3s ease-in-out; /* Smooth transition */
+  font-weight: 200;
+}
+
+/* Increase font size on hover for text inside image boxes */
+.side-box:hover .box-text {
+  font-size: 50px;
+  font-weight: 400; /* Adjust the font size as desired */
+}
+
+/* Adjust border radius on hover */
+.side-box:hover {
+  border-radius: 12px; /* Same as initial border radius */
+}
+
+.side-box:nth-child(3) .box-text {
+  color: #7f4dca; /* Purple color */
 }

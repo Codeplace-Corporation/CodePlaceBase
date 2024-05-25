@@ -12,8 +12,21 @@ export default function Navbar({ isAuthenticated }) {
       <div className="nav-center">
         <ul>
           <li>
-            <a href="/searchJobs">Search Jobs</a>
+            <a href="/searchJobs">Browse Jobs</a>
           </li>
+          <li>
+                <a href="/MyJobs">For Developers</a>
+              </li>
+              <li>
+                <a href="/MyJobs">For Clients</a>
+              </li>
+              <li>
+                <a href="/About">Teams</a>
+              </li>
+              <li>
+                <a href="/MyJobs">About</a>
+              </li>
+       
           {isAuthenticated && (
             <>
               <li>
@@ -32,7 +45,7 @@ export default function Navbar({ isAuthenticated }) {
       <div className="nav-right">
         {!isAuthenticated ? (
           <>
-            <a href="/about">About</a>
+
             <a href="/signIn">Sign In</a>
           </>
         ) : (

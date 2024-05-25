@@ -46,19 +46,43 @@ export default function Home() {
   };
 
   return (
-    <div className='Starter'>
-      <div className='Starter-top'>
-        <p className='Starter-p'>Let's Get To Work</p>
-        <p className='Starter-p2'>CodePlace is a freelance software marketplace designed to meet developer needs.</p>
-        <a href="/signIn">
-          <button>Get Started</button>
-        </a>
-      </div>
-      <div className='side-by-side-boxes'>
-          <div className='side-box'>hello</div>
-          <div className='side-box'>world</div>
+    <div className='content-container'>
+      <div className='Starter'>
+        <div className='Starter-top'>
+          <p className='Starter-p'>Let's Get To Work</p>
+          <p className='Starter-p2'>CodePlace is a freelance software marketplace by conecting qualified developers with clients.</p>
         </div>
-      <div className='Starter-middle'>
+        <div className='side-by-side-boxes'>
+          <div className='side-box'>
+            <p className='box-title'>CodePlace for developers</p>
+            <a href="/developers">
+              <img className='codeexample' src={'CodeExample.png'} alt="Description of image 1" />
+              <div className="box-text">Put Your Development Skills to Work</div>
+            </a>
+          </div>
+          <div className='side-box'>
+            <p className='box-title'>CodePlace for clients</p>
+            <a href="/clients">
+              <img className='codeexample' src={'FireBaseGeneric.png'} alt="Description of image 2" />
+              <div className="box-text">Get  A Qualified Developers To Build Your Ideas</div>
+            </a>
+          </div>
+          <div className='side-box'>
+            <p className='box-title'>Learn About CodePlace</p>
+            <a href="/learn-more">
+              <img className='codeexample' src={'LogoWhite.png'} alt="Description of image 3" />
+              <div className="box-text">Learn about who we are and what we do</div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+   
+        </div>
+
+  
+
+/*<div className='Starter-middle'>
         <div className="box-container">
           <div className="box">
             <div className="box-section top-section">
@@ -90,18 +114,21 @@ export default function Home() {
               <a href="/seeMore">See More</a>
             </div>
           </div>
+          <div className="box">
+            <div className="box-section top-section">
+              <p className='TopUser'>Learn About CodePlace</p>
+            </div>
+            <div className="box-section">
+              <p className='TopUser'>Learn About CodePlace</p>
+            </div>
+            <div className="box-section">
+              <a href="/learnMore">Learn More</a>
+            </div>
+          </div>
         </div>
       </div>
+
   
-      <img className='codeexample' src={'GeneralCode.png'} alt="Description of the image" />
-      <h2>Start Developing</h2>
-      <p className='DevSub'>Ready to work? Browse through available jobs, apply, and start earning!</p>
-      <ul className='listotwo'>
-        <li><p>Find jobs that match your skills and interests</p></li>
-        <li><p>Get hired based on your qualifications</p></li>
-        <li><p>Work on projects you're passionate about</p></li>
-        <li><p>Earn money doing what you love</p></li>
-      </ul>
 
       <img className='codelogo' src={'CodeLogo.png'} alt="Description of the image" />
       <h2>Post a Job</h2>
@@ -111,7 +138,10 @@ export default function Home() {
         <li><p>Completion assured by our satisfaction system</p></li>
         <li><p>Pick between qualified developers</p></li>
         <li><p>Get jobs done faster, cheaper, and better than other freelance sites</p></li>
-      </ul>
-    </div>
+      </ul> */
+
+
   );
 }
+
+      
