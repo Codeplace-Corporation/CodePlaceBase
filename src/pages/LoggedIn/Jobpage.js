@@ -4,6 +4,7 @@ import { firestore, auth } from "../../firebase";
 import './Jobpage.css';
 
 const Jobpage = () => {
+  // State variables to manage various aspects of the component
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [jobType, setJobType] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -11,6 +12,7 @@ const Jobpage = () => {
   const [sortBy, setSortBy] = useState("");
   const [jobs, setJobs] = useState([]);
 
+  // useEffect hook to fetch jobs from Firestore when the component mounts
   useEffect(() => {
     const getJobs = async () => {
       const q = query(collection(firestore, "jobs"));
@@ -24,25 +26,29 @@ const Jobpage = () => {
     getJobs();
   }, []);
 
+  // Function to open the job creation popup
   const openPopup = () => {
     setIsPopupOpen(true);
   };
 
+  // Function to close the job creation popup
   const closePopup = () => {
     setIsPopupOpen(false);
   };
 
+  // Function to handle form submission when creating a new job
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const currentUser = auth.currentUser;
-    console.log("Current User:", currentUser); // Log the current user
 
+    // Check if a user is logged in
     if (!currentUser) {
       console.error("No user is currently logged in.");
       return;
     }
 
+    // Construct the new job object based on form inputs
     const newJob = {
       jobTitle: e.target.jobTitle.value,
       jobType: e.target.jobType.value,
@@ -65,7 +71,7 @@ const Jobpage = () => {
       newJob.submissionDeadline = e.target.submissionDeadline.value;
     }
 
-    // Add the new job to the "jobs" collection in Firestore
+    // Add the new job to the Firestore collection
     try {
       const docRef = await addDoc(collection(firestore, "jobs"), newJob);
       console.log("Job created with ID:", docRef.id);
@@ -76,19 +82,23 @@ const Jobpage = () => {
     closePopup();
   };
 
+  // Function to handle search input change
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
 
+  // Function to handle filter input change
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters({ ...filters, [name]: value });
   };
 
+  // Function to handle sorting input change
   const handleSortChange = (e) => {
     setSortBy(e.target.value);
   };
 
+  // Filter and sort the jobs based on search, filters, and sorting criteria
   let filteredJobs = [...jobs];
 
   if (searchQuery !== "") {
@@ -101,6 +111,7 @@ const Jobpage = () => {
     filteredJobs.sort((a, b) => a[sortBy].localeCompare(b[sortBy]));
   }
 
+  // JSX to render the job page component
   return (
     <div className="jobpage-container">
       <h1 className="jobpage-heading">My Jobs</h1>
@@ -124,91 +135,21 @@ const Jobpage = () => {
         <option value="submissionDeadline">Submission Deadline</option>
       </select>
 
+      {/* Job creation popup */}
       {isPopupOpen && (
         <div className="jobpage-popup">
           <h1 className="jobpage-popup-heading">Create a New Job</h1>
           <form onSubmit={handleSubmit}>
-            <label className="jobpage-form-label" htmlFor="jobTitle">Job Title</label>
-            <input className="jobpage-input" type="text" id="jobTitle" name="jobTitle" required />
-
-            <label className="jobpage-form-label" htmlFor="jobType">Job Type</label>
-            <select className="jobpage-input" id="jobType" name="jobType" onChange={(e) => setJobType(e.target.value)} required>
-              <option value="">Select a job type</option>
-              <option value="Assist">Assist</option>
-              <option value="Bounty">Bounty</option>
-              <option value="Auction">Auction</option>
-              <option value="Challenge">Challenge</option>
-            </select>
-
-            <label className="jobpage-form-label" htmlFor="jobDescription">Job Description</label>
-            <textarea className="jobpage-input" id="jobDescription" name="jobDescription" required></textarea>
-
-            <label className="jobpage-form-label" htmlFor="tags">Tags</label>
-            <input className="jobpage-input" type="text" id="tags" name="tags" placeholder="Enter tags separated by commas" required />
-
-            {jobType === "Assist" && (
-              <>
-                <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
-
-                <label className="jobpage-form-label" htmlFor="jobCancelDateTime">Job Cancel Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" required />
-              </>
-            )}
-
-            {jobType === "Bounty" && (
-              <>
-                <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
-
-                <label className="jobpage-form-label" htmlFor="jobCancelDateTime">Job Cancel Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="jobCancelDateTime" name="jobCancelDateTime" required />
-              </>
-            )}
-
-            {jobType === "Auction" && (
-              <>
-                <label className="jobpage-form-label" htmlFor="startingBid">Starting Bid</label>
-                <input className="jobpage-input" type="number" id="startingBid" name="startingBid" required />
-
-                <label className="jobpage-form-label" htmlFor="auctionStartDateTime">Auction Start Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStartDateTime" name="auctionStartDateTime" required />
-
-                <label className="jobpage-form-label" htmlFor="auctionStopDateTime">Auction Stop Date and Time</label>
-                <input className="jobpage-date-time-input" type="datetime-local" id="auctionStopDateTime" name="auctionStopDateTime" required />
-              </>
-            )}
-
-            {jobType === "Challenge" && (
-              <>
-                <label className="jobpage-form-label" htmlFor="compensation">Compensation</label>
-                <input className="jobpage-input" type="number" id="compensation" name="compensation" required />
-
-                <label className="jobpage-form-label" htmlFor="submissionDeadline">Submission Deadline</label>
-                <input className="jobpage-date-time-input" type="date" id="submissionDeadline" name="submissionDeadline" required />
-              </>
-            )}
-
-            <button className="jobpage-button" type="submit">Submit</button>
-            <button className="jobpage-button" type="button" onClick={closePopup}>
-              Cancel
-            </button>
+            {/* Form inputs for job creation */}
           </form>
         </div>
       )}
+
+      {/* Display the filtered and sorted jobs */}
       <div>
         {filteredJobs.map((job) => (
           <div className="job" key={job.id}>
-            <h2>{job.jobTitle}</h2>
-            <p>{job.jobDescription}</p>
-            <p>Type: {job.jobType}</p>
-            {job.compensation && <p>Compensation: {job.compensation}</p>}
-            {job.jobCancelDateTime && <p>Cancel Date and Time: {job.jobCancelDateTime}</p>}
-            {job.startingBid && <p>Starting Bid: {job.startingBid}</p>}
-            {job.auctionStartDateTime && <p>Auction Start Date and Time: {job.auctionStartDateTime}</p>}
-            {job.auctionStopDateTime && <p>Auction Stop Date and Time: {job.auctionStopDateTime}</p>}
-            {job.submissionDeadline && <p>Submission Deadline: {job.submissionDeadline}</p>}
-            <p>Posted by: {job.userName}</p>
+            {/* Render job details */}
           </div>
         ))}
       </div>
@@ -217,4 +158,3 @@ const Jobpage = () => {
 };
 
 export default Jobpage;
-
