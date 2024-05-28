@@ -27,54 +27,55 @@ export default function Profile() {
                 window.location.pathname = '/';
             })
             .catch((error) => {
-                const errorCode = error.code;
-                alert(errorCode);
+                console.error('Error signing out:', error);
+                alert(error.message);
             });
     };
 
     const handleDisplayNameChange = () => {
+        if (!newDisplayName.trim()) {
+            alert('Display name cannot be empty');
+            return;
+        }
+
         updateProfile(auth.currentUser, { displayName: newDisplayName })
             .then(() => {
                 // Update user object locally
-                setUser({ ...user, displayName: newDisplayName });
+                setUser((prevUser) => ({ ...prevUser, displayName: newDisplayName }));
                 setNewDisplayName('');
             })
             .catch((error) => {
                 console.error('Error updating display name:', error);
+                alert(error.message);
             });
     };
 
     const handlePhotoURLChange = () => {
         if (!imageFile) {
-            console.error('No image file selected');
+            alert('Please select an image file');
             return;
         }
-    
+
         const storageRef = ref(storage, 'profile_images/' + auth.currentUser.uid);
         uploadBytes(storageRef, imageFile)
-            .then((snapshot) => {
-                if (!snapshot) {
-                    throw new Error('No snapshot received after uploading image');
-                }
-                return getDownloadURL(snapshot.ref);
+            .then((snapshot) => getDownloadURL(snapshot.ref))
+            .then((downloadURL) => {
+                return updateProfile(auth.currentUser, { photoURL: downloadURL }).then(() => downloadURL);
             })
             .then((downloadURL) => {
-                updateProfile(auth.currentUser, { photoURL: downloadURL })
-                    .then(() => {
-                        setUser({ ...user, photoURL: downloadURL });
-                    })
-                    .catch((error) => {
-                        console.error('Error updating photo URL:', error);
-                    });
+                setUser((prevUser) => ({ ...prevUser, photoURL: downloadURL }));
             })
             .catch((error) => {
-                console.error('Error uploading image:', error);
+                console.error('Error updating photo URL:', error);
+                alert(error.message);
             });
     };
 
     const handleFileChange = (e) => {
         const file = e.target.files[0];
-        setImageFile(file);
+        if (file) {
+            setImageFile(file);
+        }
     };
 
     if (!user) {
@@ -82,29 +83,30 @@ export default function Profile() {
     }
 
     return (
-        <div className={styles.container}> 
+        <div className={styles.container}>
             <h1>Welcome, {user.displayName || 'User'}</h1>
-            <div className={styles.profile}> 
-                <img src={user.photoURL} alt="Profile" className={styles.profileImg} />
+            <div className={styles.profile}>
+                <img src={user.photoURL || 'default-profile.png'} alt="Profile" className={styles.profileImg} />
                 <input
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
+                    className={styles.fileInput}
                 />
-                <button onClick={handlePhotoURLChange} className={styles.button}>Change Profile Picture</button> 
+                <button onClick={handlePhotoURLChange} className={styles.button}>Change Profile Picture</button>
             </div>
-            <div className={styles.inputContainer}> 
+            <div className={styles.inputContainer}>
                 <p>Username: {user.displayName || 'User'}</p>
                 <input
                     type="text"
                     placeholder="New Username"
                     value={newDisplayName}
                     onChange={(e) => setNewDisplayName(e.target.value)}
-                    className={styles.input} 
+                    className={styles.input}
                 />
-                <button onClick={handleDisplayNameChange} className={styles.button}>Change Username</button> 
+                <button onClick={handleDisplayNameChange} className={styles.button}>Change Username</button>
             </div>
-            <button onClick={handleSignOut} className={styles.button}>Sign Out</button> 
+            <button onClick={handleSignOut} className={styles.button}>Sign Out</button>
         </div>
     );
 }

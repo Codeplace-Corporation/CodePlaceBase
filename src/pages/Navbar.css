@@ -1,4 +1,3 @@
-/* Navbar.css */
 * {
   box-sizing: border-box;
 }
@@ -90,6 +89,7 @@ body {
 .profile-info {
   display: flex;
   align-items: center;
+  justify-content: flex-end; /* Align items to the right */
   cursor: pointer;
 }
 
@@ -97,11 +97,8 @@ body {
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  margin-left: 0.5rem;
-}
-
-.arrow {
-  margin-left: 0.5rem;
+  margin-left: 0.5rem; /* Adjusted margin to separate picture from text */
+  order: 2; /* Set order to place the picture on the right */
 }
 
 .dropdown {
