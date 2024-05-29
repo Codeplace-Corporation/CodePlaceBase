@@ -51,7 +51,7 @@ export default function Navbar() {
       {({ isAuthenticated, user }) => (
         <nav className={`nav ${isScrolled ? 'semi-transparent' : ''}`}>
           <div className="nav-left">
-            <a href={isAuthenticated ? "/LogLand" : "/"}>
+            <a href={isAuthenticated ? "/LandingPage" : "/"}>
               <img src="CodeLogo.png" alt="CodePlace" />
             </a>
           </div>

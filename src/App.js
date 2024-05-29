@@ -11,10 +11,9 @@ import Teams from './pages/LoggedIn/Teams.js';
 import SearchJobs from './pages/LoggedIn/Jobpage.js';
 import Auth from './Auth';
 import { BrowserRouter as Router } from "react-router-dom";
-import LogLand from './pages/LoggedIn/LogLand.js';
 import Profile from './pages/LoggedIn/Profile.js';
-import MyJobs from './pages/LoggedIn/MyJobs.js';
 import CreateAccount from './pages/Nologin/CreateAccount.js';
+import LandingPage from './pages/LoggedIn/LandingPage/LandingPage.js';
 
 function App() {
   const [showNavbar, setShowNavbar] = useState(true);
@@ -48,14 +47,12 @@ function App() {
             return <SignIn />;
           case "/Messages":
             return <Messages />;
-            case "/LogLand" :
-             return <LogLand />;
+            case "/LandingPage" :
+             return <LandingPage />;
              case "/Teams" :
              return <Teams />;
            case "/Profile":
             return <Profile />;
-          case "/MyJobs":
-          return <MyJobs />;
           case "/CreateAccount":
             return <CreateAccount />;
           

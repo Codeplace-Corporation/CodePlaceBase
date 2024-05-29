@@ -1,0 +1,211 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    padding: 20px;
+    padding-top: 80px; /* Add padding to the top to account for the navbar */
+  }
+  
+  .mainContent {
+    display: flex;
+    flex-grow: 1;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .userList {
+    width: 250px;
+    border-right: 1px solid #ddd;
+    background-color: #f9f9f9;
+    overflow-y: auto;
+  }
+  
+  .newConversationButton {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .newConversationButton:hover {
+    background-color: #0056b3;
+  }
+  
+  .userListItem {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .userListItem:hover {
+    background-color: #efefef;
+  }
+  
+  .userPicture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+  
+  .chatRoom {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .chatRoomPlaceholder {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+  }
+  
+  .messagesBox {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  
+  .message {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .message.sent {
+    justify-content: flex-end;
+  }
+  
+  .message.received {
+    justify-content: flex-start;
+  }
+  
+  .message img {
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-right: 10px;
+  }
+  
+  .message p {
+    background: #f1f1f1;
+    border-radius: 10px;
+    padding: 10px;
+    max-width: 60%;
+  }
+  
+  .message.sent p {
+    background: #dcf8c6;
+  }
+  
+  .dateTime {
+    font-size: 0.9em;
+    color: #999;
+    margin-left: 10px;
+  }
+  
+  form {
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid #ddd;
+  }
+  
+  form input {
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px 0 0 5px;
+  }
+  
+  form button {
+    padding: 10px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+  }
+  
+  form button:hover {
+    background: #0056b3;
+  }
+  
+  .popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .popupContent {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .popupContent h2 {
+    margin-top: 0;
+  }
+  
+  .popupContent form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .popupContent input {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .popupContent button {
+    padding: 10px;
+    border: none;
+    background: #007bff;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 5px;
+  }
+  
+  .popupContent button:hover {
+    background: #0056b3;
+  }
+  
+  .suggestions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #ddd;
+    border-top: none;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  
+  .suggestions li {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .suggestions li:hover {
+    background-color: #efefef;
+  }
+  
+  .noResults {
+    padding: 10px;
+    color: #999;
+  }
+  
