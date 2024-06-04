@@ -1,75 +1,59 @@
 .container {
-    max-width: 600px;
-    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    padding-top: 8rem;
+    gap: 20px;
+    height: 100vh;
+    box-sizing: border-box;
+  }
+  
+  .sidebar {
+    background-color: #052141f4;
     padding: 20px;
-    color: white; /* Make text white */
-}
+    color: white;
+  }
+  
+  .main-content {
+    background-color: #052141f4;
+    padding: 20px;
+    overflow-y: auto;
+    color: white;
+  }
 
-.profile {
-    text-align: center;
-    margin-bottom: 20px;
-    color: white; /* Ensure text is white */
-}
-
-.profile img {
+  .main-profile-img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
     margin-bottom: 10px;
-}
+    margin-left: 8rem;
 
-.input-container {
-    margin-bottom: 20px;
-    color: white; /* Ensure text is white */
-}
+  }
 
-.input-container input[type="text"] {
-    width: 100%;
-    padding: 10px;
+  .horizontalBar {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+    padding: 100px;
+    background-color: #4114bb;
+    border: 1px solid #1c127a;
+    border-radius: 5px;
+  }
+  
+  .box {
+    flex: 1;
+    margin: 0 20px;
+    padding: 50px;
+    background-color: #7700a7;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin-bottom: 10px;
-    color: white; /* Make input text white */
-    background-color: #333; /* Add background color for better contrast */
-}
-
-.input-container input[type="file"] {
-    display: none; /* Hide the file input */
-}
-
-.input-container label {
-    display: block;
-    padding: 10px 20px;
-    background-color: #0366d6; /* GitHub primary color */
-    color: #fff; /* Make text white */
-    border-radius: 5px;
-    cursor: pointer;
     text-align: center;
-}
-
-.input-container label:hover {
-    background-color: #005cc5; /* GitHub hover color */
-}
-
-.button-container {
-    text-align: center;
-    color: white; /* Ensure text is white */
-}
-
-.button-container button {
-    padding: 10px 20px;
-    margin: 0 10px;
-    border: none;
-    border-radius: 5px;
-    background-color: #0366d6; /* GitHub primary color */
-    color: #fff; /* Make text white */
-    cursor: pointer;
-}
-
-.button-container button:hover {
-    background-color: #005cc5; /* GitHub hover color */
-}
-
-h1, p {
-    color: white; /* Ensure all headings and paragraphs have white text */
-}
+  }
+  
+  .box:first-child {
+    margin-left: 0;
+  }
+  
+  .box:last-child {
+    margin-right: 0;
+  }
+  

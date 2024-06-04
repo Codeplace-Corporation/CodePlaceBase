@@ -82,31 +82,154 @@ export default function Profile() {
         return <div>Loading...</div>;
     }
 
+    const UserActivities = () => {
+        return (
+          <div>
+            <h3>User Activities</h3>
+            {/* Render activities */}
+          </div>
+        );
+    }
+
+    const UserPosts = () => {
+        return (
+          <div>
+            <h3>User Posts</h3>
+            {/* Render posts */}
+          </div>
+        );
+    }
+
+    const ProfileForm = () => {
+      return (
+        <form className={styles['profile-form']}>
+          <label>
+            Name:
+            <input type="text" name="name" />
+          </label>
+          <label>
+            Bio:
+            <input type="email" name="email" />
+          </label>
+        </form>
+      );
+    };
+
+    const ProfileDetails = () => {
+      const [isFormVisible, setFormVisible] = useState(false);
+
+      const toggleFormVisibility = () => {
+      setFormVisible(!isFormVisible);
+      };
+
+        return (
+          <div>
+            <button onClick={toggleFormVisibility} className={styles['toggle-form-button']}>
+               {isFormVisible ? 'Finish' : 'Edit Profile'}
+            </button>
+            {isFormVisible && <ProfileForm />}
+          </div>
+        );
+      }
+
+    const ProfileName = () => {
+        return (
+          <div>
+            <h2>Welcome, {user.displayName}</h2>
+          </div>
+        );
+      }      
+
+    const ProfilePicture = () => {
+        return (
+          <div>
+            <img src={user.photoURL} alt="Profile" className={styles['main-profile-img']} />
+          </div>
+        );
+      }
+    
+    const ProfileRating = () => {
+      return (
+        <div className={styles.horizontalBar}>
+          <div className={styles.box}>Rating</div>
+          <div className={styles.box}>Info</div>
+          <div className={styles.box}>Other</div>
+        </div>
+      );
+    };
+      
+    const MainContent = () => {
+        const [activeTab, setActiveTab] = useState('Developer');
+        const handleTabClick = (tab) => {
+          setActiveTab(tab);
+        };
+        
+        return (
+        <div className={styles['main-content']}>
+          <div className={styles.tabs}>
+            <button
+              className={`${styles.tab} ${activeTab === 'Developer' ? styles.active : ''}`}
+              onClick={() => handleTabClick('Developer')}
+            >
+            Developer
+        </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'info2' ? styles.active : ''}`}
+          onClick={() => handleTabClick('info2')}
+        >
+          Client
+        </button>
+      </div>
+      <div className={styles['tab-content']}>
+        {activeTab === 'Developer' && <Developer />}
+        {activeTab === 'info2' && <Client />}
+      </div>
+          </div>
+        );
+      }
+      const Developer = () => {
+        return(
+        <div>
+            <ProfileRating />
+            <UserPosts />
+            <UserActivities />
+         
+        </div>
+      );
+      }
+      const Client = () => (
+        <div>
+          <h2>Client</h2>
+          <p>This is the content for client </p>
+          {/* Add more modules as needed */}
+        </div>
+      );
+      
+
+    const Sidebar = () => {
+        return (
+          <div className={styles.sidebar}>
+            <ProfilePicture />
+            <ProfileName />
+            <ProfileDetails />
+            {/* Add more modules as needed */}
+          </div>
+        );
+      }
+
+    const ProfilePage = () => {
+        return (
+          <div className="container">
+            <Sidebar />
+            <MainContent />
+          </div>
+        );
+    }
+
     return (
         <div className={styles.container}>
-            <h1>Welcome, {user.displayName || 'User'}</h1>
-            <div className={styles.profile}>
-                <img src={user.photoURL || 'default-profile.png'} alt="Profile" className={styles.profileImg} />
-                <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className={styles.fileInput}
-                />
-                <button onClick={handlePhotoURLChange} className={styles.button}>Change Profile Picture</button>
-            </div>
-            <div className={styles.inputContainer}>
-                <p>Username: {user.displayName || 'User'}</p>
-                <input
-                    type="text"
-                    placeholder="New Username"
-                    value={newDisplayName}
-                    onChange={(e) => setNewDisplayName(e.target.value)}
-                    className={styles.input}
-                />
-                <button onClick={handleDisplayNameChange} className={styles.button}>Change Username</button>
-            </div>
-            <button onClick={handleSignOut} className={styles.button}>Sign Out</button>
+            <Sidebar />
+            <MainContent />
         </div>
     );
 }
