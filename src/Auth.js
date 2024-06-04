@@ -19,6 +19,7 @@ const signInWithGoogle = async () => {
   }, { merge: true });
 };
 
+// Listen for auth state changes
 onAuthStateChanged(auth, user => {
   if (user) {
     // User is signed in
