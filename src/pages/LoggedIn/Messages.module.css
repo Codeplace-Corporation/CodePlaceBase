@@ -1,0 +1,475 @@
+/* General Styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px); /* Adjust height to fit within the viewport */
+  padding: 0;
+  margin-top: 60px;
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: calc(100vh - 108px); /* Adjust height to fit within the viewport */
+}
+
+.conversationListContainer, .chatRoomContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid #dddddd00;
+  border-radius: 0;
+  background-color: #0c0c0c; /* Conversation box background color */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.conversationListContainer {
+  width: 20%;
+  overflow-y: auto;
+}
+
+.chatRoomContainer {
+  width: 80%;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: #0c0c0c;
+  border-radius: 15px 15px 0px 1px;
+  color: white;
+  text-align: center;
+  width: 100%;
+}
+
+.headerTitle {
+  margin-left: 20px; /* Adjust margin to move the header to the left */
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+}
+
+.newConversationButton {
+  background-color: #7b05e9;
+  color: rgb(255, 255, 255);
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 10px;
+  width: 28px; /* Adjust width */
+  height: 28px; /* Adjust height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.newConversationButton:hover {
+  background-color: #5904a8;
+}
+
+/* Conversation list item styles */
+.conversationListItem {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  position: relative;
+}
+
+.conversationListItem:hover {
+  background-color: #efefef;
+}
+
+.conversationListItem:hover .conversationName {
+  color: black;
+}
+
+.selectedConversation .conversationName {
+  color: black;
+}
+
+.conversationPicture {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
+.conversationDetails {
+  flex-grow: 1;
+}
+
+.conversationHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conversationName {
+  font-weight: bold;
+  color: white;
+  transition: color 0.3s; /* Added transition for smooth color change */
+}
+
+.conversationDate {
+  font-size: 0.9em;
+  color: #8a8a8a;
+}
+
+.conversationLastMessage {
+  color: #8a8a8a;
+  font-size: 0.9em;
+  max-width: 200px; /* Adjust as needed */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.selectedConversation {
+  background-color: #ffffff;
+}
+
+.conversationActions {
+  margin-left: 10px;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  color: #999;
+}
+
+.menuButton:hover {
+  color: #333;
+}
+
+.menu {
+  position: absolute;
+  right: 10px;
+  top: 20px;
+  background: rgb(255, 0, 0);
+  border: 1px solid #ff0000;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.menu button {
+  background: none;
+  border: none;
+  padding: 10px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.menu button:hover {
+  background: #f0f0f0;
+}
+
+.searchBar {
+  width: 20rem;
+}
+
+.searchBar input {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid #2f2f2f;
+  background-color: #2f2f2f;
+  border-radius: 50px;
+  justify-content: center;
+  color: #ffffff;
+}
+
+/* Chat room styles */
+.chatRoom {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: flex-end;
+  flex-grow: 1;
+}
+
+.messagesBox {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: #111111; /* Different color from conversation box */
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+  width: 100%; /* Updated to take full width */
+}
+
+.message.received {
+  flex-direction: row;
+  align-self: flex-start;
+  margin-left: 0;
+  max-width: 70%; /* Ensure no extra margin here */
+}
+
+.message img {
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+}
+
+.message.sent img {
+  margin-right: 0;
+  margin-left: 10px;
+  margin-top: 1%; /* Align the profile picture lower */
+}
+
+.message.sent {
+  flex-direction: row-reverse;
+  text-align: right;
+  align-self: flex-end;
+  margin-right: 0; /* Ensure no margin here */
+}
+
+.message.sent {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  align-self: flex-end;
+  text-align: right;
+  width: 100%; /* Ensure it takes the full width of the container */
+}
+
+.message.received {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  align-self: flex-start;
+  text-align: left;
+  width: 100%; /* Ensure it takes the full width of the container */
+}
+
+.message p {
+  background: #ffffff;
+  color: #0c0c0c;
+  border-radius: 10px;
+  padding: 10px;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-wrap;
+  max-width: 80%; /* Adjust as needed */
+  margin: 0; /* Remove extra margin */
+  flex-grow: 0; /* Prevent the message bubble from growing unexpectedly */
+}
+
+.message.sent p {
+  background: #6600ff;
+  color: #fff;
+  max-width: 80%; /* Ensure it does not exceed 80% of the container */
+  margin-left: auto; /* Pushes the message bubble to the right */
+  border-radius: 10px;
+}
+
+.dateTime {
+  font-size: 0.9em;
+  color: #999;
+}
+
+.dateTime.sent {
+  text-align: right;
+}
+
+.chatRoomForm {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #111111;
+  width: 100%;
+  border-top: 1px solid #2f2f2f;
+  border-radius: 0 0 20px 20px; /* Add rounded corners */
+}
+
+.inputContainer {
+  display: flex;
+  align-items: center;
+  background-color: #2f2f2f;
+  border-radius: 20px;
+  flex-grow: 1;
+  padding-left: 10px; /* Adjust padding to fit paperclip icon */
+}
+
+.chatRoomForm textarea {
+  flex-grow: 1;
+  padding: 10px;
+  border: none;
+  background-color: #2f2f2f;
+  color: #ddd;
+  border-radius: 20px;
+  font-family: 'inter';
+  margin-left: 10px;
+  outline: none; /* Remove the border that appears when typing */
+  resize: none; /* Prevent manual resizing */
+  font-size: 1.2em; /* Increase text size */
+  max-height: 150px; /* Limit the maximum height */
+  overflow-y: auto; /* Add vertical scrollbar if needed */
+}
+
+.chatRoomForm button {
+  padding: 10px;
+  border: none;
+  background: #7b05e9;
+  color: white;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.chatRoomForm button:hover {
+  background: #5904a8;
+}
+
+.chatRoomForm input[type="file"] {
+  display: none;
+}
+
+.chatRoomForm .fileInputLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  background: none;
+  color: white;
+  cursor: pointer;
+}
+
+.chatRoomForm .fileInputLabel:hover {
+  color: #007bff;
+}
+
+.signInButton {
+  padding: 10px 20px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.signInButton:hover {
+  background-color: #ff0000;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.popupContent {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.popupContent h2 {
+  margin-top: 0;
+}
+
+.popupContent form {
+  display: flex;
+  flex-direction: column;
+}
+
+.popupContent input {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.popupContent button {
+  padding: 10px;
+  border: none;
+  background: #007bff;
+  color: white;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.popupContent button:hover {
+  background: #0056b3;
+}
+
+.suggestions {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-top: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.suggestions li:hover {
+  background-color: #efefef;
+}
+
+.noResults {
+  padding: 10px;
+  color: #999;
+}
+
+/* CSS for the notification circle */
+.notificationCircle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #7b05e9; /* Change color to match other buttons */
+  color: white;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  position: absolute;
+  top: 35px; /* Adjust position to move up */
+  right: 9px; /* Adjust position to move left */
+  z-index: 10; /* Ensure it is on top */
+}
+
+/* Placeholder for no selected conversation */
+.chatRoomPlaceholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+  color: #888;
+  font-size: 50px;
+  background-color: #111111; /* Match the background color of chat room */
+  padding: 20px;
+  text-align: center;
+}
