@@ -1,50 +1,87 @@
+/* General container style */
 .container {
-  padding: 20px;
-  margin-top: 20px;  /* Added margin from the top */
-  margin-left: 20px; /* Added margin from the left */
-  max-width: 600px;  /* Set a max width to make it shorter */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  background-color: #000000; /* Dark background color */
+  color: white; /* White text color */
+  padding: 20px; /* Space at the top of the page */
+  margin: 20px 150px; /* Adjusted margins: top/bottom 20px, left/right 150px */
 }
 
-.messagesBox {
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 10px;
-  background-color: #f9f9f9;
+/* Welcome heading style */
+.welcomeHeading {
+  font-size: 2.5rem;
+  color: white; /* White text color */
+  margin-bottom: 40px; /* Space below the heading */
+  font-weight: 500;
+  align-self: flex-start; /* Align to the left end */
 }
 
-.message {
+/* Sub boxes style */
+.subBoxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%; /* Ensure sub-boxes take full width */
+}
+
+.subBox {
+  background-color: #0c0c0c;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  flex: 1;
+  min-width: 250px; /* Minimum width for each sub-box */
+  margin: 10px;
+}
+
+.subBox h3 {
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #ddd;
-  padding: 10px 0;
+  gap: 10px;
+  margin-top: 0;
 }
 
-.message:last-child {
-  border-bottom: none;
+.subBox p {
+  margin-bottom: 0;
+}
+
+/* Unread Messages Widget */
+.unreadMessageWidget {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .profilePicture {
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
 }
 
 .messageDetails {
-  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
-.messageDetails h3 {
-  margin: 0 0 5px;
-  font-size: 1.1em;
+.messageDetails h4, .messageDetails p, .messageDetails span {
+  margin: 0;
+  font-size: 1rem;
 }
 
-.messageDetails p {
-  margin: 0 0 5px;
-  color: #666;
+@media (min-width: 600px) {
+  .subBox {
+    width: 48%; /* Two boxes per row for larger screens */
+  }
 }
 
-.dateTime {
-  font-size: 0.9em;
-  color: #999;
+@media (min-width: 900px) {
+  .subBox {
+    width: 30%; /* Three boxes per row for larger screens */
+  }
 }
