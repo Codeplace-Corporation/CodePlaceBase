@@ -1,87 +1,269 @@
-/* General container style */
 .container {
+  width: 70%;
+  margin: 40px auto;
+  padding: 20px;
+  margin-top: 7rem;
+  box-sizing: border-box;
+}
+
+.globalHeading {
+  font-size: 2.1rem;
+  margin-bottom: 0px;
+  text-align: left; /* Align the heading text to the left */
+  width: 100%; /* Ensure it takes full width of the container */
+  color: white;
+  margin-left: 1rem;
+  font-weight: 400;
+  font-family: 'inter';
+}
+
+.sliderContainer {
+  width: 100%;
+  margin: 0 auto;
+}
+
+.overallBox {
+  background-color: #8400ffad;
+  padding: 5px;
+  border-radius: 25px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  height: 100vh; /* Full viewport height */
-  background-color: #000000; /* Dark background color */
-  color: white; /* White text color */
-  padding: 20px; /* Space at the top of the page */
-  margin: 20px 150px; /* Adjusted margins: top/bottom 20px, left/right 150px */
+  align-items: flex-start; /* Align items to the left */
 }
 
-/* Welcome heading style */
-.welcomeHeading {
-  font-size: 2.5rem;
-  color: white; /* White text color */
-  margin-bottom: 40px; /* Space below the heading */
-  font-weight: 500;
-  align-self: flex-start; /* Align to the left end */
-}
-
-/* Sub boxes style */
-.subBoxes {
+.carouselItem {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  width: 100%; /* Ensure sub-boxes take full width */
+  justify-content: center; /* Center the sub-boxes horizontally */
+  padding: 5px;
 }
 
 .subBox {
-  background-color: #0c0c0c;
-  padding: 15px;
-  border-radius: 8px;
+  background-color: #0808085d;
+  padding: 10px;
+  border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
-  flex: 1;
-  min-width: 250px; /* Minimum width for each sub-box */
-  margin: 10px;
-}
-
-.subBox h3 {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  margin-top: 0;
+  height: 80px;
+  width: 400px;
+  margin-bottom: 15px;
+  color: azure;
 }
 
-.subBox p {
-  margin-bottom: 0;
-}
-
-/* Unread Messages Widget */
-.unreadMessageWidget {
+.subBoxHeader {
+  width: 100%;
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  margin-bottom: 5px;
 }
 
-.profilePicture {
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
-}
-
-.messageDetails {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.messageDetails h4, .messageDetails p, .messageDetails span {
+.subBoxHeader p {
+  font-size: 1.2rem;
+  font-weight: bold;
   margin: 0;
+}
+
+.notificationCircle {
+  background-color: #ffffff;
+  color: #7b05e9;
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   font-size: 1rem;
 }
 
-@media (min-width: 600px) {
-  .subBox {
-    width: 48%; /* Two boxes per row for larger screens */
-  }
+.subBoxContent {
+  width: 100%;
+  display: flex;
+  align-items: flex-start; /* Align content to the top */
+  justify-content: center; /* Center content horizontally */
+  margin-bottom: 100px; /* Add padding to adjust the vertical position */
 }
 
-@media (min-width: 900px) {
-  .subBox {
-    width: 30%; /* Three boxes per row for larger screens */
-  }
+.unreadMessageWidget,
+.notificationsWidget,
+.upcomingDeadlineWidget {
+  text-align: center;
+  font-size: 1rem;
 }
+
+.currentJobsContainer {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.currentJobsWidget {
+  text-align: center;
+  font-size: 1rem;
+}
+
+.currentJobsWidget h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.currentJobsWidget ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.currentJobsWidget li {
+  padding: 5px 0;
+}
+
+.calendarAppliedContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.calendarWidgetContainer {
+  flex: 1;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-right: 10px;
+  height: auto;
+}
+
+.appliedJobsWidgetContainer {
+  flex: 2;
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  height: auto;
+}
+
+.weekContainer {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.dayBox {
+  flex: 1;
+  background-color: #4285f4;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  margin-right: 10px;
+}
+
+.dayBox:last-child {
+  margin-right: 0;
+}
+
+.selectedDay {
+  background-color: #0f9d58;
+}
+
+.agendaContainer {
+  background-color: #ffffff;
+  color: black;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.agendaContainer h3 {
+  margin-top: 0;
+}
+
+.pastJobsContainer {
+  background-color: #f0f0f0;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 20px;
+  width: 100%;
+}
+
+.pastJobsWidget {
+  text-align: center;
+  font-size: 1rem;
+}
+
+.pastJobsWidget h2 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.pastJobsWidget ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.pastJobsWidget li {
+  padding: 5px 0;
+}
+
+.customDots {
+  display: flex !important;
+  justify-content: center;
+  padding: 10px 0;
+  margin: -10px;
+}
+
+.customDots li {
+  display: inline-block;
+  margin: 0 2px;
+}
+
+.customDots li button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.customDots li button::before {
+  content: '•';
+  font-size: 24px;
+  color: #ddd;
+}
+
+.customDots li.react-multi-carousel-dot--active button::before {
+  color: #000;
+}
+
+.customArrow {
+  background: rgba(0, 0, 255, 0);
+  border: none;
+  outline: none;
+  cursor: pointer;
+  width: 60px;
+  height: 100%;
+  
+  position: absolute;
+  z-index: 1;
+}
+
+.leftArrow {
+  left: 0;
+}
+
+.rightArrow {
+  right: 0;
+}
+
+
+
+
+
+
+
+

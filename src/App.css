@@ -13,7 +13,7 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
-body {background-color:rgb(0, 0, 0);}
+body {background-color:#080808}
 #rcorners2 {
   border-radius: 25px;
   border: 2px solid #73AD21;

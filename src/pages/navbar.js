@@ -125,6 +125,7 @@ export default function Navbar() {
             {isDropdownOpen && (
               <div className="dropdown">
                 <a href="/Profile">Profile</a>
+                <a href="/Profile">Settings</a>
                 <a href="/logout">Logout</a>
               </div>
             )}

@@ -1,89 +1,171 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
-import { app } from '../../../firebase'; // Adjust the path to your firebase.js file
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
+import Carousel from 'react-multi-carousel';
+import 'react-multi-carousel/lib/styles.css';
+import moment from 'moment';
+import { app } from '../../../firebase';
 import styles from './LandingPage.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faBell, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faBell, faCalendarAlt, faBriefcase } from '@fortawesome/free-solid-svg-icons';
 
 const auth = getAuth(app);
 const firestore = getFirestore(app);
 
-const formatDate = (timestamp) => {
-  if (!timestamp) return '';
+const UnreadMessagesWidget = ({ count }) => (
+  <div className={styles.unreadMessageWidget}>
+    {count > 0 ? (
+      <p>You have {count} unread {count > 1 ? 'messages' : 'message'}</p>
+    ) : (
+      <p>No unread messages</p>
+    )}
+  </div>
+);
 
-  const date = new Date(timestamp.seconds * 1000);
-  const now = new Date();
-  const diff = now - date;
+const NotificationsWidget = ({ count }) => (
+  <div className={styles.notificationsWidget}>
+    <p>{count > 0 ? `You have ${count} new notifications` : 'No new notifications'}</p>
+  </div>
+);
 
-  if (diff < 24 * 60 * 60 * 1000) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  } else {
-    return date.toLocaleDateString();
-  }
-};
+const UpcomingDeadlineWidget = ({ count }) => (
+  <div className={styles.upcomingDeadlineWidget}>
+    <p>{count > 0 ? `You have ${count} upcoming deadlines` : 'No upcoming deadlines'}</p>
+  </div>
+);
 
-const UnreadMessagesWidget = ({ message }) => {
-  if (!message) {
-    return <h4>No unread messages</h4>;
-  }
+const CurrentJobsWidget = ({ jobs }) => (
+  <div className={styles.currentJobsWidget}>
+    <h2>Current Jobs</h2>
+    {jobs.length > 0 ? (
+      <ul>
+        {jobs.map((job, index) => (
+          <li key={index}>{job}</li>
+        ))}
+      </ul>
+    ) : (
+      <p>No current jobs</p>
+    )}
+  </div>
+);
 
-  const { text, createdAt, sender } = message;
-  const formattedDate = formatDate(createdAt);
+const AppliedJobsWidget = ({ jobs }) => (
+  <div className={styles.appliedJobsWidget}>
+    <h2>Applied Jobs</h2>
+    {jobs.length > 0 ? (
+      <ul>
+        {jobs.map((job, index) => (
+          <li key={index}>{job}</li>
+        ))}
+      </ul>
+    ) : (
+      <p>No applied jobs</p>
+    )}
+  </div>
+);
+
+const CalendarWidget = ({ deadlines, selectedDate, onSelectDate }) => {
+  const startOfWeek = moment().startOf('week');
+  const days = Array.from({ length: 7 }, (_, i) => startOfWeek.clone().add(i, 'days'));
 
   return (
-    <div className={styles.unreadMessageWidget}>
-      <img src={sender.photoURL || 'default-profile.png'} alt="profile" className={styles.profilePicture} />
-      <div className={styles.messageDetails}>
-        <h4>{sender.displayName}</h4>
-        <p>{text}</p>
-        <span>{formattedDate}</span>
+    <div className={styles.calendarWidget}>
+      <h2>Calendar</h2>
+      <div className={styles.weekContainer}>
+        {days.map((day) => (
+          <div
+            key={day.format('YYYY-MM-DD')}
+            className={`${styles.dayBox} ${selectedDate.isSame(day, 'day') ? styles.selectedDay : ''}`}
+            onClick={() => onSelectDate(day)}
+          >
+            <p>{day.format('ddd, MMM D')}</p>
+            <div className={styles.notificationCircle}>
+              {deadlines[day.format('YYYY-MM-DD')] || 0}
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className={styles.agendaContainer}>
+        <h3>Agenda for {selectedDate.format('dddd, MMMM D')}</h3>
+        {deadlines[selectedDate.format('YYYY-MM-DD')] ? (
+          <ul>
+            {deadlines[selectedDate.format('YYYY-MM-DD')].map((deadline, index) => (
+              <li key={index}>{deadline}</li>
+            ))}
+          </ul>
+        ) : (
+          <p>No deadlines for this day.</p>
+        )}
       </div>
     </div>
   );
 };
 
-const NotificationsWidget = () => {
-  return (
-    <div>
-      <h4>No new notifications</h4>
-    </div>
-  );
-};
+const PastJobsWidget = ({ jobs }) => (
+  <div className={styles.pastJobsWidget}>
+    <h2>Past Jobs</h2>
+    {jobs.length > 0 ? (
+      <ul>
+        {jobs.map((job, index) => (
+          <li key={index}>{job}</li>
+        ))}
+      </ul>
+    ) : (
+      <p>No past jobs</p>
+    )}
+  </div>
+);
 
-const UpcomingDeadlineWidget = () => {
-  return (
-    <div>
-      <h4>No upcoming deadlines</h4>
-    </div>
-  );
-};
+const CustomArrow = ({ onClick, direction }) => (
+  <button
+    onClick={onClick}
+    className={`${styles.customArrow} ${direction === 'left' ? styles.leftArrow : styles.rightArrow}`}
+  />
+);
 
 const LandingPage = () => {
   const [user, setUser] = useState(null);
-  const [mostRecentUnreadMessage, setMostRecentUnreadMessage] = useState(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [notificationsCount, setNotificationsCount] = useState(0);
+  const [deadlinesCount, setDeadlinesCount] = useState(0);
+  const [currentJobs, setCurrentJobs] = useState([]);
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [pastJobs, setPastJobs] = useState([]);
+  const [deadlines, setDeadlines] = useState({});
+  const [selectedDate, setSelectedDate] = useState(moment());
 
   useEffect(() => {
     const unsubscribeAuth = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
-        fetchMostRecentUnreadMessage(user.uid);
+        fetchUnreadMessagesCount(user.uid);
+        fetchNotificationsCount(user.uid);
+        fetchDeadlinesCount(user.uid);
+        fetchCurrentJobs(user.uid);
+        fetchAppliedJobs(user.uid);
+        fetchPastJobs(user.uid);
+        fetchDeadlines(user.uid);
       } else {
         setUser(null);
-        setMostRecentUnreadMessage(null);
+        setUnreadMessagesCount(0);
+        setNotificationsCount(0);
+        setDeadlinesCount(0);
+        setCurrentJobs([]);
+        setAppliedJobs([]);
+        setPastJobs([]);
+        setDeadlines({});
       }
     });
 
     return () => unsubscribeAuth();
   }, []);
 
-  const fetchMostRecentUnreadMessage = useCallback(async (userId) => {
+  const fetchUnreadMessagesCount = useCallback(async (userId) => {
     const conversationsRef = collection(firestore, 'conversations');
     const q = query(conversationsRef, where('userIds', 'array-contains', userId));
     const querySnapshot = await getDocs(q);
 
-    let mostRecentMessage = null;
-    let mostRecentTimestamp = 0;
+    let totalUnreadCount = 0;
 
     for (const docSnapshot of querySnapshot.docs) {
       const messagesRef = collection(firestore, 'conversations', docSnapshot.id, 'messages');
@@ -93,45 +175,158 @@ const LandingPage = () => {
         return !data.read && data.uid !== userId;
       });
 
-      for (const msg of unreadMessages) {
-        const data = msg.data();
-        if (data.createdAt && data.createdAt.seconds > mostRecentTimestamp) {
-          mostRecentTimestamp = data.createdAt.seconds;
-          mostRecentMessage = data;
-
-          // Fetch the sender's profile picture and username
-          const senderRef = doc(firestore, 'users', data.uid);
-          const senderSnapshot = await getDoc(senderRef);
-          if (senderSnapshot.exists()) {
-            const senderData = senderSnapshot.data();
-            mostRecentMessage.sender = {
-              displayName: senderData.displayName,
-              photoURL: senderData.photoURL,
-            };
-          }
-        }
-      }
+      totalUnreadCount += unreadMessages.length;
     }
 
-    setMostRecentUnreadMessage(mostRecentMessage);
+    setUnreadMessagesCount(totalUnreadCount);
   }, []);
+
+  const fetchNotificationsCount = useCallback(async (userId) => {
+    const notificationsCount = 5; // Placeholder value
+    setNotificationsCount(notificationsCount);
+  }, []);
+
+  const fetchDeadlinesCount = useCallback(async (userId) => {
+    const deadlinesCount = 3; // Placeholder value
+    setDeadlinesCount(deadlinesCount);
+  }, []);
+
+  const fetchCurrentJobs = useCallback(async (userId) => {
+    const jobsRef = collection(firestore, 'jobs');
+    const q = query(jobsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    const jobs = querySnapshot.docs.map((doc) => doc.data().jobTitle);
+    setCurrentJobs(jobs);
+  }, []);
+
+  const fetchAppliedJobs = useCallback(async (userId) => {
+    const appliedJobsRef = collection(firestore, 'appliedJobs');
+    const q = query(appliedJobsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    const jobs = querySnapshot.docs.map((doc) => doc.data().jobTitle);
+    setAppliedJobs(jobs);
+  }, []);
+
+  const fetchPastJobs = useCallback(async (userId) => {
+    const pastJobsRef = collection(firestore, 'pastJobs');
+    const q = query(pastJobsRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    const jobs = querySnapshot.docs.map((doc) => doc.data().jobTitle);
+    setPastJobs(jobs);
+  }, []);
+
+  const fetchDeadlines = useCallback(async (userId) => {
+    const deadlinesRef = collection(firestore, 'deadlines');
+    const q = query(deadlinesRef, where('userId', '==', userId));
+    const querySnapshot = await getDocs(q);
+
+    const deadlinesData = {};
+    querySnapshot.docs.forEach((doc) => {
+      const data = doc.data();
+      const date = data.date.toDate().toISOString().split('T')[0];
+      if (!deadlinesData[date]) {
+        deadlinesData[date] = [];
+      }
+      deadlinesData[date].push(data.title);
+    });
+    setDeadlines(deadlinesData);
+  }, []);
+
+  const responsive = {
+    superLargeDesktop: {
+      breakpoint: { max: 4000, min: 3000 },
+      items: 5
+    },
+    desktop: {
+      breakpoint: { max: 3000, min: 1024 },
+      items: 3
+    },
+    tablet: {
+      breakpoint: { max: 1024, min: 464 },
+      items: 2
+    },
+    mobile: {
+      breakpoint: { max: 464, min: 0 },
+      items: 1
+    }
+  };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.welcomeHeading}>Welcome back, {user ? user.displayName : 'Guest'}!</h1>
-      <div className={styles.subBoxes}>
-        <div className={styles.subBox}>
-          <h3><FontAwesomeIcon icon={faEnvelope} /> Unread Messages</h3>
-          <UnreadMessagesWidget message={mostRecentUnreadMessage} />
+      <div className={styles.overallBox}>
+        <h1 className={styles.globalHeading}>Welcome Back, {user ? user.displayName : 'Guest'}!</h1>
+        <div className={styles.sliderContainer}>
+          <Carousel 
+            responsive={responsive} 
+            infinite={true} 
+            showDots={true} 
+            dotListClass={styles.customDots} 
+            itemClass={styles.carouselItem}
+            customLeftArrow={<CustomArrow direction="left" />}
+            customRightArrow={<CustomArrow direction="right" />}
+          >
+            <div className={styles.carouselItem}>
+              <div className={styles.subBox}>
+                <div className={styles.subBoxHeader}>
+                  <p><FontAwesomeIcon icon={faEnvelope} /> Unread Messages</p>
+                  {unreadMessagesCount > 0 && (
+                    <div className={styles.notificationCircle}>{unreadMessagesCount}</div>
+                  )}
+                </div>
+                <div className={styles.subBoxContent}>
+                  <UnreadMessagesWidget count={unreadMessagesCount} />
+                </div>
+              </div>
+            </div>
+            <div className={styles.carouselItem}>
+              <div className={styles.subBox}>
+                <div className={styles.subBoxHeader}>
+                  <p><FontAwesomeIcon icon={faBell} /> Notifications</p>
+                  {notificationsCount > 0 && (
+                    <div className={styles.notificationCircle}>{notificationsCount}</div>
+                  )}
+                </div>
+                <div className={styles.subBoxContent}>
+                  <NotificationsWidget count={notificationsCount} />
+                </div>
+              </div>
+            </div>
+            <div className={styles.carouselItem}>
+              <div className={styles.subBox}>
+                <div className={styles.subBoxHeader}>
+                  <p><FontAwesomeIcon icon={faCalendarAlt} /> Upcoming Deadline</p>
+                  {deadlinesCount > 0 && (
+                    <div className={styles.notificationCircle}>{deadlinesCount}</div>
+                  )}
+                </div>
+                <div className={styles.subBoxContent}>
+                  <UpcomingDeadlineWidget count={deadlinesCount} />
+                </div>
+              </div>
+            </div>
+          </Carousel>
         </div>
-        <div className={styles.subBox}>
-          <h3><FontAwesomeIcon icon={faBell} /> Notifications</h3>
-          <NotificationsWidget />
+      </div>
+      <div className={styles.currentJobsContainer}>
+        <CurrentJobsWidget jobs={currentJobs} />
+      </div>
+      <div className={styles.calendarAppliedContainer}>
+        <div className={styles.calendarWidgetContainer}>
+          <CalendarWidget
+            deadlines={deadlines}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+          />
         </div>
-        <div className={styles.subBox}>
-          <h3><FontAwesomeIcon icon={faCalendarAlt} /> Upcoming Deadline</h3>
-          <UpcomingDeadlineWidget />
+        <div className={styles.appliedJobsWidgetContainer}>
+          <AppliedJobsWidget jobs={appliedJobs} />
         </div>
+      </div>
+      <div className={styles.pastJobsContainer}>
+        <PastJobsWidget jobs={pastJobs} />
       </div>
     </div>
   );
