@@ -1,10 +1,11 @@
 /* General Styles */
+
 .container {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px); /* Adjust height to fit within the viewport */
   padding: 0;
-  margin-top: 60px;
+  margin-top: 50px;
 }
 
 .mainContent {

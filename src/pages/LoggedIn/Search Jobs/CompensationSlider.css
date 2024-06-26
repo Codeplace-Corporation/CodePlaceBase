@@ -1,0 +1,47 @@
+/* CompensationSlider.css */
+.slider-container {
+    position: relative;
+    width: 100%;
+    padding-top: 30px; /* Adjust to provide space above the slider for the value boxes */
+  }
+  
+  .slider-values {
+    position: relative;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .slider-value {
+    position: absolute;
+    transform: translateX(-50%) translateY(-120%); /* Move up */
+    background: #26262B;
+    color: #32CD32;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1px solid #32CD32;
+    white-space: nowrap;
+    font-family: Arial, sans-serif;
+    font-size: 0.9em;
+  }
+  
+  .slider-value.right-value {
+    margin-left: 0; /* No additional margin needed */
+  }
+  
+  .rc-slider-track {
+    background-color:  #32CD32;
+  }
+  
+  .rc-slider-handle {
+    border: 2px solid #121212;
+    height: 22px;
+    width: 22px;
+    margin-top: -10px;
+    background-color: #32CD32;
+  }
+  
+  .rc-slider-rail {
+    background-color: #333333;
+  }
+  

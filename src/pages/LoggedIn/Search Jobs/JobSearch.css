@@ -1,0 +1,503 @@
+body {
+  background-color: #121212;
+  color: #ffffff;
+  font-family:Inter, Arial, sans-serif;
+}
+.jobs-list {
+  max-height: 550px; /* Adjust this height as needed to fit 6 job entries */
+  overflow-y: auto;
+}
+.jobs-list::-webkit-scrollbar {
+  width: 8px; /* Adjust the width of the scrollbar */
+}
+
+.jobs-list::-webkit-scrollbar-track {
+  background: #121212; /* Background of the scrollbar track */
+}
+
+.jobs-list::-webkit-scrollbar-thumb {
+  background-color: #7d4cdb; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Roundness of the scrollbar thumb */
+  border: 2px solid #121212; /* Padding around the scrollbar thumb */
+}
+
+
+.jobs-container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  color: #7d4cdb;
+  margin-bottom: 20px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 0;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.filter-button {
+  background-color: #26262B;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-radius 0.3s ease;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filter-button.active {
+  background-color: #7d4cdb;
+}
+
+.filter-button.selected {
+  background-color: #151518;
+  border-radius: 8px 8px 0 0;
+}
+
+.filter-button:hover {
+  background-color: #151518;
+}
+
+.filter-buttons.selected .filter-button:not(.selected) {
+  border-radius: 8px 8px 0 0;
+}
+
+.filters-container {
+  background-color: #151518;
+  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  margin-top: -30px;
+}
+
+.filter-columns {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.filter-column {
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.filter-column label {
+  margin-top: 5px;
+  color: #b0b0b0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  padding-left: 25px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.filter-column input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 14px;
+  width: 14px;
+  background-color: #26262B;
+  border-radius: 50%;
+}
+
+.filter-column input:checked ~ .checkmark {
+  background-color: #32CD32;
+}
+
+.filter-column input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.filter-column .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.filter-column .checkmark:after {
+  top: 5px;
+  left: 5px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: white;
+}
+
+.filter-icons {
+  display: flex;
+  justify-content: space-between;
+  margin-left: 130px;
+  margin-right: 130px;
+}
+
+.filter-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.filter-icon-container.selected {
+  color: #32CD32;
+  transform: scale(1.2);
+}
+
+.filter-icon {
+  font-size: 2em;
+}
+
+.filter-icon-text {
+  margin-top: 5px;
+  font-size: 0.9em;
+  color: #b0b0b0;
+}
+
+.apply-filters-button {
+  background-color: #32CD32;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.apply-filters-button:hover {
+  background-color: #28a745;
+}
+
+.create-job-button {
+  background-color: #32CD32;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.create-job-button:hover {
+  background-color: #28a745;
+}
+
+.job-form-container {
+  background-color: hsl(0, 0%, 12%);
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.job-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.job-form label {
+  color: #b0b0b0;
+}
+
+.job-form input,
+.job-form textarea,
+.job-form select,
+.job-form button {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+}
+
+.job-form button[type="submit"] {
+  background-color: #32CD32;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.job-form button[type="submit"]:hover {
+  background-color: #28a745;
+}
+
+.job-form button[type="button"] {
+  background-color: #ff6347;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+.job-form button[type="button"]:hover {
+  background-color: #e55342;
+}
+
+.job-container {
+  margin-bottom: 10px;
+}
+
+.job-box {
+  background-color: hsl(0, 0%, 12%);
+  border-radius: 8px;
+  padding: 0px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: border-radius 0.3s ease;
+}
+
+.job-container.active .job-box {
+  border-radius: 8px 8px 0 0;
+}
+
+.job-icon {
+  color: #7d4cdb;
+  font-size: 1.5em;
+  margin-right: 10px;
+}
+
+.job-content {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.job-details {
+  flex: 1;
+}
+
+.job-title {
+  color: #ffffff;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: -15px;
+  font-family: Inter, sans-serif;
+}
+
+.job-subtitle-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.job-subtitle {
+  color: #b0b0b0;
+  font-size: 0.9em;
+  font-weight: normal;
+  display: flex;
+  align-items: center;
+}
+
+.subtitle-separator {
+  color: #7d4cdb;
+  margin: 0 5px;
+}
+
+.subtitle-arrow {
+  margin-left: 5px;
+  color: #32CD32; /* Set arrow color to green */
+  transition: transform 0.3s ease;
+  transform-origin: center;
+}
+
+.subtitle-arrow.rotated {
+  transform: rotate(90deg); /* Rotate only 90 degrees */
+}
+
+.job-extra {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: -15px;
+}
+
+.job-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #333333;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.job-price-box {
+  background-color: #333333;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+.user-icon {
+  color: #32CD32;
+}
+
+.job-price {
+  color: #32CD32;
+  font-size: 1em;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.job-expanded {
+  background-color: #333333;
+  border-radius: 0 0 8px 8px;
+  overflow: hidden;
+  max-height: 0;
+  padding: 0 10px;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.job-container.active .job-expanded {
+  max-height: 1000px;
+  padding: 10px;
+}
+
+.job-expanded-title {
+  color: #ffffff;
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 10px;
+  font-family: Inter, sans-serif;
+}
+
+.job-expanded-user {
+  color: #b0b0b0;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+.job-expanded-description {
+  color: #ffffff;
+  font-size: 0.9em;
+  margin-top: 5px;
+  width: 33%;
+  word-wrap: break-word;
+}
+
+.styled-h2 {
+  font-size: 24px;
+  font-size: small;
+  font-family: 'inter';
+  margin-top: -10px;
+}
+
+.part1 {
+  color: white;
+}
+
+.line {
+  color: #6c4da6;
+}
+
+.part2 {
+  color: gray;
+}
+
+.title {
+  color: #ffffff;
+  font-family: 'inter';
+  margin-top: 50px;
+  font-size: 50px;
+}
+
+.icon {
+  scale: 70%;
+  vertical-align: middle;
+  margin-left: -5px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #26262B;
+  color: #ffffff;
+}
+
+.search-button,
+.reset-button {
+  background-color: #32CD32;
+  color: #ffffff;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-bottom: 0px;
+}
+
+.filter-compensation {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+  align-items: center; /* Center content horizontally */
+}
+
+.filter-compensation-heading {
+  font-size: 1.2em;
+  color: #ffffff;
+  text-align: center;
+  margin-top: -10px;
+}
+
+.compensation-inputs {
+  margin-top: -15px;
+  display: flex;
+  gap: 10px;
+  justify-content: center; /* Center input fields horizontally */
+}
+
+.filter-compensation label {
+  color: #ffffff;
+  text-align: center; /* Center text inside labels */
+}
+
+.filter-compensation input {
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background-color: #26262B;
+  color: #32CD32;
+  width: 100px;
+  padding: 2.5px 0px;
+  text-align: center; /* Center text inside input fields */
+}
+
+.filter-compensation input.error {
+  border: 2px solid red;
+}
+
+.filter-compensation .error-message {
+  margin-top: 10px;
+  color: red;
+  font-size: 0.8em;
+  margin-top: 10px;
+  text-align: center; /* Center error messages */
+  position: inherit;
+}

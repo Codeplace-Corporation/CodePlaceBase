@@ -75,28 +75,22 @@ export default function Navbar() {
       <div className="nav-center">
         <ul>
           <li>
-            <a href="/searchJobs">Browse Jobs</a>
-          </li>
+                <a href="/JobSearch">Job Search</a>
+              </li>
           <li>
-            <a href="/MyJobs">For Developers</a>
+            <a href="/Teams">Teams</a>
           </li>
-          <li>
-            <a href="/MyJobs">For Clients</a>
-          </li>
-          <li>
-            <a href="/About">Teams</a>
-          </li>
-          <li>
-            <a href="/MyJobs">About</a>
-          </li>
+        
           {isAuthenticated && (
             <>
-              <li>
-                <a href="/MyJobs">My Jobs</a>
-              </li>
+             
+            
               <li>
                 <a href="/Messages">Messages</a>
               </li>
+              <li>
+            <a href="/MyJobs">My Jobs</a>
+          </li>
             </>
           )}
         </ul>
@@ -125,7 +119,7 @@ export default function Navbar() {
             {isDropdownOpen && (
               <div className="dropdown">
                 <a href="/Profile">Profile</a>
-                <a href="/Profile">Settings</a>
+                <a href="/Settings">Settings</a>
                 <a href="/logout">Logout</a>
               </div>
             )}

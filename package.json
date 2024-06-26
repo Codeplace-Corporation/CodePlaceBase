@@ -3,22 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@fortawesome/fontawesome-free": "^6.5.2",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/icons-material": "^5.15.20",
+    "@mui/material": "^5.15.20",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "firebase": "^10.6.0",
     "moment": "^2.30.1",
+    "rc-slider": "^10.6.2",
+    "rc-tooltip": "^6.2.0",
     "react": "^18.2.0",
     "react-big-calendar": "^1.12.2",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
     "react-multi-carousel": "^2.8.5",
+    "react-range": "^1.8.14",
     "react-scripts": "^5.0.1",
     "react-simple-widgets": "^6.7.0",
     "react-slick": "^0.30.2",
+    "react-slider": "^2.0.6",
+    "react-tooltip": "^5.27.0",
     "react-widgets": "^5.8.4",
     "slick-carousel": "^1.8.1",
     "web-vitals": "^2.1.4"
@@ -48,6 +58,6 @@
     ]
   },
   "devDependencies": {
-    "react-router-dom": "^6.22.3"
+    "react-router-dom": "^6.23.1"
   }
 }

@@ -3,16 +3,15 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import React, { useState, useEffect } from 'react';
 import Home from './pages/Nologin/homepage/home.jsx';
 import Navbar from './pages/navbar';
-import SearchJob from './pages/Nologin/searchJob';
 import About from './pages/Nologin/about';
 import SignIn from './pages/Nologin/SignIn';
 import Messages from './pages/LoggedIn/Messages';
 import Teams from './pages/LoggedIn/Teams.js';
-import { signInWithGoogle } from './Auth';
-import { BrowserRouter as Router } from "react-router-dom";
 import Profile from './pages/LoggedIn/Profile.js';
 import CreateAccount from './pages/Nologin/CreateAccount.js';
 import LandingPage from './pages/LoggedIn/LandingPage/LandingPage.js';
+import JobSearch from './pages/LoggedIn/Search Jobs/JobSearch.js'; // Correct path
+import MyJobs from './pages/LoggedIn/MyJobs/MyJobs.js'; // Correct path
 
 const auth = getAuth();
 
@@ -39,33 +38,38 @@ function App() {
     return () => unsubscribe();
   }, []);
 
+  const renderPage = () => {
+    switch (window.location.pathname) {
+      case "/":
+        return <Home />;
+      case "/about":
+        return <About />;
+      case "/signIn":
+        return <SignIn />;
+      case "/Messages":
+        return <Messages />;
+      case "/LandingPage":
+        return <LandingPage />;
+      case "/Teams":
+        return <Teams />;
+      case "/Profile":
+        return <Profile />;
+      case "/CreateAccount":
+        return <CreateAccount />;
+      case "/JobSearch":
+        return <JobSearch />;
+      case "/MyJobs":
+        return <MyJobs />;
+      default:
+        return <Home />; // Default to Home if no route matches
+    }
+  };
+
   return (
-    <Router>
+    <div>
       {showNavbar && <Navbar isAuthenticated={isAuthenticated} />}
-      {/* Render different components based on the route */}
-      {(() => {
-        switch (window.location.pathname) {
-          case "/":
-            return <Home />;
-          case "/about":
-            return <About />;
-          case "/signIn":
-            return <SignIn />;
-          case "/Messages":
-            return <Messages />;
-          case "/LandingPage":
-            return <LandingPage />;
-          case "/Teams":
-            return <Teams />;
-          case "/Profile":
-            return <Profile />;
-          case "/CreateAccount":
-            return <CreateAccount />;
-          default:
-            return null;
-        }
-      })()}
-    </Router>
+      {renderPage()}
+    </div>
   );
 }
 

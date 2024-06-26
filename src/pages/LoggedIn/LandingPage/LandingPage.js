@@ -7,7 +7,7 @@ import moment from 'moment';
 import { app } from '../../../firebase';
 import styles from './LandingPage.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faBell, faCalendarAlt, faBriefcase } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faBell, faCalendarAlt, faChevronLeft, faChevronRight, faAngleDoubleLeft, faAngleDoubleRight, faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 const auth = getAuth(app);
 const firestore = getFirestore(app);
@@ -35,17 +35,28 @@ const UpcomingDeadlineWidget = ({ count }) => (
 );
 
 const CurrentJobsWidget = ({ jobs }) => (
-  <div className={styles.currentJobsWidget}>
-    <h2>Current Jobs</h2>
-    {jobs.length > 0 ? (
-      <ul>
-        {jobs.map((job, index) => (
-          <li key={index}>{job}</li>
-        ))}
-      </ul>
-    ) : (
-      <p>No current jobs</p>
-    )}
+  <div className={styles.currentJobsContainer}>
+    <div className={styles.currentJobsHeader}>Current Jobs</div>
+    <div className={styles.currentJobsContent}>
+      {jobs.length > 0 ? (
+        <ul className={styles.jobsList}>
+          {jobs.map((job, index) => (
+            <li key={index} className={styles.jobItem}>
+              <div className={styles.jobBox}>
+                <span className={styles.jobTitle}>{job}</span>
+                <div className={styles.jobIcons}>
+                  <FontAwesomeIcon icon={faBell} className={styles.jobIcon} />
+                  <FontAwesomeIcon icon={faEnvelope} className={styles.jobIcon} />
+                  <FontAwesomeIcon icon={faEllipsisV} className={styles.jobIcon} />
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>No current jobs</p>
+      )}
+    </div>
   </div>
 );
 
@@ -65,12 +76,36 @@ const AppliedJobsWidget = ({ jobs }) => (
 );
 
 const CalendarWidget = ({ deadlines, selectedDate, onSelectDate }) => {
-  const startOfWeek = moment().startOf('week');
-  const days = Array.from({ length: 7 }, (_, i) => startOfWeek.clone().add(i, 'days'));
+  const [currentStartOfWeek, setCurrentStartOfWeek] = useState(moment().startOf('week'));
+
+  const days = Array.from({ length: 7 }, (_, i) => currentStartOfWeek.clone().add(i, 'days'));
+
+  const handlePreviousWeek = () => {
+    setCurrentStartOfWeek(currentStartOfWeek.clone().subtract(1, 'week'));
+  };
+
+  const handleNextWeek = () => {
+    setCurrentStartOfWeek(currentStartOfWeek.clone().add(1, 'week'));
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentStartOfWeek(currentStartOfWeek.clone().subtract(1, 'month'));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentStartOfWeek(currentStartOfWeek.clone().add(1, 'month'));
+  };
 
   return (
     <div className={styles.calendarWidget}>
-      <h2>Calendar</h2>
+      <h2 className={styles.calendarHeading}>Calendar</h2>
+      <div className={styles.weekNavigation}>
+        <FontAwesomeIcon icon={faAngleDoubleLeft} onClick={handlePreviousMonth} className={styles.navigationIcon} />
+        <FontAwesomeIcon icon={faChevronLeft} onClick={handlePreviousWeek} className={styles.navigationIcon} />
+        <span>{currentStartOfWeek.format('MMM D')} - {currentStartOfWeek.clone().endOf('week').format('MMM D')}</span>
+        <FontAwesomeIcon icon={faChevronRight} onClick={handleNextWeek} className={styles.navigationIcon} />
+        <FontAwesomeIcon icon={faAngleDoubleRight} onClick={handleNextMonth} className={styles.navigationIcon} />
+      </div>
       <div className={styles.weekContainer}>
         {days.map((day) => (
           <div
@@ -78,9 +113,10 @@ const CalendarWidget = ({ deadlines, selectedDate, onSelectDate }) => {
             className={`${styles.dayBox} ${selectedDate.isSame(day, 'day') ? styles.selectedDay : ''}`}
             onClick={() => onSelectDate(day)}
           >
-            <p>{day.format('ddd, MMM D')}</p>
+            <p className={styles.dayName}>{day.format('ddd')}</p>
+            <p className={styles.dayDate}>{day.format('MMM D')}</p>
             <div className={styles.notificationCircle}>
-              {deadlines[day.format('YYYY-MM-DD')] || 0}
+              {deadlines[day.format('YYYY-MM-DD')] ? deadlines[day.format('YYYY-MM-DD')].length : 0}
             </div>
           </div>
         ))}
