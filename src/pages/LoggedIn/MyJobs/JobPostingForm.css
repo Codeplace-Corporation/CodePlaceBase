@@ -1,59 +1,223 @@
+/* JobPostingForm.css */
+
 .job-posting-form {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .close-form-button {
-    background-color: #e55342;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    position: absolute;
-    top: 20px;
-    right: 20px;
-  }
-  
-  /* Add more styles for your form */
-  form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  form div {
-    margin-bottom: 10px;
-  }
-  
-  label {
-    font-size: 16px;
-  }
-  
-  input, textarea {
-    padding: 10px;
-    width: 300px;
-    border: none;
-    border-radius: 5px;
-  }
-  
-  button[type="submit"] {
-    background-color: #7d4cdb;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 95%;
+  max-width: 800px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  margin: 5rem auto;
+  padding: 20px;
+}
+
+.job-posting-form__close-button {
+  background-color: #e55342;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: background-color 0.3s ease;
+}
+
+.job-posting-form__close-button:hover {
+  background-color: #ff6347;
+}
+
+.job-posting-form__form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #282828;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.job-posting-form__title {
+  font-size: 24px;
+  color: #ffffff;
+  margin-bottom: 20px;
+}
+
+.job-posting-form__field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.job-posting-form__label {
+  font-size: 16px;
+  color: #b0b0b0;
+  margin-bottom: 5px;
+}
+
+.job-posting-form__input,
+.job-posting-form__textarea,
+.job-posting-form__select,
+.job-posting-form__file-input {
+  padding: 10px;
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  background-color: #333333;
+  color: #ffffff;
+}
+
+.job-posting-form__textarea {
+  height: 100px;
+  resize: none;
+}
+
+.job-posting-form__image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.job-posting-form__image-container {
+  position: relative;
+}
+
+.job-posting-form__image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #7d4cdb;
+}
+
+.job-posting-form__remove-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background-color: #e55342;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.job-posting-form__remove-button:hover {
+  background-color: #ff6347;
+}
+
+.job-posting-form__next-button,
+.job-posting-form__prev-button,
+.job-posting-form__submit-button {
+  background-color: #32CD32;
+  color: #ffffff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+.job-posting-form__next-button:hover,
+.job-posting-form__prev-button:hover,
+.job-posting-form__submit-button:hover {
+  background-color: #28a745;
+}
+
+.job-posting-form__prev-button {
+  background-color: #ff6347;
+}
+
+.job-posting-form__prev-button:hover {
+  background-color: #e55342;
+}
+
+.job-posting-form__checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.job-posting-form__checkbox-field {
+  display: flex;
+  align-items: center;
+}
+
+.job-posting-form__checkbox {
+  margin-right: 5px;
+  accent-color: #32CD32;
+}
+
+.job-posting-form__radio {
+  margin-right: 10px;
+  accent-color: #32CD32;
+}
+
+
+  .job-posting-form__tool-item,
+.job-posting-form__tag-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.job-posting-form__tool-item span,
+.job-posting-form__tag-item span {
+  margin-right: 10px;
+}
+
+.job-posting-form__remove-button {
+  background: none;
+  border: none;
+  color: red;
+  margin-top: 100px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.job-posting-form__tool-item select {
+  margin-right: 10px;
+}
+.job-posting-form__icons {
+  display: flex;
+  justify-content: space-around;
+  margin: 1em 0;
+}
+
+.job-posting-form__icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.job-posting-form__icon-container:hover {
+  border-color: #7d4cdb; /* Your accent color */
+}
+
+.job-posting-form__icon {
+  font-size: 2em;
+}
+
+.job-posting-form__icon-text {
+  margin-top: 0.5em;
+  font-size: 1em;
+}
+
+.job-posting-form__icon-container.selected {
+  border-color: #7d4cdb; /* Your accent color */
+  background-color: rgba(125, 76, 219, 0.2); /* A light background for the selected state */
+}

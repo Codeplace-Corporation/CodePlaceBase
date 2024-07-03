@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getFirestore, collection } from "@firebase/firestore";
+import { getFirestore, collection, addDoc } from "firebase/firestore"; // Updated to include addDoc
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -20,4 +20,4 @@ const analytics = getAnalytics(app);
 const firestore = getFirestore(app);
 const auth = getAuth(app);
 
-export { app, analytics, firestore, auth };
+export { app, analytics, firestore, auth, collection, addDoc }; // Export collection and addDoc

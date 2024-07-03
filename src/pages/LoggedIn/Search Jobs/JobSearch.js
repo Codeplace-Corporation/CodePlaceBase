@@ -4,14 +4,14 @@ import { collection, query, orderBy, limit, getDocs, getDoc, doc, updateDoc, arr
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import './JobSearch.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel, faGift, faFileContract, faTrophy, faHandsHelping, faUser, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faGavel, faCrosshairs, faFileContract, faTrophy, faHandsHelping, faUser, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import CustomSlider from './CustomSlider'; // Import CustomSlider
 import CompensationSlider from './CompensationSlider'; // Import CompensationSlider
 import '../../../App.css';
 const jobTypes = [
   { type: "Auction", icon: faGavel },
-  { type: "Bounty", icon: faGift },
+  { type: "Bounty", icon: faCrosshairs },
   { type: "Contract", icon: faFileContract },
   { type: "Challenge", icon: faTrophy },
   { type: "Assist", icon: faHandsHelping },

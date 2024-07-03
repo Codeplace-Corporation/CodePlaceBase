@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './MyJobs.css';
+import './MyJobs.css';  // Import the CSS file for page styles
 import JobPostingForm from './JobPostingForm';
 
 function MyJobs() {
@@ -11,10 +11,16 @@ function MyJobs() {
 
   return (
     <div>
-      <button onClick={toggleForm} className="open-form-button">
-        Create Job Post
-      </button>
-      {isFormOpen && <JobPostingForm closeForm={toggleForm} />}
+      {isFormOpen ? (
+        <JobPostingForm closeForm={toggleForm} />
+      ) : (
+        <div>
+          <button onClick={toggleForm} className="open-form-button">
+            Create Job Post
+          </button>
+          {/* Other content of MyJobs component */}
+        </div>
+      )}
     </div>
   );
 }

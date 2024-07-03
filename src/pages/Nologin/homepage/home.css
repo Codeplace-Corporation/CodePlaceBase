@@ -1,268 +1,201 @@
-/* CSS for Home Component */
-
-/* Adjust margins on the left and right edges */
-.content-container {
-  margin: 0 4rem;
-}
-
-/* Styling for the Starter section */
-.Starter {
-  margin-top: 10rem;
-  font-family: 'inter';
-  color: rgb(255, 255, 255);
-  text-align: center;
-  font-size: 600%;
-  font-weight: 400;
-  margin-left: 2%;
-  margin-right: 2%;
-}
-
-.Starter h2 {
-  margin-right: 5%;
-  margin-left: 5%;
-}
-
-.Starter-p2 {
-  font-family: 'inter';
-  color: rgb(161, 159, 161);
-  text-align: center;
-  font-size: 50%;
-  font-weight: 200;
-  margin: -2% 2%;
-  margin-right: 20%;
-  margin-left: 20%;
-
-}
-
-/* Styling for the list items */
-.listo li {
-  font-family: 'inter';
-  text-align: left;
-  font-size: 40%;
-  margin-left: 5%;
-  font-weight: 200;
-}
-
-.listotwo li {
-  font-family: 'inter';
-  text-align: left;
-  font-size: 40%;
-  margin-left: 65%;
-  margin-right: 5%;
-  font-weight: 200;
-}
-
-/* Styling for the Developer Subsection */
-.DevSub {
-  font-family: 'inter';
-  color: rgb(255, 255, 255);
-  font-weight: 300;
-  margin-left: 50%;
-  margin-right: 5%;
-  font-size: 80%;
-}
-
-/* Styling for the Post Subsection */
-.PostSub {
-  font-family: 'inter';
-  color: rgb(255, 255, 255);
-  font-weight: 300;
-  margin-left: 5%;
-  margin-right: 50%;
-  font-size: 80%;
-}
-
-/* Styling for the Code Logo */
-.codelogo {
-  float: right;
-  position: relative;
-  margin: 15%;
-  margin-right: 20%;
-  margin-top: 5%;
-  margin-bottom: 0%;
-  transform: scale(2);
-  transform-origin: center;
-  border-radius: 3%;
-}
-
-/* Styling for the code examples */
-.codeexample {
-  width: 100%;
-  border-radius: 3%;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Hover effect on code examples */
-.codeexample:hover {
-  transform: scale(1.1);
-  filter: blur(2px);
-}
-
-/* Styling for the box container */
-.box-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-}
-
-/* Styling for the individual boxes */
-.box {
-  flex: 0 0 calc(48% - 20px);
-  margin-bottom: 0;
-  margin-left: 1.25%;
-  margin-top: 2%;
-  margin-right: 1.25%;
-  background-color: #000000;
-  font-size: 25%;
-  border-radius: 20px; /* Larger border radius */
-}
-
-/* Styling for the first box */
-.box:first-child {
-  border-bottom-left-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
-
-/* Styling for the last box */
-.box:last-child {
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-/* Styling for the box sections */
-.box-section {
+.homepagediv {
   display: flex;
   flex-direction: column;
-  padding: 10px;
-  border: 1px solid #6e5494;
-  border-radius: 17px 17px 0 0;
-  margin-bottom: 0;
-}
-
-/* Styling for the last box section in Starter-middle */
-.Starter-middle .box-section:last-child {
-  margin-bottom: 0;
-}
-
-/* Styling for job and user information */
-.job-info, .user-info {
-  display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  background-color: #000000;
+}
+.hometitletypetwo,
+.hometitle {
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  margin-top: 8rem;
+  color: #ffffff;
+  text-align: center;
+}
+.hometitletypetwo{
+  margin-top: 6rem;
 }
 
-/* Styling for job titles and user names */
-.job-title, .user-name {
-  font-weight: bold;
+.subsectionone {
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+  width: 60%;
 }
 
-/* Styling for compensations and monthly earnings */
-.compensation, .monthly-earnings {
+.substackright,
+.substackleft {
+  display: flex;
+  flex-direction: column;
+}
+
+.homeimg {
+  width: 60%;
+  height: 60%;
+  align-self: center;
+  margin-top: 1rem;
+  border-radius: 10px;
+  border: solid 1px #ffffff57;
+}
+
+.homebtns {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+.waitbutton,
+.homebtndev,
+.homebtnclient {
+  flex: 1;
+  max-width: 150px;
+  border-radius: 10px;
+  background-color: white;
+  color: #000000;
+  border: 2px solid #7f4dca00;
+  padding: 8px 20px;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: all 0.3s;
+  outline: none;
+  cursor: pointer;
+  margin: 0 40px;
+  text-align: center;
+  margin-top: 0px;
+}
+.waitbutton:hover,
+.homebtndev:hover,
+.homebtnclient:hover {
+  color: #7d4cdb;
+}
+.waitbutton{
+  margin-top: 20px;
+  margin-bottom: 100px;
+}
+
+.subtitleone,
+.subtitletwo {
+  font-weight: 300;
+  font-size: 1.25rem;
+  text-align: center;
+  margin-bottom: 1.5rem;
+  margin-top: .5rem;
+}
+
+.icon-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.icon-container {
+  display: flex;
+  align-items: center;
+  background-color: #33333300;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 5px;
+  color: #ffffff;
+}
+
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 50px;
+  height: 50px;
+  border: 2px solid #7d4cdb;
+  margin-right: 10px;
+  border-radius: 5px;
+}
+
+.icon-text-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin-left: 10px;
 }
 
-/* Styling for poster information */
-.poster-info {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #666;
-  text-align: left;
+.icon-text {
+  font-size: 1rem;
 }
 
-/* Styling for side-by-side boxes */
-.side-by-side-boxes {
-  display: flex;
-  justify-content: space-around;
-  margin-top: 50px; /* Adjusted to reduce vertical distance */
+.icon-subheading {
+  font-size: 0.875rem;
+  color: #b0b0b0;
 }
 
-/* Styling for individual side boxes */
-.side-box {
-  position: relative;
-  flex: 0 0 30%;
-  padding: 0;
-  border-radius: 8px;
-  overflow: hidden;
-  margin: 20px;
-  transition: transform 0.3s ease-in-out; /* Add transition here for smooth effect */
+.vertical-line {
+  width: 2px;
+  height: 50px;
+  background-color: #7d4cdb;
+  margin: 0 10px;
 }
 
-/* Styling for box titles */
-.side-box:nth-child(1) .box-title {
-  color: #ffffff; 
-}
-
-/* Styling for box titles in the second box */
-.side-box:nth-child(2) .box-title {
-  color: #ffffff; /* Neon purple color */
-}
-
-/* Styling for box titles in the third box */
-.side-box:nth-child(3) .box-title {
-  color: #7f4dca; /* White color */
-}
-
-/* Styling for box titles */
-.box-title {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #ffffff;
-  z-index: 2;
-}
-
-/* Styling for image containers */
-.img-container {
+.footer {
   width: 100%;
-  height: 200px;
-  border-radius: 8px;
-  overflow: hidden;
-  transition: transform 0.3s ease-in-out;
-}
-
-/* Styling for side box images */
-.side-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease-in-out;
-  display: block;
-  border-radius: 12px;
-}
-
-/* Hover effect on side boxes */
-.side-box:hover img {
-  transform: scale(1.1);
-  filter: blur(2px);
-}
-
-/* Styling for the text inside image boxes */
-.box-text {
-  position: absolute;
-  top: 35%;
-  left: 10%;
-  right: 10%;
-  transform: translateY(-50%);
-  font-size: 50px;
-  color: white;
+  padding: 20px;
+  background-color: #26262600;
+  color: #b0b0b0;
   text-align: center;
-  transition: font-size 0.3s ease-in-out; /* Smooth transition */
-  font-weight: 200;
+  margin-top: 20px;
+  border: 2px solid #7e4cdb00;
+  border-top-color: rgba(243, 243, 243, 0.233);
 }
 
-/* Increase font size on hover for text inside image boxes */
-.side-box:hover .box-text {
-  font-size: 50px;
-  font-weight: 400; /* Adjust the font size as desired */
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-/* Adjust border radius on hover */
-.side-box:hover {
-  border-radius: 12px; /* Same as initial border radius */
+.footer-links a {
+  color: #ffffff;
+  margin: 0 10px;
+  text-decoration: none;
 }
 
-.side-box:nth-child(3) .box-text {
-  color: #7f4dca; /* Purple color */
+.footer-links a:hover {
+  text-decoration: underline;
+}
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: #161616;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+.popup h2, .popup p {
+  color: #ffffff;
+}
+.popup button {
+  background-color: #7d4cdb;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.popup form {
+  display: flex;
+  flex-direction: column;
+}
+.popup form label {
+  margin-bottom: 10px;
+  color: #ffffff;
+}
+.popup form input {
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #b0b0b0;
+  border-radius: 5px;
 }

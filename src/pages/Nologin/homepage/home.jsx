@@ -1,147 +1,121 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { firestore } from "../../../firebase";
-import { addDoc, collection, getDocs, query, orderBy, limit } from "@firebase/firestore";
+import React, { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faGavel, faCrosshairs, faFileContract, faTrophy } from '@fortawesome/free-solid-svg-icons';
+import { firestore, collection, addDoc } from '../../../firebase'; // Adjusted import to match your configuration file
 import './home.css';
-import TopJobsComponent from './TopJobsComponent'; // Import TopJobsComponent
+
+const jobTypes = [
+  { type: "Auction", icon: faGavel, subheading: "Optimized for Price" },
+  { type: "Bounty", icon: faCrosshairs, subheading: "Optimized for Time" },
+  { type: "Contract", icon: faFileContract, subheading: "Optimized for Control" },
+  { type: "Challenge", icon: faTrophy, subheading: "Optimized for Creativity " },
+];
 
 export default function Home() {
-  const [topJobs, setTopJobs] = useState([]);
-  const [topUsers, setTopUsers] = useState([]);
-  const ref = collection(firestore, "messages");
-  const messageRef = useRef();
+  const [showWaitlistForm, setShowWaitlistForm] = useState(false);
+  const [showContactInfo, setShowContactInfo] = useState(false);
+  const [showPolicyInfo, setShowPolicyInfo] = useState({ open: false, content: '' });
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      const q = query(collection(firestore, 'jobs'), orderBy('compensation', 'desc'), limit(3));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const sortedData = data.map(job => ({ ...job, compensation: parseFloat(job.compensation) }));
-      sortedData.sort((a, b) => b.compensation - a.compensation);
-      setTopJobs(sortedData);
-    };
+  const toggleWaitlistForm = () => setShowWaitlistForm(!showWaitlistForm);
+  const toggleContactInfo = () => setShowContactInfo(!showContactInfo);
+  const openPolicyInfo = (content) => setShowPolicyInfo({ open: true, content });
+  const closePolicyInfo = () => setShowPolicyInfo({ open: false, content: '' });
 
-    const fetchUsers = async () => {
-      const q = query(collection(firestore, 'users'), orderBy('monthlyEarnings', 'desc'), limit(3));
-      const querySnapshot = await getDocs(q);
-      const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const sortedData = data.map(user => ({ ...user, monthlyEarnings: parseFloat(user.monthlyEarnings) }));
-      sortedData.sort((a, b) => b.monthlyEarnings - a.monthlyEarnings);
-      setTopUsers(sortedData);
-    };
-
-    fetchJobs();
-    fetchUsers();
-  }, []);
-
-  const handleSave = async (e) => {
-    e.preventDefault();
-    let data = {
-      message: messageRef.current.value,
-    };
+  const handleJoinWaitlist = async () => {
     try {
-      await addDoc(ref, data);
-    } catch (e) {
-      console.log(e);
+      await addDoc(collection(firestore, 'waitlist'), { email, phone });
+      alert('You have been added to the waitlist!');
+      setShowWaitlistForm(false);
+    } catch (error) {
+      console.error('Error adding document: ', error);
     }
   };
 
   return (
-    <div className='content-container'>
-      <div className='Starter'>
-        <div className='Starter-top'>
-          <p className='Starter-p'>Let's Get To Work</p>
-          <p className='Starter-p2'>CodePlace is a freelance software marketplace by conecting qualified developers with clients.</p>
-        </div>
-        <div className='side-by-side-boxes'>
-          <div className='side-box'>
-            <p className='box-title'>CodePlace for developers</p>
-            <a href="/developers">
-              <img className='codeexample' src={'CodeExample.png'} alt="Description of image 1" />
-              <div className="box-text">Put Your Development Skills to Work</div>
-            </a>
-          </div>
-          <div className='side-box'>
-            <p className='box-title'>CodePlace for clients</p>
-            <a href="/clients">
-              <img className='codeexample' src={'FireBaseGeneric.png'} alt="Description of image 2" />
-              <div className="box-text">Get  A Qualified Developers To Build Your Ideas</div>
-            </a>
-          </div>
-          <div className='side-box'>
-            <p className='box-title'>Learn About CodePlace</p>
-            <a href="/learn-more">
-              <img className='codeexample' src={'LogoWhite.png'} alt="Description of image 3" />
-              <div className="box-text">Learn about who we are and what we do</div>
-            </a>
-          </div>
-        </div>
+    <div className='homepagediv'>
+      <h1 className='hometitle'>Find Developers To Build Your Ideas</h1>
+      <h2 className='subtitleone'>
+        Connecting Clients to Developers Through Job Posts Optimized for Client Need and <br />
+        The Software Development Process.
+      </h2>
+      <div className='homebtns'>
+        <button className='homebtnclient'>For Clients</button>
+        <button className='homebtndev'>For Developers</button>
       </div>
 
-   
-        </div>
+      <h2 className='subtitleone'></h2>
+      <h1 className='hometitletypetwo'>Advanced Job Search</h1>
+      <h2 className='subtitletwo'>
+        Find The Best Jobs for your skillset and work as much as you <br />
+        want when you want without being at the mercy of an algorithm
+      </h2>
+      <img className='homeimg' src="JobSearch.png" alt="undraw-creative-team-r90h" border="0" />
+      <h1 className='hometitle'>Job Posting Optimized for Your Needs</h1>
 
-  
-
-/*<div className='Starter-middle'>
-        <div className="box-container">
-          <div className="box">
-            <div className="box-section top-section">
-              <p className='TopJob'>Top Jobs</p>
+      <div className='icon-list'>
+        {jobTypes.map((jobType, index) => (
+          <div key={index} className='icon-container'>
+            <div className='icon-box'>
+              <FontAwesomeIcon icon={jobType.icon} size="2x" />
             </div>
-            {topJobs.map(job => (
-              <TopJobsComponent // Render TopJobsComponent for each job
-                key={job.id}
-                title={job.jobTitle}
-                username={job.userName}
-                price={job.compensation}
-                timeRemaining={job.timeRemaining}
-              />
-            ))}
-          </div>
-          <div className="box">
-            <div className="box-section top-section">
-              <p className='TopUser'>Top Users</p>
-            </div>
-            {topUsers.map(user => (
-              <div className="box-section" key={user.id}>
-                <div className="user-info">
-                  <span className="user-name">{user.userName}</span>
-                  <span className="monthly-earnings">$: {user.monthlyEarnings}</span>
-                </div>
-              </div>
-            ))}
-            <div className="box-section">
-              <a href="/seeMore">See More</a>
+            <div className='vertical-line'></div>
+            <div className='icon-text-container'>
+              <span className='icon-text'>{jobType.type}</span>
+              <span className='icon-subheading'>{jobType.subheading}</span>
             </div>
           </div>
-          <div className="box">
-            <div className="box-section top-section">
-              <p className='TopUser'>Learn About CodePlace</p>
-            </div>
-            <div className="box-section">
-              <p className='TopUser'>Learn About CodePlace</p>
-            </div>
-            <div className="box-section">
-              <a href="/learnMore">Learn More</a>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
+      <h2 className='hometitletypetwo'>Get Started With CodePlace</h2>
+      <button className='waitbutton' onClick={toggleWaitlistForm}>Join Waitlist</button>
+      
+      {showWaitlistForm && (
+        <div className='popup'>
+          <h2>Join Waitlist</h2>
+          <form>
+            <label>
+              Email:
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            </label>
+            <label>
+              Phone:
+              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required />
+            </label>
+            <button type="button" onClick={handleJoinWaitlist}>Submit</button>
+          </form>
 
-  
+        </div>
+      )}
 
-      <img className='codelogo' src={'CodeLogo.png'} alt="Description of the image" />
-      <h2>Post a Job</h2>
-      <p className='PostSub'>Have an idea you want made, need a bug fixed, feature added, or even help on an existing project? Post a job on CodePlace.</p>
-      <ul className='listo'>
-        <li><p>Job posts that are optimized to your needs</p></li>
-        <li><p>Completion assured by our satisfaction system</p></li>
-        <li><p>Pick between qualified developers</p></li>
-        <li><p>Get jobs done faster, cheaper, and better than other freelance sites</p></li>
-      </ul> */
+      {showContactInfo && (
+        <div className='popup'>
+          <h2>Contact Us</h2>
+          <p>Email: diegorafaelpitt@gmail.com</p>
+          <p>Phone: 612-666-1948</p>
+          <button onClick={toggleContactInfo}>Close</button>
+        </div>
+      )}
 
+      {showPolicyInfo.open && (
+        <div className='popup'>
+          <h2>{showPolicyInfo.content}</h2>
+          <p>{showPolicyInfo.content === 'Terms of Service' ? 'Please Dont Sue Us.' : 'Like I am being so fr right now like I have 0 Money If you sue me I will cry'}</p>
+          <button onClick={closePolicyInfo}>Close</button>
+        </div>
+      )}
 
+      <footer className='footer'>
+        <div className='footer-content'>
+          <p>&copy; 2024 CodePlace. All Rights Reserved.</p>
+          <div className='footer-links'>
+            <a href='#' onClick={() => openPolicyInfo('Terms of Service')}>Terms of Service</a>
+            <a href='#' onClick={() => openPolicyInfo('Privacy Policy')}>Privacy Policy</a>
+            <a href='#' onClick={toggleContactInfo}>Contact Us</a>
+          </div>
+        </div>
+      </footer>
+    </div>
   );
 }
-
-      
