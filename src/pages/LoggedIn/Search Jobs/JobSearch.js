@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { firestore } from '../../../firebase'; // Corrected path
+import { firestore } from '../../../firebase';
 import { collection, query, orderBy, limit, getDocs, getDoc, doc, updateDoc, arrayUnion } from "@firebase/firestore";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import './JobSearch.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGavel, faCrosshairs, faFileContract, faTrophy, faHandsHelping, faUser, faChevronRight, faChevronDown } from "@fortawesome/free-solid-svg-icons";
+import { faGavel, faCrosshairs, faFileContract, faTrophy, faHandsHelping, faUser, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import CustomSlider from './CustomSlider'; // Import CustomSlider
-import CompensationSlider from './CompensationSlider'; // Import CompensationSlider
+import CustomSlider from './CustomSlider';
+import CompensationSlider from './CompensationSlider';
+import JobDetails from './JobDetails';
 import '../../../App.css';
+
 const jobTypes = [
   { type: "Auction", icon: faGavel },
   { type: "Bounty", icon: faCrosshairs },
@@ -39,7 +41,7 @@ const JobSearch = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeJob, setActiveJob] = useState(null);
-  const [activeInterestedJob, setActiveInterestedJob] = useState(null); // Separate state for active interested job
+  const [activeInterestedJob, setActiveInterestedJob] = useState(null);
   const [filterSelected, setFilterSelected] = useState(null);
   const [filterActive, setFilterActive] = useState({});
   const [filters, setFilters] = useState({
@@ -52,15 +54,24 @@ const JobSearch = () => {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [compensationError, setCompensationError] = useState("");
+  const [currentPage, setCurrentPage] = useState('jobSearch');
+  const [selectedJobId, setSelectedJobId] = useState(null);
 
   const fetchJobs = async () => {
     try {
       const jobsCol = collection(firestore, "jobs");
-      let jobsQuery = query(jobsCol, orderBy("jobCancelDateTime", "desc"), limit(20));
+      let jobsQuery = query(jobsCol, orderBy("postLiveDate", "desc"), limit(20));
 
       const jobSnapshot = await getDocs(jobsQuery);
       const jobList = await Promise.all(jobSnapshot.docs.map(async jobDoc => {
         const jobData = jobDoc.data();
+        console.log("Fetched job data:", jobData);
+
+        if (!jobData.userId) {
+          console.error("No userId found in job data:", jobData);
+          return null;
+        }
+
         const userRef = doc(firestore, "users", jobData.userId);
         const userDoc = await getDoc(userRef);
         if (userDoc.exists()) {
@@ -71,8 +82,11 @@ const JobSearch = () => {
         return { id: jobDoc.id, ...jobData };
       }));
 
-      setJobs(jobList);
+      const filteredJobList = jobList.filter(job => job !== null);
+
+      setJobs(filteredJobList);
       setLoading(false);
+      console.log("Jobs fetched:", filteredJobList);
     } catch (error) {
       console.error("Error fetching jobs:", error);
       setError(error);
@@ -89,25 +103,31 @@ const JobSearch = () => {
         console.log("Interested job IDs:", interestedJobIds);
         if (interestedJobIds.length > 0) {
           const jobDocs = await Promise.all(interestedJobIds.map(async (jobId) => {
-            const jobDoc = await getDoc(doc(firestore, "jobs", jobId));
-            if (jobDoc.exists()) {
-              return { id: jobDoc.id, ...jobDoc.data() };
+            try {
+              const jobDoc = await getDoc(doc(firestore, "jobs", jobId));
+              if (jobDoc.exists()) {
+                return { id: jobDoc.id, ...jobDoc.data() };
+              }
+              console.warn(`Job with ID ${jobId} not found`);
+              return null;
+            } catch (error) {
+              console.error(`Error fetching job with ID ${jobId}:`, error);
+              return null;
             }
-            return null;
           }));
           const jobList = jobDocs.filter(job => job !== null);
           console.log("Interested job list:", jobList);
           setInterestedJobs(jobList);
         } else {
-          setInterestedJobs([]); // Clear interested jobs if no interested jobs found
+          setInterestedJobs([]); 
         }
       } else {
         console.log("User doc does not exist.");
-        setInterestedJobs([]); // Clear interested jobs if user doc does not exist
+        setInterestedJobs([]); 
       }
     } else {
       console.log("No authenticated user.");
-      setInterestedJobs([]); // Clear interested jobs if no authenticated user
+      setInterestedJobs([]); 
     }
   };
 
@@ -119,7 +139,7 @@ const JobSearch = () => {
         fetchInterestedJobs(user);
       } else {
         console.log("No user is signed in.");
-        setInterestedJobs([]); // Clear interested jobs if no user is signed in
+        setInterestedJobs([]); 
       }
     });
     fetchJobs();
@@ -250,7 +270,7 @@ const JobSearch = () => {
           InterestedJobs: arrayUnion(jobId)
         });
         alert("Job added to your Interested Jobs");
-        fetchInterestedJobs(user); // Fetch the updated list of interested jobs
+        fetchInterestedJobs(user); 
       } catch (error) {
         console.error("Error adding job to Interested Jobs: ", error);
         alert("Error adding job to Interested Jobs");
@@ -260,20 +280,38 @@ const JobSearch = () => {
     }
   };
 
+  const handleApplyClick = (jobId) => {
+    setSelectedJobId(jobId);
+    setCurrentPage('jobDetails');
+  };
+
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.jobTitle.toLowerCase().includes(searchTerm.toLowerCase());
+    console.log("Filtering job:", job);
+    const matchesSearch = job.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase());
+    console.log("Matches search:", matchesSearch);
     const matchesType = filters.type.length === 0 || filters.type.includes(job.jobType);
+    console.log("Matches type:", matchesType);
     const matchesCategory = filters.category.length === 0 || (job.jobCategory && filters.category.some(category => job.jobCategory?.includes(category)));
+    console.log("Matches category:", matchesCategory);
     const matchesTools = filters.tools.length === 0 || (job.jobTools && filters.tools.some(tool => job.jobTools?.includes(tool)));
+    console.log("Matches tools:", matchesTools);
     const matchesCompensation = job.compensation >= filters.compensation[0] && job.compensation <= filters.compensation[1];
+    console.log("Matches compensation:", matchesCompensation);
     const matchesTiming = (
       (job.projectLengthHours >= filters.timing[0] && job.projectLengthHours <= filters.timing[1]) ||
       (job.projectLengthDays >= filters.timing[0] && job.projectLengthDays <= filters.timing[1]) ||
       (job.projectLengthWeeks >= filters.timing[0] && job.projectLengthWeeks <= filters.timing[1]) ||
       (job.projectLengthMonths >= filters.timing[0] && job.projectLengthMonths <= filters.timing[1])
     );
+    console.log("Matches timing:", matchesTiming);
     return matchesSearch && matchesType && matchesCategory && matchesTools && matchesCompensation && matchesTiming;
   });
+
+  console.log("Filtered jobs:", filteredJobs);
+
+  if (currentPage === 'jobDetails') {
+    return <JobDetails jobId={selectedJobId} />;
+  }
 
   return (
     <div className="jobs-container">
@@ -323,7 +361,7 @@ const JobSearch = () => {
           value={searchTerm}
           onChange={handleSearchChange}
         />
-        <button className="search-button">Advanced Search</button>
+        <button className="search-button" onClick={handleSearchReset}>Reset Search</button>
       </div>
 
       {filterSelected === 'type' && (
@@ -416,41 +454,46 @@ const JobSearch = () => {
       )}
 
       <div className="jobs-list">
-        {filteredJobs.map((job) => (
-          <div key={job.id} className={`job-container ${activeJob === job.id ? 'active' : ''}`}>
-            <div className="job-box" onClick={() => handleJobClick(job.id)}>
-              <div className="job-content">
-                <FontAwesomeIcon icon={getJobIcon(job.jobType)} className="job-icon" />
-                <div className="job-details">
-                  <h3 className="job-title">{job.jobTitle}</h3>
-                  <div className="job-subtitle-wrapper">
-                    <h4 className="job-subtitle">
-                      {formatSubtitle(`${job.jobType} | ${job.jobCategory || ''} | ${job.jobreqs || ''} | ${job.jobTools || ''}`)}
-                      <span className={`subtitle-arrow ${activeJob === job.id ? 'rotated' : ''}`}>
-                        <FontAwesomeIcon icon={faChevronRight} className="subtitle-arrow" />
-                      </span>
-                    </h4>
-                    <div className="job-extra">
-                      <div className="job-info">
-                        <span><FontAwesomeIcon icon={faUser} className="user-icon" /> {job.Applications}</span>
-                        <span>{calculateTimeRemaining(job.jobCancelDateTime)}</span>
-                      </div>
-                      <div className="job-price-box">
-                        <span className="job-price">{job.compensation}$</span>
+        {filteredJobs.length > 0 ? (
+          filteredJobs.map((job) => (
+            <div key={job.id} className={`job-container ${activeJob === job.id ? 'active' : ''}`}>
+              <div className="job-box" onClick={() => handleJobClick(job.id)}>
+                <div className="job-content">
+                  <FontAwesomeIcon icon={getJobIcon(job.jobType)} className="job-icon" />
+                  <div className="job-details">
+                    <h3 className="job-title">{job.jobTitle}</h3>
+                    <div className="job-subtitle-wrapper">
+                      <h4 className="job-subtitle">
+                        {formatSubtitle(`${job.jobType} | ${job.jobCategory || ''} | ${job.jobreqs || ''} | ${job.jobTools || ''}`)}
+                        <span className={`subtitle-arrow ${activeJob === job.id ? 'rotated' : ''}`}>
+                          <FontAwesomeIcon icon={faChevronRight} className="subtitle-arrow" />
+                        </span>
+                      </h4>
+                      <div className="job-extra">
+                        <div className="job-info">
+                          <span><FontAwesomeIcon icon={faUser} className="user-icon" /> {job.Applications}</span>
+                          <span>{calculateTimeRemaining(job.jobCancelDateTime)}</span>
+                        </div>
+                        <div className="job-price-box">
+                          <span className="job-price">{job.compensation}$</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+              <div className={`job-expanded ${activeJob === job.id ? 'expanded' : ''}`}>
+                <h3 className="job-expanded-title">{job.jobTitle}</h3>
+                <p className="job-expanded-user">Posted by: {job.postedBy}</p>
+                <p className="job-expanded-description">{job.jobDescription}</p>
+                <button onClick={() => handleInterestedJob(job.id)}>Add to Interested Jobs</button>
+                <button onClick={() => handleApplyClick(job.id)}>Apply</button>
+              </div>
             </div>
-            <div className={`job-expanded ${activeJob === job.id ? 'expanded' : ''}`}>
-              <h3 className="job-expanded-title">{job.jobTitle}</h3>
-              <p className="job-expanded-user">Posted by: {job.postedBy}</p>
-              <p className="job-expanded-description">{job.jobDescription}</p>
-              <button onClick={() => handleInterestedJob(job.id)}>Add to Interested Jobs</button>
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p>No jobs found.</p>
+        )}
       </div>
 
       <h2 className="interested-jobs-title">My Jobs</h2>
@@ -488,6 +531,7 @@ const JobSearch = () => {
                 <p className="job-expanded-user">Posted by: {job.postedBy}</p>
                 <p className="job-expanded-description">{job.jobDescription}</p>
                 <button onClick={() => handleInterestedJob(job.id)}>Add to Interested Jobs</button>
+                <button onClick={() => handleApplyClick(job.id)}>Apply</button>
               </div>
             </div>
           ))
