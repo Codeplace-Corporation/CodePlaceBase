@@ -1,117 +1,4 @@
-.job-posting-form__tooltip {
-  position: relative;
-  display: inline-block;
-  margin-left: 10px; /* Add margin to the left of the icon */
-}
-
-.job-posting-form__tooltip .job-posting-form__tooltiptext {
-  visibility: hidden;
-  width: 200px;
-  background-color: #555;
-  color: #fff;
-  text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
-  position: absolute;
-  z-index: 1;
-  bottom: 125%;
-  left: 50%;
-  margin-left: -100px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-
-.job-posting-form__tooltip:hover .job-posting-form__tooltiptext {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Styles for drag-and-drop file upload */
-.job-posting-form__file-drop {
-  border: 2px dashed #7d4cdb;
-  border-radius: 8px;
-  background-color: #f7f7f700;
-  color: #333333;
-  text-align: center;
-  padding: 20px 20px;
-  margin-top: 20px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.job-posting-form__file-drop.dragover {
-  border-color: #32cd32;
-  background-color: #e6ffe600;
-  transition: color 0.3s ease;
-}
-
-.job-posting-form__file-drop:hover {
-  background-color: #eeeeee00;
-  border-color: #ffffff;
-}
-
-.job-posting-form__file-drop-icon {
-  font-size: 48px;
-  color: #7d4cdb;
-  margin-bottom: 10px;
-}
-
-.job-posting-form__file-drop-icon:hover {
-  font-size: 48px;
-  color: #ffffff;
-  margin-bottom: 10px;
-  transition: color 0.3s ease;
-}
-
-.job-posting-form__file-drop-text {
-  font-size: 18px;
-  color: #ffffff;
-}
-
-.job-posting-form__file-drop-input {
-  display: none;
-}
-
-/* Adjust existing styles */
-.job-posting-form__section {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.job-posting-form__column {
-  flex: 1;
-  min-width: 45%;
-  margin: 10px;
-}
-
-.Required {
-  color: rgba(255, 255, 255, 0.315);
-  text-align: right;
-}
-
-.Required::before {
-  content: '* ';
-  color: rgb(255, 0, 0);
-  margin-left: 5px; /* Change this color to your preferred bullet point color */
-}
-
-.job-posting-form__column-heading {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: start;
-  text-align: center;
-  margin-top: -110px;
-}
-
-.job-posting-form__column-content {
-  display: flex;
-  flex-direction: column;
-  margin-top: 160px;
-  margin-right: 100px;
-}
+/* General Styles for the Form */
 
 .job-posting-form {
   display: flex;
@@ -133,6 +20,12 @@
   background: #000000;
   padding: 20px;
   border-radius: 8px;
+}
+
+.job-posting-form__button-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
 }
 
 .job-posting-form__save-button,
@@ -225,25 +118,6 @@
   resize: none;
 }
 
-.job-posting-form__image-preview {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.job-posting-form__image-container {
-  position: relative;
-}
-
-.job-posting-form__image {
-  width: 100px;
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 2px solid #7d4cdb;
-}
-
 .job-posting-form__next-button,
 .job-posting-form__prev-button,
 .job-posting-form__submit-button,
@@ -273,79 +147,77 @@
   background-color: #e55342;
 }
 
-.job-posting-form__checkbox-group {
+.Required {
+  color: rgba(255, 255, 255, 0.315);
+  text-align: right;
+}
+
+.Required::before {
+  content: '* ';
+  color: rgb(255, 0, 0);
+  margin-left: 5px; /* Change this color to your preferred bullet point color */
+}
+
+/* Tooltip Styles */
+.job-posting-form__tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: 10px; /* Add margin to the left of the icon */
+}
+
+.job-posting-form__tooltip .job-posting-form__tooltiptext {
+  visibility: hidden;
+  width: 200px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.job-posting-form__tooltip:hover .job-posting-form__tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* Styles for Step 1: Project Overview */
+.job-posting-form__section {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
 }
 
-.job-posting-form__checkbox-field {
-  display: flex;
-  align-items: center;
+.job-posting-form__column {
+  flex: 1;
+  min-width: 45%;
+  margin: 10px;
 }
 
-.job-posting-form__checkbox {
-  margin-right: 5px;
-  accent-color: #32cd32;
-}
-
-.job-posting-form__radio {
-  margin-right: 10px;
-  accent-color: #32cd32;
-}
-
-.job-posting-form__tool-item,
-.job-posting-form__tag-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.job-posting-form__tool-item span,
-.job-posting-form__tag-item span {
-  margin-right: 10px;
-}
-
-.job-posting-form__icons {
-  display: flex;
-  justify-content: space-around;
-  margin: 1em 0;
-}
-
-.job-posting-form__icon-container {
+.job-posting-form__column-heading {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  padding: 10px;
-  border: 2px solid transparent;
-  border-radius: 10px;
-  transition: border-color 0.3s, background-color 0.3s;
+  justify-content: center;
+  align-items: start;
+  text-align: center;
+  margin-top: -110px;
 }
 
-.job-posting-form__icon-container:hover {
-  border-color: #7d4cdb;
-}
-
-.job-posting-form__icon {
-  font-size: 2em;
-}
-
-.job-posting-form__icon-text {
-  margin-top: 0.5em;
-  font-size: 1em;
-}
-
-.job-posting-form__icon-container.selected {
-  border-color: #7d4cdb;
-  background-color: rgba(125, 76, 219, 0.2);
-}
-
-.job-posting-form__button-group {
+.job-posting-form__column-content {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  margin-top: 160px;
+  margin-right: 100px;
 }
 
+/* Styles for Step 2: Project Type and Tools */
 .job-posting-form__container {
   display: flex;
   flex-direction: row;
@@ -365,23 +237,27 @@
   margin-top: 120px;
 }
 
-.job-posting-form__title {
-  margin-bottom: 20px;
-}
-
-.job-posting-form__field {
-  margin-bottom: 20px;
-}
-
 .job-posting-form__tool-input-container,
 .job-posting-form__tag-input-container {
   display: flex;
   align-items: center;
 }
 
+.job-posting-form__input-with-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.job-posting-form__input {
+  flex: 1;
+  padding-right: 40px; /* Add space for the button */
+}
+
 .job-posting-form__add-button {
-  margin-left: 10px;
-  background-color: #32CD32; /* Green color */
+  position: absolute;
+  right: 10px;
+  background-color: #32cd3200; /* Green color */
   color: white;
   border: none;
   border-radius: 50%;
@@ -437,8 +313,355 @@
   font-size: 14px;
 }
 
-.job-posting-form__button-group {
+/* Styles for Step 3: Job Post Type and Project Length */
+.job-posting-form__icons {
+  display: flex;
+  justify-content: space-around;
+  margin: 1em 0;
+}
+
+.job-posting-form__icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 10px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+.job-posting-form__icon-container:hover {
+  border-color: #7d4cdb;
+}
+
+.job-posting-form__icon {
+  font-size: 2em;
+}
+
+.job-posting-form__icon-text {
+  margin-top: 0.5em;
+  font-size: 1em;
+}
+
+.job-posting-form__icon-container.selected {
+  border-color: #7d4cdb;
+  background-color: rgba(125, 76, 219, 0.2);
+}
+
+/* Styles for Step 4: Project Requirements and Deliverables */
+.job-posting-form__file-drop {
+  border: 2px dashed #7d4cdb;
+  border-radius: 8px;
+  background-color: #f7f7f700;
+  color: #333333;
+  text-align: center;
+  padding: 20px 20px;
+  margin-top: 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.job-posting-form__file-drop.dragover {
+  border-color: #32cd32;
+  background-color: #e6ffe600;
+  transition: color 0.3s ease;
+}
+
+.job-posting-form__file-drop:hover {
+  background-color: #eeeeee00;
+  border-color: #ffffff;
+}
+
+.job-posting-form__file-drop-icon {
+  font-size: 48px;
+  color: #7d4cdb;
+  margin-bottom: 10px;
+}
+
+.job-posting-form__file-drop-icon:hover {
+  font-size: 48px;
+  color: #ffffff;
+  margin-bottom: 10px;
+  transition: color 0.3s ease;
+}
+
+.job-posting-form__file-drop-text {
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.job-posting-form__file-drop-input {
+  display: none;
+}
+
+.job-posting-form__image-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.job-posting-form__image-container {
+  position: relative;
+}
+
+.job-posting-form__image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #7d4cdb;
+}
+
+/* Styles for Step 5: Upload Graphics, Code, and Existing Works */
+
+.job-posting-form__input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.job-posting-form__input {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.job-posting-form__list {
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0 0;
+}
+
+.job-posting-form__list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #000000;
+  padding: 5px 10px;
+  border-radius: 4px;
+  margin-bottom: 5px;
+}
+
+.job-posting-form__remove-button {
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
+}
+
+
+/* Styles for Step 6: Job Posting Details */
+
+.job-posting-form__timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.job-posting-form__timeline-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0px;
+}
+
+.job-posting-form__timeline-date {
+  font-size: 14px;
+  color: #ffffff;
+  margin-right: 10px;
+}
+
+.job-posting-form__timeline-node {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: #7d4cdb;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 5px; /* Add margin to the right */
+}
+
+.job-posting-form__timeline-node.current {
+  background-color: #32cd32;
+}
+
+.job-posting-form__timeline-node.post-live {
+  background-color: #ffa500;
+}
+
+.job-posting-form__timeline-node.auction-end {
+  background-color: #ff6347;
+}
+
+.job-posting-form__timeline-node.project-end {
+  background-color: #1e90ff;
+}
+
+.job-posting-form__timeline-line {
+  width: 2px;
+  background-color: #7d4cdb;
+  margin-left: 23.2%; /* Add margin to the left to center the line relative to the node */
+}
+
+.job-posting-form__timeline-line.post-live {
+  background-color: #ffa500;
+}
+
+.job-posting-form__timeline-line.auction-end {
+  background-color: #ff6347;
+}
+
+.job-posting-form__timeline-line.project-end {
+  background-color: #1e90ff;
+}
+
+.job-posting-form__timeline-end {
+  font-size: 14px;
+  color: #ffffff;
+  background-color: #7d4cdb;
+  padding: 5px 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+/* Styles for Step 7: Overview of Your Post */
+/* Styles for Step 7: Preview Post */
+.carousel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-image-container {
+  position: relative;
+  width: 500px; /* Set the desired width for your carousel images */
+  height: 300px; /* Set the desired height for your carousel images */
+  background-color: black; /* Black bars around the image */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.job-posting-form__preview-title {
+  font-size: 2.5rem;
+  text-align: center;
+  color: #ffffff;
+  margin-bottom: 30px;
+}
+
+.job-posting-form__heading {
+  font-size: 2rem;
+  color: #ffffff;
+  margin-bottom: 10px;
+  text-align: left;
+  margin-left: 20px;
+}
+
+.job-posting-form__company-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+
+.job-posting-form__company-name {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin-right: 10px;
+}
+
+.job-posting-form__username {
+  font-size: 1.2rem;
+  color: #7d4cdb;
+}
+
+.job-posting-form__carousel {
+  width: 100%;
+  position: relative;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.job-posting-form__carousel-images {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+}
+
+.job-posting-form__carousel img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.job-posting-form__carousel-controls {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+  transform: translateY(-50%);
+}
+
+.job-posting-form__carousel-button {
+  background-color: rgba(125, 76, 219, 0.7);
+  color: #ffffff;
+  border: none;
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.job-posting-form__carousel-button:hover {
+  background-color: #32cd32;
+}
+.carousel-image-container {
+  position: relative;
+  width: 100%; /* Full width of the parent container */
+  height: 400px; /* Fixed height for all images */
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Ensures the image fits within the container without stretching */
+  background-color: black; /* Adds black bars around the image */
+}
+
+
+
+
+/* Styles for Step 8: Overview of Your Post */
+.job-posting-form__checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.job-posting-form__checkbox-field {
+  display: flex;
+  align-items: center;
+}
+
+.job-posting-form__checkbox {
+  margin-right: 5px;
+  accent-color: #32cd32;
+}
+
+.job-posting-form__radio {
+  margin-right: 10px;
+  accent-color: #32cd32;
 }

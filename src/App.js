@@ -13,6 +13,7 @@ import LandingPage from './pages/LoggedIn/LandingPage/LandingPage.js';
 import JobSearch from './pages/LoggedIn/Search Jobs/JobSearch.js'; // Correct path
 import MyJobs from './pages/LoggedIn/MyJobs/MyJobs.js'; // Correct path
 
+
 const auth = getAuth();
 
 function App() {
