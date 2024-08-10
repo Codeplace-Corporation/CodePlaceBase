@@ -6,8 +6,7 @@ import ProgressBar from './ProgressBar';
 import './JobPostingForm.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import { faGavel, faGift, faFileContract, faTrophy, faQuestionCircle, faUpload } from '@fortawesome/free-solid-svg-icons';
-
+import { faGavel, faGift, faFileContract, faTrophy, faQuestionCircle, faUpload, faTimes } from '@fortawesome/free-solid-svg-icons';
 const stripePromise = loadStripe('pk_test_51PVdEj02Xwjq9MLsTy2IJAZ52ar7iGwPWHNGOdTYNbkkFKDcKSZO2NlIWoTU3g24EZMaox1qsRUst9MUYvjWKVEF00VvCrzadl');
 
 const jobPostTypes = [
@@ -28,30 +27,203 @@ function JobPostingForm({ closeForm }) {
     tags: [],
     filePermissions: 'public',
     selectedJobPostType: "",
-    auctionStartingBid: "",
-    auctionStartTime: "",
-    auctionLength: "",
-    bountyAmount: "",
-    projectStart: "",
-    projectEnd: "",
     compensation: "",
-    contractApplyPeriodStart: "",
-    contractApplyPeriodEnd: "",
-    challengeAmount: "",
     challengeStartTime: "",
-    projectStartTime: "",
     projectEndTime: "",
-    projectLength: "",
     projectDescription: "",
-    requirements: [],
     deliverables: [],
-    fileDescriptions: [],
     prepaidRevisions: "",
     revisionCost: "",
-    lateDiscount: "",
-    postLiveDate: "",
-    jobClosedTiming: "",
+    projectFiles: [],
+    estimatedProjectLength: ''
   });
+  const [validationErrors, setValidationErrors] = useState({});
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+
+  const validateForm = () => {
+  const errors = {};
+  const allRequiredFields = [
+    'projectTitle',
+    'projectOverview',
+    'projectType',
+    'tools',
+    'tags',
+    'selectedJobPostType',
+    'compensation',
+    'projectDescription',
+    'deliverables',
+    'prepaidRevisions',
+    'filePermissions',
+    'estimatedProjectLength'
+  ];
+
+  // Add job type-specific required fields
+  if (formData.selectedJobPostType === "Bounty") {
+    allRequiredFields.push('bountyStartTime', 'bountyEndTime');
+  } else if (formData.selectedJobPostType === "Challenge") {
+    allRequiredFields.push('challengeStartTime', 'challengeEndTime');
+  } else if (formData.selectedJobPostType === "Contract") {
+    allRequiredFields.push('applicationsOpenTime', 'applicationsCloseTime', 'contractEndTime');
+  } else if (formData.selectedJobPostType === "Auction") {
+    allRequiredFields.push('auctionOpenTime', 'auctionCloseTime', 'projectEndTime');
+  }
+
+  allRequiredFields.forEach(field => {
+    if (Array.isArray(formData[field])) {
+      if (formData[field].length === 0) {
+        errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} is required`;
+      }
+    } else if (!formData[field] || formData[field].trim() === '') {
+      errors[field] = `${field.charAt(0).toUpperCase() + field.slice(1).replace(/([A-Z])/g, ' $1')} is required`;
+    }
+  });
+
+  setValidationErrors(errors);
+  return Object.keys(errors).length === 0;
+};
+
+
+
+// Helper function to determine which step a field belongs to
+const getStepForField = (field) => {
+  // Define which fields belong to which steps
+  const stepFields = {
+    1: ['projectTitle', 'companyName', 'projectOverview'],
+    2: ['projectType', 'tools', 'tags'],
+    3: ['selectedJobPostType', 'compensation'],
+    4: ['projectDescription', 'filePermissions'],
+    5: ['deliverables', 'prepaidRevisions', 'revisionCost'],
+    6: ['bountyStartTime', 'bountyEndTime', 'challengeStartTime', 'challengeEndTime', 
+        'applicationsOpenTime', 'applicationsCloseTime', 'contractEndTime', 
+        'auctionOpenTime', 'auctionCloseTime', 'projectEndTime', 'estimatedProjectLength']
+  };
+
+  for (let [step, fields] of Object.entries(stepFields)) {
+    if (fields.includes(field)) {
+      return parseInt(step);
+    }
+  }
+  return null;
+};
+
+const handleGeneratePreview = () => {
+  const isValid = validateForm();
+  if (isValid) {
+    setStep(7); // Move to the preview step
+  } else {
+    setShowErrorPopup(true);
+  }
+};
+
+const ErrorPopup = ({ errors, onClose, goToStep }) => (
+  <div className="job-posting-form__error-popup">
+    <div className="job-posting-form__error-popup-content">
+      <button onClick={onClose} className="job-posting-form__error-close-button">
+        ×
+      </button>
+      <h2>Required Fields Missing</h2>
+      <p>Please fill in the following required fields:</p>
+      <ul>
+        {Object.entries(errors).map(([field, error]) => (
+          <li key={field} onClick={() => goToStep(getStepForField(field))} className="job-posting-form__error-item">
+            {error}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </div>
+);
+  const goToStep = (step) => {
+    setStep(step);
+    setShowErrorPopup(false);
+  };
+
+
+  const handleProjectFileUpload = (event) => {
+    const files = Array.from(event.target.files);
+    setFormData(prevData => ({
+      ...prevData,
+      projectFiles: [...prevData.projectFiles, ...files]
+    }));
+  };
+  
+  const handleFileDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragOver(false);
+    const files = Array.from(e.dataTransfer.files);
+    setFormData(prevData => ({
+      ...prevData,
+      projectFiles: [...prevData.projectFiles, ...files]
+    }));
+  };
+  
+  const handleSubmitJob = async (isDraft = false) => {
+    if (!userId) {
+      console.error("User is not authenticated.");
+      return;
+    }
+
+    try {
+  
+      const dataToSubmit = {
+        ...formData,
+        
+        userId: userId,
+        createdAt: new Date(),
+      };
+
+      const collectionName = isDraft ? 'draftedJobs' : 'activeJobs';
+      const jobRef = await addDoc(collection(firestore, collectionName), dataToSubmit);
+      console.log(`Job added to ${collectionName}, jobId: ${jobRef.id}`);
+
+      if (!isDraft) {
+        // Create Stripe checkout session for active jobs
+        const response = await fetch('https://us-central1-codeplace-76019.cloudfunctions.net/createCheckoutSession', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jobId: jobRef.id,
+            amount: 2000, // Replace with actual amount in cents
+            currency: 'usd', // Replace with actual currency
+            userId: userId
+          }),
+        });
+
+        if (!response.ok) {
+          console.error("Failed to create checkout session");
+          return;
+        }
+
+        const session = await response.json();
+        console.log("Session created:", session);
+
+        // Redirect to Stripe Checkout
+        const stripe = await stripePromise;
+        const { error } = await stripe.redirectToCheckout({
+          sessionId: session.id,
+        });
+
+        if (error) {
+          console.error("Stripe Checkout Error:", error);
+        }
+      } else {
+        // If it's a draft, just close the form
+        closeForm();
+      }
+    } catch (error) {
+      console.error("Error in handleSubmitJob:", error);
+    }
+  };
+
+  const removeProjectFile = (index) => {
+    setFormData(prevData => ({
+      ...prevData,
+      projectFiles: prevData.projectFiles.filter((_, i) => i !== index)
+    }));
+  };
   const [imageFiles, setImageFiles] = useState([]);
   const [toolInput, setToolInput] = useState('');
   const [tagInput, setTagInput] = useState('');
@@ -62,12 +234,17 @@ function JobPostingForm({ closeForm }) {
   const [userId, setUserId] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [carouselIndex, setCarouselIndex] = useState(0);
-
+  const [displayName, setDisplayName] = useState('');
+  const handleTextareaInput = (e) => {
+    e.target.style.height = 'auto';
+    e.target.style.height = (e.target.scrollHeight) + 'px';
+  };
   useEffect(() => {
     const auth = getAuth();
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUserId(user.uid);
+        setDisplayName(user.displayName); // Assuming user.displayName contains the display name
       } else {
         setUserId(null);
       }
@@ -76,7 +253,7 @@ function JobPostingForm({ closeForm }) {
     return () => unsubscribe();
   }, []);
 
-  const totalSteps = 8;
+  const totalSteps = 7;
 
   const nextStep = () => {
     setStep(step + 1);
@@ -85,23 +262,82 @@ function JobPostingForm({ closeForm }) {
   const prevStep = () => {
     setStep(step - 1);
   };
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    const { name, value, type } = e.target;
+    let updatedValue = value;
+  
+    // Special handling for radio buttons
+    if (type === 'radio') {
+      updatedValue = e.target.value;
+    }
+  
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: updatedValue
+    }));
+  
+    // Clear validation error for this field
+    setValidationErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: undefined
+    }));
+  
+    // Special handling for fields that need immediate validation
+    if (name === 'deliverables' || name === 'tools' || name === 'tags') {
+      if (formData[name].length > 0) {
+        setValidationErrors(prevErrors => ({
+          ...prevErrors,
+          [name]: undefined
+        }));
+      }
+    }
   };
-
-  const calculateProjectLengths = (length) => {
-    const hours = length * 24;
-    const days = length;
-    const weeks = length / 7;
-    const months = length / 30;
-
-    return { projectLengthHours: hours, projectLengthDays: days, projectLengthWeeks: weeks, projectLengthMonths: months };
+  
+  // For fields like deliverables, tools, and tags that use a separate input and button to add items
+  const handleAddItem = (itemName, item) => {
+    setFormData(prevData => ({
+      ...prevData,
+      [itemName]: [...prevData[itemName], item]
+    }));
+  
+    // Clear validation error when an item is added
+    setValidationErrors(prevErrors => ({
+      ...prevErrors,
+      [itemName]: undefined
+    }));
   };
+  const EstimatedProjectLengthInput = () => (
+    <div className="job-posting-form__field">
+      <label className="job-posting-form__label">
+        Estimated Project Length
+        <span className="job-posting-form__tooltip">
+          <FontAwesomeIcon icon={faQuestionCircle} />
+          <span className="job-posting-form__tooltiptext">Select the estimated length of the project</span>
+        </span>
+        <span className='Required'></span>
+      </label>
+      <select
+        name="estimatedProjectLength"
+        className="job-posting-form__select"
+        value={formData.estimatedProjectLength}
+        onChange={handleChange}
+        required
+      >
+        <option value="">Select project length</option>
+        <option value="<1hour">Less than 1 hour</option>
+        <option value="1-3hours">1-3 hours</option>
+        <option value="3-6hours">3-6 hours</option>
+        <option value="6-12hours">6-12 hours</option>
+        <option value="12-24hours">12-24 hours</option>
+        <option value="1-3days">1-3 days</option>
+        <option value="3-7days">3-7 days</option>
+        <option value="1-2weeks">1-2 weeks</option>
+        <option value="2-4weeks">2-4 weeks</option>
+        <option value=">1month">More than 1 month</option>
+      </select>
+    </div>
+  );
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -110,63 +346,39 @@ function JobPostingForm({ closeForm }) {
       return;
     }
 
-    console.log("Publishing job...");
-
     try {
-      // Calculate project lengths
-      const projectLengths = calculateProjectLengths(formData.projectLength);
-
-      // Add userId and calculated project lengths to formData
       const dataToSubmit = {
         ...formData,
-        ...projectLengths,
+  
         userId: userId,
       };
 
-      // Save job data to Firestore
-      console.log("Attempting to add job to Firestore...");
-      const jobRef = await addDoc(collection(firestore, 'jobs'), dataToSubmit);
-      console.log("Job added to Firestore, getting jobId...");
-      const jobId = jobRef.id;
+      // Save job data to tempJobs collection in Firestore
+      const tempJobRef = await addDoc(collection(firestore, 'tempJobs'), dataToSubmit);
+      console.log("Job added to tempJobs, getting jobId...");
+      const jobId = tempJobRef.id;
 
-      // Log job creation
-      console.log(`Job created with ID: ${jobId}`);
+      setTempJobId(jobId); // Store the tempJob ID for later use
 
-      // Create Stripe checkout session
-      console.log("Attempting to create Stripe checkout session...");
-      const response = await fetch('https://us-central1-codeplace-76019.cloudfunctions.net/createCheckoutSession', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          jobId: jobId, // Use actual job ID from Firestore
-          amount: 2000, // Replace with actual amount in cents
-          currency: 'usd', // Replace with actual currency
-          userId: userId // Use actual user ID
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Failed to create checkout session");
-        return;
-      }
-
-      const session = await response.json();
-      console.log("Session created:", session);
-
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      const { error } = await stripe.redirectToCheckout({
-        sessionId: session.id,
-      });
-
-      if (error) {
-        console.error("Stripe Checkout Error:", error);
-      }
+      // The rest of your handleSubmit function (Stripe checkout, etc.)
+      // ...
     } catch (error) {
       console.error("Error in handleSubmit:", error);
     }
+  };
+
+   // New function to handle "Publish Job" button click
+   const handlePublishJob = () => {
+    handleSubmitJob(false);
+  };
+
+  // New function to handle "Save as Draft" button click
+  const handleSaveAsDraft = () => {
+    handleSubmitJob(true);
+  };
+  // New function to handle "Close" button click
+  const handleClose = async () => {
+    closeForm(); // Close the form
   };
 
   const handleImageUpload = (event) => {
@@ -217,10 +429,7 @@ function JobPostingForm({ closeForm }) {
 
   const handleAddTool = () => {
     if (toolInput.trim() !== '') {
-      setFormData({
-        ...formData,
-        tools: [...formData.tools, { name: toolInput.trim() }],
-      });
+      handleAddItem('tools', { name: toolInput.trim() });
       setToolInput('');
     }
   };
@@ -238,10 +447,7 @@ function JobPostingForm({ closeForm }) {
 
   const handleAddTag = () => {
     if (tagInput.trim() !== '') {
-      setFormData({
-        ...formData,
-        tags: [...formData.tags, tagInput.trim()],
-      });
+      handleAddItem('tags', tagInput.trim());
       setTagInput('');
     }
   };
@@ -291,21 +497,35 @@ function JobPostingForm({ closeForm }) {
     setImageFiles([...imageFiles, ...newImageFiles]);
   };
 
-  const handleCompensationChange = (e, type) => {
+  const handleCompensationChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, ''); // Only keep numeric characters
-    setFormData({
-      ...formData,
-      [`${type}Compensation`]: value,
-    });
+    setFormData(prevData => ({
+      ...prevData,
+      compensation: value
+    }));
+  
+    // Clear validation error
+    setValidationErrors(prevErrors => ({
+      ...prevErrors,
+      compensation: undefined
+    }));
   };
-
-  const formatCompensation = (e, type) => {
+  
+  const formatCompensation = (e) => {
     const value = parseInt(e.target.value, 10);
     const formattedValue = isNaN(value) ? "$0.00" : `$${(value / 100).toFixed(2)}`;
-    setFormData({
-      ...formData,
-      [`${type}Compensation`]: formattedValue,
-    });
+    setFormData(prevData => ({
+      ...prevData,
+      compensation: formattedValue
+    }));
+  
+    // Clear validation error if the value is valid
+    if (!isNaN(value) && value > 0) {
+      setValidationErrors(prevErrors => ({
+        ...prevErrors,
+        compensation: undefined
+      }));
+    }
   };
 
   const handleAddRequirement = () => {
@@ -327,10 +547,7 @@ function JobPostingForm({ closeForm }) {
 
   const handleAddDeliverable = () => {
     if (deliverableInput.trim() !== '') {
-      setFormData({
-        ...formData,
-        deliverables: [...formData.deliverables, deliverableInput.trim()],
-      });
+      handleAddItem('deliverables', deliverableInput.trim());
       setDeliverableInput('');
     }
   };
@@ -362,11 +579,10 @@ function JobPostingForm({ closeForm }) {
   const handlePrevSlide = () => {
     setCarouselIndex((prevIndex) => (prevIndex === 0 ? imageFiles.length - 1 : prevIndex - 1));
   };
-
+  
   const handleNextSlide = () => {
     setCarouselIndex((prevIndex) => (prevIndex === imageFiles.length - 1 ? 0 : prevIndex + 1));
   };
-
   const getTimeDifferenceInPixels = (startDate, endDate) => {
     const msInDay = 24 * 60 * 60 * 1000;
     const timeDiffInMs = endDate - startDate;
@@ -378,10 +594,10 @@ function JobPostingForm({ closeForm }) {
 
   return (
     <div className="job-posting-form">
-      <button
+         <button
         type="button"
         className="job-posting-form__save-button"
-        onClick={closeForm}
+        onClick={handleSaveAsDraft}
       >
         Save as Draft
       </button>
@@ -392,868 +608,886 @@ function JobPostingForm({ closeForm }) {
       >
         Close
       </button>
+
+      {showErrorPopup && (
+        <ErrorPopup 
+          errors={validationErrors} 
+          onClose={() => setShowErrorPopup(false)} 
+          goToStep={goToStep}
+        />
+      )}
+
       <form className="job-posting-form__form" onSubmit={handleSubmit}>
         <ProgressBar step={step} totalSteps={totalSteps} />
-        {step === 1 && (
-          <div className="job-posting-form__section">
-            <div className="job-posting-form__column job-posting-form__column-heading">
-              <h2 className="job-posting-form__title">Project <br />Overview</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Introduce Your Project and yourself </p>
-              <p className="job-posting-form__paragraph">&nbsp; Give a brief overview of the work you need done</p>
-              <p className="job-posting-form__paragraph">&nbsp; Add Images to your job post to give a clear picture of <br /> &nbsp; what you need done </p>
+{step === 1 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__section">
+      <div className="job-posting-form__column job-posting-form__column-heading">
+        <h2 className="job-posting-form__title">Project <br />Overview</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Introduce Your Project and yourself </p>
+        <p className="job-posting-form__paragraph">&nbsp; Give a brief overview of the work you need done</p>
+        <p className="job-posting-form__paragraph">&nbsp; Add Images that will help give a clearer picture  <br /> &nbsp; on what you need done </p>
+      </div>
+      <div className="job-posting-form__column job-posting-form__column-content">
+        <div className="job-posting-form__field">
+          <p className='Required'> Required Field </p>
+          <label className="job-posting-form__label">
+            Project Title
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Enter the title of the project</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <input 
+            type="text" 
+            name="projectTitle" 
+            className={`job-posting-form__input ${validationErrors.projectTitle ? 'error' : ''}`}
+            value={formData.projectTitle} 
+            onChange={handleChange} 
+          />
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Company Name
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Enter the name of your company</span>
+            </span>
+          </label>
+          <input 
+            type="text" 
+            name="companyName" 
+            className={`job-posting-form__input ${validationErrors.companyName ? 'error' : ''}`}
+            value={formData.companyName} 
+            onChange={handleChange} 
+          />
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Project Overview
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Provide a brief overview of the job, a couple sentences to let people know what the project is about</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <textarea 
+            name="projectOverview" 
+            className={`job-posting-form__textarea ${validationErrors.projectOverview ? 'error' : ''}`}
+            value={formData.projectOverview} 
+            onChange={handleChange} 
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          ></textarea>
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Upload Image Files
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Upload any relevant images for the project, These will be used to advertise the post</span>
+            </span>
+          </label>
+          <div
+            className={`job-posting-form__file-drop ${isDragOver ? 'dragover' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => document.getElementById('fileInput').click()}
+          >
+            <FontAwesomeIcon icon={faUpload} className="job-posting-form__file-drop-icon" />
+            <div className="job-posting-form__file-drop-text">
+              Choose a file or drag it here.
             </div>
-            <div className="job-posting-form__column job-posting-form__column-content">
-              <div className="job-posting-form__field">
-                <p className='Required'> Required Field </p>
-                <label className="job-posting-form__label">
-                  Project Title
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Enter the title of the project</span>
-                  </span>
-                  <span className='Required'></span>
-                </label>
-                <input type="text" name="projectTitle" className="job-posting-form__input" value={formData.projectTitle} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Company Name
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Enter the name of your company</span>
-                  </span>
-                </label>
-                <input type="text" name="companyName" className="job-posting-form__input" value={formData.companyName} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label" style={{ fontFamily: 'Inter, sans-serif' }}>
-                  Project Overview
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide an overview of the project</span>
-                  </span>
-                </label>
-                <textarea name="projectOverview" className="job-posting-form__textarea" value={formData.projectOverview} onChange={handleChange} style={{ fontFamily: 'Inter, sans-serif' }}></textarea>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Upload Image Files
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Upload any relevant images for the project, These w ill be used to advertise the post</span>
-                  </span>
-                </label>
-                <div
-                  className={`job-posting-form__file-drop ${isDragOver ? 'dragover' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('fileInput').click()}
+            <input
+              type="file"
+              id="fileInput"
+              name="imageFiles"
+              className="job-posting-form__file-drop-input"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+            />
+          </div>
+          <div className="job-posting-form__image-preview">
+            {imageFiles.map((image, index) => (
+              <div key={index} className="job-posting-form__image-container">
+                <img src={image.preview} alt="Preview" className="job-posting-form__image" />
+                <button 
+                  type="button" 
+                  className="job-posting-form__remove-image-button" 
+                  onClick={() => removeImage(index)}
                 >
-                  <FontAwesomeIcon icon={faUpload} className="job-posting-form__file-drop-icon" />
-                  <div className="job-posting-form__file-drop-text">
-                    Choose a file or drag it here.
-                  </div>
-                  <input
-                    type="file"
-                    id="fileInput"
-                    name="imageFiles"
-                    className="job-posting-form__file-drop-input"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                  />
-                </div>
-                <div className="job-posting-form__image-preview">
-                  {imageFiles.map((image, index) => (
-                    <div key={index} className="job-posting-form__image-container">
-                      <img src={image.preview} alt="Preview" className="job-posting-form__image" />
-                      <button type="button" className="job-posting-form__remove-button" onClick={() => removeImage(index)}>X</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
+                  ×
                 </button>
               </div>
-            </div>
+            ))}
           </div>
-        )}
-
-        {step === 2 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Project Type and Tools</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Select you Project type form the list</p>
-              <p className="job-posting-form__paragraph">&nbsp; Select what languages,APIs or other tools you <br /> &nbsp; need your project made with</p>
-              <p className="job-posting-form__paragraph">&nbsp; Add tags to help devlopers find your project <br /> &nbsp; </p>
-            </div>
-            <div className="job-posting-form__column-left">
-              <p className='Required'> Required Field </p>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Type
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Enter the type of your project</span>
-                    <span className='Required'></span>
-                  </span>
-                </label>
-                <input
-                  type="text"
-                  name="projectType"
-                  className="job-posting-form__input"
-                  value={formData.projectType}
-                  onChange={handleProjectTypeChange}
-                />
-                {suggestedTypes.length > 0 && (
-                  <ul className="job-posting-form__suggestions">
-                    {suggestedTypes.map((type, index) => (
-                      <li
-                        key={index}
-                        className="job-posting-form__suggestion-item"
-                        onClick={() => selectSuggestedType(type)}
-                      >
-                        {type}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Required Tools
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Enter the required tools for your project</span>
-                  </span>
-                </label>
-                <div className="job-posting-form__input-with-button">
-                  <input
-                    type="text"
-                    className="job-posting-form__input"
-                    value={toolInput}
-                    onChange={handleToolInputChange}
-                    placeholder="Type a tool and press +"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTool())}
-                  />
-                  <button type="button" className="job-posting-form__add-button" onClick={handleAddTool}>
-                    +
-                  </button>
-                </div>
-                <div className="job-posting-form__tool-list">
-                  {formData.tools.map((tool, index) => (
-                    <div key={index} className="job-posting-form__tool-item">
-                      <span>{tool.name}</span>
-                      <button
-                        type="button"
-                        className="job-posting-form__remove-button"
-                        onClick={() => handleRemoveTool(index)}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Add Tags for Filtering
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Enter tags to help developers find your project</span>
-                  </span>
-                </label>
-                <div className="job-posting-form__input-with-button">
-                  <input
-                    type="text"
-                    className="job-posting-form__input"
-                    value={tagInput}
-                    onChange={handleTagInputChange}
-                    placeholder="Type a tag and press +"
-                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-                  />
-                  <button type="button" className="job-posting-form__add-button" onClick={handleAddTag}>
-                    +
-                  </button>
-                </div>
-                <div className="job-posting-form__tag-list">
-                  {formData.tags.map((tag, index) => (
-                    <div key={index} className="job-posting-form__tag-item">
-                      <span>{tag}</span>
-                      <button
-                        type="button"
-                        className="job-posting-form__remove-button"
-                        onClick={() => handleRemoveTag(index)}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 3 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Job Post Type and Project Length</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Select the type of job post and provide the estimated project length.</p>
-            </div>
-            <div className="job-posting-form__column-left">
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">Select A Post Type</label>
-                <div className="job-posting-form__icons">
-                  {jobPostTypes.map(({ type, icon }) => (
-                    <div
-                      key={type}
-                      className={`job-posting-form__icon-container ${formData.selectedJobPostType === type ? 'selected' : ''}`}
-                      onClick={() => handleJobPostTypeClick(type)}
-                      onMouseEnter={() => setFormData({ ...formData, hoveredJobPostType: type })}
-                      onMouseLeave={() => setFormData({ ...formData, hoveredJobPostType: "" })}
-                    >
-                      <FontAwesomeIcon icon={icon} className="job-posting-form__icon" />
-                      <span className="job-posting-form__icon-text">{type}</span>
-                    </div>
-                  ))}
-                </div>
-                {formData.hoveredJobPostType && (
-                  <div className="job-posting-form__type-description">
-                    {formData.hoveredJobPostType === "Auction" && <p>Auctions are optimized for price.<br /><br /> Set a starting bid and auction length, and have developers bid on your project in an open market.<br /><br /> Payment is required once you accept a bid, but if the developers fail to complete the job, the money is returned.</p>}
-                    {formData.hoveredJobPostType === "Bounty" && <p>Bounties are optimized for time.<br /><br /> Set your requirements and bounty amount, and the first to finish gets paid. Bounties are recommended for projects that need to be done as fast as possible, or smaller projects like bug fixes, homework, or feature implementation.<br /><br /> Payment is required upon posting the job but is returned if it is not successfully completed in the allotted time period.</p>}
-                    {formData.hoveredJobPostType === "Contract" && <p>Contracts are optimized for control.<br /><br /> Set your price, requirements, and timeline, and choose the most qualified developer from the applications you receive. Contracts are optimized for larger projects like full sites or apps where it is important to take your time and select the right developer. <br /><br />Payment is required when accepting an application and will be returned if the job is not successfully completed.</p>}
-                    {formData.hoveredJobPostType === "Challenge" && <p>Challenges are optimized for creativity.<br /><br /> Set a price and duration for your challenge, then developers will create their own unique solutions, and when the time expires, select the one you like the most to be paid. Challenges are great for design-heavy jobs like UI/UX design or more open-ended jobs.<br /><br /> Payment is required when posting the job but will be returned if you receive no challenge entries or none meet your requirements.</p>}
-                  </div>
-                )}
-                {formData.selectedJobPostType && !formData.hoveredJobPostType && (
-                  <div className="job-posting-form__type-description">
-                    {formData.selectedJobPostType === "Auction" && <p>Auctions are optimized for price. <br /><br />Set a starting bid and auction length, and have developers bid on your project in an open market. <br /><br /> Payment is required once you accept a bid, but if the developers fail to complete the job, the money is returned.</p>}
-                    {formData.selectedJobPostType === "Bounty" && <p>Bounties are optimized for time. <br /><br /> Set your requirements and bounty amount, and the first to finish gets paid. Bounties are recommended for projects that need to be done as fast as possible, or smaller projects like bug fixes, homework, or feature implementation. <br /><br /> Payment is required upon posting the job but is returned if it is not successfully completed in the allotted time period.</p>}
-                    {formData.selectedJobPostType === "Contract" && <p>Contracts are optimized for control. <br /><br /> Set your price, requirements, and timeline, and choose the most qualified developer from the applications you receive. Contracts are optimized for larger projects like full sites or apps where it is important to take your time and select the right developer. <br /><br /> Payment is required when accepting an application and will be returned if the job is not successfully completed.</p>}
-                    {formData.selectedJobPostType === "Challenge" && <p>Challenges are optimized for creativity.<br /><br />  Set a price and duration for your challenge, then developers will create their own unique solutions, and when the time expires, select the one you like the most to be paid. Challenges are great for design-heavy jobs like UI/UX design or more open-ended jobs.<br /><br />  Payment is required when posting the job but will be returned if you receive no challenge entries or none meet your requirements.</p>}
-                  </div>
-                )}
-              </div>
-              <div className="job-posting-form__field">
-                {formData.selectedJobPostType && (
-                  <div className="job-posting-form__field">
-                    <label className="job-posting-form__label">
-                      {formData.selectedJobPostType === "Auction" && "Starting Bid"}
-                      {formData.selectedJobPostType === "Bounty" && "Bounty Compensation"}
-                      {formData.selectedJobPostType === "Contract" && "Contract Compensation"}
-                      {formData.selectedJobPostType === "Challenge" && "Challenge Compensation"}
-                    </label>
-                    <input
-                      type="text"
-                      name={`${formData.selectedJobPostType.toLowerCase()}Compensation`}
-                      className="job-posting-form__input job-posting-form__compensation-input"
-                      value={formData[`${formData.selectedJobPostType.toLowerCase()}Compensation`] || ""}
-                      onChange={(e) => handleCompensationChange(e, formData.selectedJobPostType.toLowerCase())}
-                      onBlur={(e) => formatCompensation(e, formData.selectedJobPostType.toLowerCase())}
-                      placeholder="0"
-                    />
-                  </div>
-                )}
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 4 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Upload Graphics, Code, and Existing Works</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Provide detailed descriptions of your project, including any existing works, graphics, and code. Specify the file permissions for these uploads.</p>
-            </div>
-            <div className="job-posting-form__column-left">
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Description
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide a detailed description of your project</span>
-                  </span>
-                </label>
-                <textarea name="projectDescription" className="job-posting-form__textarea" value={formData.projectDescription} onChange={handleChange}></textarea>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Upload Graphics, Code, and Existing Works
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Upload any relevant files for the project</span>
-                  </span>
-                </label>
-                <div
-                  className={`job-posting-form__file-drop ${isDragOver ? 'dragover' : ''}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => document.getElementById('fileInput').click()}
-                >
-                  <FontAwesomeIcon icon={faUpload} className="job-posting-form__file-drop-icon" />
-                  <div className="job-posting-form__file-drop-text">
-                    Choose a file or drag it here.
-                  </div>
-                  <input
-                    type="file"
-                    id="fileInput"
-                    name="imageFiles"
-                    className="job-posting-form__file-drop-input"
-                    accept="image/*"
-                    multiple
-                    onChange={handleImageUpload}
-                  />
-                </div>
-                <div className="job-posting-form__image-preview">
-                  {imageFiles.map((image, index) => (
-                    <div key={index} className="job-posting-form__image-container">
-                      <img src={image.preview} alt="Preview" className="job-posting-form__image" />
-                      <button type="button" className="job-posting-form__remove-button" onClick={() => removeImage(index)}>X</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  File Permissions Control
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Set permissions for the uploaded files</span>
-                  </span>
-                </label>
-                <div className="job-posting-form__permissions">
-                  <label>
-                    <input
-                      type="radio"
-                      name="filePermissions"
-                      value="public"
-                      checked={formData.filePermissions === 'public'}
-                      onChange={handleFilePermissionsChange}
-                    />
-                    Public
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="filePermissions"
-                      value="applicants"
-                      checked={formData.filePermissions === 'applicants'}
-                      onChange={handleFilePermissionsChange}
-                    />
-                    Open to those who apply
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="filePermissions"
-                      value="hired"
-                      checked={formData.filePermissions === 'hired'}
-                      onChange={handleFilePermissionsChange}
-                    />
-                    Open to those who are hired
-                  </label>
-                </div>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  File Descriptions
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide descriptions for the uploaded files</span>
-                  </span>
-                </label>
-                <div className="job-posting-form__input-with-button">
-                  <input
-                    type="text"
-                    className="job-posting-form__input"
-                    value={fileDescriptionInput}
-                    onChange={(e) => setFileDescriptionInput(e.target.value)}
-                    placeholder="Type a file description and press Add"
-                  />
-                  <button type="button" className="job-posting-form__add-button" onClick={handleAddFileDescription}>
-                    +
-                  </button>
-                </div>
-                <ul className="job-posting-form__list">
-                  {formData.fileDescriptions.map((fileDescription, index) => (
-                    <li key={index} className="job-posting-form__list-item">
-                      {fileDescription}
-                      <button
-                        type="button"
-                        className="job-posting-form__remove-button"
-                        onClick={() => handleRemoveFileDescription(index)}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 5 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Project Requirements and Deliverables</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Provide detailed requirements and deliverables for the project. Outline the project milestones and any other important details.</p>
-            </div>
-            <div className="job-posting-form__column-left">
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Deliverables
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the deliverables for the project</span>
-                  </span>
-                </label>
-                <div className="job-posting-form__input-with-button">
-                  <input
-                    type="text"
-                    className="job-posting-form__input"
-                    value={deliverableInput}
-                    onChange={(e) => setDeliverableInput(e.target.value)}
-                    placeholder="Type a deliverable and press Add"
-                  />
-                  <button type="button" className="job-posting-form__add-button" onClick={handleAddDeliverable}>
-                    +
-                  </button>
-                </div>
-                <ul className="job-posting-form__list">
-                  {formData.deliverables.map((deliverable, index) => (
-                    <li key={index} className="job-posting-form__list-item">
-                      {deliverable}
-                      <button
-                        type="button"
-                        className="job-posting-form__remove-button"
-                        onClick={() => handleRemoveDeliverable(index)}
-                      >
-                        <i className="fas fa-times"></i>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Milestones
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the project milestones</span>
-                  </span>
-                </label>
-                <textarea name="projectMilestones" className="job-posting-form__textarea" value={formData.projectMilestones} onChange={handleChange}></textarea>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Amount of Prepaid Revisions
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the number of prepaid revisions</span>
-                  </span>
-                </label>
-                <input type="number" name="prepaidRevisions" className="job-posting-form__input" value={formData.prepaidRevisions} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Cost of Additional Revisions
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the cost for additional revisions</span>
-                  </span>
-                </label>
-                <input type="number" name="revisionCost" className="job-posting-form__input" value={formData.revisionCost} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Late Submission Discount
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the discount for late submissions</span>
-                  </span>
-                </label>
-                <input type="number" name="lateDiscount" className="job-posting-form__input" value={formData.lateDiscount} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 6 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Project Start and End Dates</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Provide the project start and end dates, including the project length in days, weeks, and months.</p>
-            </div>
-            <div className="job-posting-form__column-left">
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Start Date
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the project start date</span>
-                  </span>
-                </label>
-                <input type="date" name="projectStartDate" className="job-posting-form__input" value={formData.projectStartDate} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project End Date
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the project end date</span>
-                  </span>
-                </label>
-                <input type="date" name="projectEndDate" className="job-posting-form__input" value={formData.projectEndDate} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Length
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Provide the project length in days, weeks, and months</span>
-                  </span>
-                </label>
-                <input type="text" name="projectLength" className="job-posting-form__input" value={formData.projectLength} onChange={handleChange} />
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-{step === 7 && (
-  <div className="job-posting-form__container">
-    <div className="job-posting-form__column-right">
-      <h2 className="job-posting-form__title">Review Your Information</h2>
-      <p className="job-posting-form__paragraph">&nbsp; Review all the details you have provided for the project.</p>
+        </div>
+      </div>
     </div>
-    <div className="job-posting-form__column-left">
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Title
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project title</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.projectTitle}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Company Name
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the company name</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.companyName}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Overview
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project overview</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.projectOverview}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Type
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project type</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.projectType}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Required Tools
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the required tools</span>
-          </span>
-        </label>
-        <ul className="job-posting-form__review-list">
-          {formData.tools.map((tool, index) => (
-            <li key={index} className="job-posting-form__review-list-item">{tool.name}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Tags
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the tags</span>
-          </span>
-        </label>
-        <ul className="job-posting-form__review-list">
-          {formData.tags.map((tag, index) => (
-            <li key={index} className="job-posting-form__review-list-item">{tag}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Compensation
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the compensation</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.compensation}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Description
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project description</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.projectDescription}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          File Permissions
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the file permissions</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.filePermissions}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          File Descriptions
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the file descriptions</span>
-          </span>
-        </label>
-        <ul className="job-posting-form__review-list">
-          {formData.fileDescriptions.map((fileDescription, index) => (
-            <li key={index} className="job-posting-form__review-list-item">{fileDescription}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Deliverables
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project deliverables</span>
-          </span>
-        </label>
-        <ul className="job-posting-form__review-list">
-          {formData.deliverables.map((deliverable, index) => (
-            <li key={index} className="job-posting-form__review-list-item">{deliverable}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Requirements
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project requirements</span>
-          </span>
-        </label>
-        <ul className="job-posting-form__review-list">
-          {formData.requirements.map((requirement, index) => (
-            <li key={index} className="job-posting-form__review-list-item">{requirement}</li>
-          ))}
-        </ul>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Project Milestones
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the project milestones</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.projectMilestones}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Amount of Prepaid Revisions
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the amount of prepaid revisions</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.prepaidRevisions}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Cost of Additional Revisions
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the cost of additional revisions</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.revisionCost}</p>
-      </div>
-      <div className="job-posting-form__field">
-        <label className="job-posting-form__label">
-          Late Submission Discount
-          <span className="job-posting-form__tooltip">
-            <FontAwesomeIcon icon={faQuestionCircle} />
-            <span className="job-posting-form__tooltiptext">Review the late submission discount</span>
-          </span>
-        </label>
-        <p className="job-posting-form__review-text">{formData.lateDiscount}</p>
-      </div>
-      <div className="job-posting-form__button-group">
-        <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-          Back
-        </button>
-        <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
-          Next
-        </button>
-      </div>
+    <div className="job-posting-form__button-group job-posting-form__button-group-step1">
+      <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
+        Next Step
+      </button>
     </div>
   </div>
 )}
 
-
-        {step === 8 && (
-          <div className="job-posting-form__container">
-            <div className="job-posting-form__column-right">
-              <h2 className="job-posting-form__title">Review and Publish</h2>
-              <p className="job-posting-form__paragraph">&nbsp; Review all the details of your job post and publish it to make it available to developers.</p>
+{step === 2 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__container">
+      <div className="job-posting-form__column-right">
+        <h2 className="job-posting-form__title">Project Type and Tools</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Select your Project type from the list</p>
+        <p className="job-posting-form__paragraph">&nbsp; Select what languages, APIs or other tools you <br /> &nbsp; need your project made with</p>
+        <p className="job-posting-form__paragraph">&nbsp; Add tags to help developers find your project <br /> &nbsp; </p>
+      </div>
+      <div className="job-posting-form__column-left">
+        <p className='Required'> Required Field </p>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Project Type
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Enter the type of your project</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <input
+            type="text"
+            name="projectType"
+            className={`job-posting-form__input ${validationErrors.projectType ? 'error' : ''}`}
+            value={formData.projectType}
+            onChange={handleProjectTypeChange}
+          />
+          {suggestedTypes.length > 0 && (
+            <ul className="job-posting-form__suggestions">
+              {suggestedTypes.map((type, index) => (
+                <li
+                  key={index}
+                  className="job-posting-form__suggestion-item"
+                  onClick={() => selectSuggestedType(type)}
+                >
+                  {type}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Required Tools
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Add Tools a developer would need to know to complete the project like React, JavaScript, NPM </span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <div className="job-posting-form__input-with-button">
+            <input
+              type="text"
+              className={`job-posting-form__input ${validationErrors.tools ? 'error' : ''}`}
+              value={toolInput}
+              onChange={handleToolInputChange}
+              placeholder="Type a tool and press +"
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTool())}
+            />
+            <button type="button" className="job-posting-form__add-button" onClick={handleAddTool}>
+              +
+            </button>
+          </div>
+          <div className="job-posting-form__tool-list">
+            {formData.tools.map((tool, index) => (
+              <div key={index} className="job-posting-form__tool-item">
+                <span>{tool.name}</span>
+                <button
+                  type="button"
+                  className="job-posting-form__remove-button"
+                  onClick={() => handleRemoveTool(index)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Add Tags for Filtering
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Enter tags to help developers find your project like Bug Fix, Large Project, Urgent</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <div className="job-posting-form__input-with-button">
+            <input
+              type="text"
+              className={`job-posting-form__input ${validationErrors.tags ? 'error' : ''}`}
+              value={tagInput}
+              onChange={handleTagInputChange}
+              placeholder="Type a tag and press +"
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+            />
+            <button type="button" className="job-posting-form__add-button" onClick={handleAddTag}>
+              +
+            </button>
+          </div>
+          <div className="job-posting-form__tag-list">
+            {formData.tags.map((tag, index) => (
+              <div key={index} className="job-posting-form__tag-item">
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  className="job-posting-form__remove-button"
+                  onClick={() => handleRemoveTag(index)}
+                >
+                  <FontAwesomeIcon icon={faTimes} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="job-posting-form__button-group">
+      <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+        Back
+      </button>
+      <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
+        Next
+      </button>
+    </div>
+  </div>
+)}
+{step === 3 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__container">
+      <div className="job-posting-form__column-right">
+        <h2 className="job-posting-form__title">Job Post Type and Project Length</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Select the type of job post and provide the estimated project length.</p>
+      </div>
+      <div className="job-posting-form__column-left">
+        <p className='Required'> Required Field </p>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">Select A Post Type<span className='Required'></span></label>
+          <div className={`job-posting-form__icons ${validationErrors.selectedJobPostType ? 'error' : ''}`}>
+            {jobPostTypes.map(({ type, icon }) => (
+              <div
+                key={type}
+                className={`job-posting-form__icon-container ${formData.selectedJobPostType === type ? 'selected' : ''}`}
+                onClick={() => handleJobPostTypeClick(type)}
+                onMouseEnter={() => setFormData({ ...formData, hoveredJobPostType: type })}
+                onMouseLeave={() => setFormData({ ...formData, hoveredJobPostType: "" })}
+              >
+                <FontAwesomeIcon icon={icon} className="job-posting-form__icon" />
+                <span className="job-posting-form__icon-text">{type}</span>
+              </div>
+            ))}
+          </div>
+          {formData.hoveredJobPostType && (
+            <div className="job-posting-form__type-description">
+              {formData.hoveredJobPostType === "Auction" && <p>Auctions are optimized for price.<br /><br /> Set a starting bid and auction length, and have developers bid on your project in an open market.<br /><br /> Payment is required once you accept a bid, but if the developers fail to complete the job, the money is returned.</p>}
+              {formData.hoveredJobPostType === "Bounty" && <p>Bounties are optimized for time.<br /><br /> Set your requirements and bounty amount, and the first to finish gets paid. Bounties are recommended for projects that need to be done as fast as possible, or smaller projects like bug fixes, homework, or feature implementation.<br /><br /> Payment is required upon posting the job but is returned if it is not successfully completed in the allotted time period.</p>}
+              {formData.hoveredJobPostType === "Contract" && <p>Contracts are optimized for control.<br /><br /> Set your price, requirements, and timeline, and choose the most qualified developer from the applications you receive. Contracts are optimized for larger projects like full sites or apps where it is important to take your time and select the right developer. <br /><br />Payment is required when accepting an application and will be returned if the job is not successfully completed.</p>}
+              {formData.hoveredJobPostType === "Challenge" && <p>Challenges are optimized for creativity.<br /><br /> Set a price and duration for your challenge, then developers will create their own unique solutions, and when the time expires, select the one you like the most to be paid. Challenges are great for design-heavy jobs like UI/UX design or more open-ended jobs.<br /><br /> Payment is required when posting the job but will be returned if you receive no challenge entries or none meet your requirements.</p>}
             </div>
-            <div className="job-posting-form__column-left">
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Title
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the project title</span>
-                  </span>
-                </label>
-                <input type="text" name="projectTitle" className="job-posting-form__input" value={formData.projectTitle} onChange={handleChange} disabled />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Company Name
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the company name</span>
-                  </span>
-                </label>
-                <input type="text" name="companyName" className="job-posting-form__input" value={formData.companyName} onChange={handleChange} disabled />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Overview
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the project overview</span>
-                  </span>
-                </label>
-                <textarea name="projectOverview" className="job-posting-form__textarea" value={formData.projectOverview} onChange={handleChange} disabled></textarea>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Project Type
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the project type</span>
-                  </span>
-                </label>
-                <input type="text" name="projectType" className="job-posting-form__input" value={formData.projectType} onChange={handleChange} disabled />
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Tools
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the tools for the project</span>
-                  </span>
-                </label>
-                <ul className="job-posting-form__list">
-                  {formData.tools.map((tool, index) => (
-                    <li key={index} className="job-posting-form__list-item">{tool.name}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="job-posting-form__field">
-                <label className="job-posting-form__label">
-                  Tags
-                  <span className="job-posting-form__tooltip">
-                    <FontAwesomeIcon icon={faQuestionCircle} />
-                    <span className="job-posting-form__tooltiptext">Review the tags for the project</span>
-                  </span>
-                </label>
-                <ul className="job-posting-form__list">
-                  {formData.tags.map((tag, index) => (
-                    <li key={index} className="job-posting-form__list-item">{tag}</li>
-                  ))}
-                </ul>
-              </div>
-              <div className="job-posting-form__button-group">
-                <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
-                  Back
-                </button>
-                <button type="submit" className="job-posting-form__submit-button">
-                  Publish Job
-                </button>
-              </div>
+          )}
+          {formData.selectedJobPostType && !formData.hoveredJobPostType && (
+            <div className="job-posting-form__type-description">
+              {formData.selectedJobPostType === "Auction" && <p>Auctions are optimized for price. <br /><br />Set a starting bid and auction length, and have developers bid on your project in an open market. <br /><br /> Payment is required once you accept a bid, but if the developers fail to complete the job, the money is returned.</p>}
+              {formData.selectedJobPostType === "Bounty" && <p>Bounties are optimized for time. <br /><br /> Set your requirements and bounty amount, and the first to finish gets paid. Bounties are recommended for projects that need to be done as fast as possible, or smaller projects like bug fixes, homework, or feature implementation. <br /><br /> Payment is required upon posting the job but is returned if it is not successfully completed in the allotted time period.</p>}
+              {formData.selectedJobPostType === "Contract" && <p>Contracts are optimized for control. <br /><br /> Set your price, requirements, and timeline, and choose the most qualified developer from the applications you receive. Contracts are optimized for larger projects like full sites or apps where it is important to take your time and select the right developer. <br /><br /> Payment is required when accepting an application and will be returned if the job is not successfully completed.</p>}
+              {formData.selectedJobPostType === "Challenge" && <p>Challenges are optimized for creativity.<br /><br />  Set a price and duration for your challenge, then developers will create their own unique solutions, and when the time expires, select the one you like the most to be paid. Challenges are great for design-heavy jobs like UI/UX design or more open-ended jobs.<br /><br />  Payment is required when posting the job but will be returned if you receive no challenge entries or none meet your requirements.</p>}
+            </div>
+          )}
+        </div>
+        <div className="job-posting-form__field">
+          {formData.selectedJobPostType && (
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                {formData.selectedJobPostType === "Auction" && "Starting Bid"}
+                {formData.selectedJobPostType === "Bounty" && "Bounty Compensation"}
+                {formData.selectedJobPostType === "Contract" && "Contract Compensation"}
+                {formData.selectedJobPostType === "Challenge" && "Challenge Compensation"}
+                <span className='Required'></span>
+              </label>
+              <input
+                type="text"
+                name="compensation"
+                className={`job-posting-form__input job-posting-form__compensation-input ${validationErrors.compensation ? 'error' : ''}`}
+                value={formData.compensation || ""}
+                onChange={handleCompensationChange}
+                onBlur={formatCompensation}
+                placeholder="0"
+              />
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+    <div className="job-posting-form__button-group">
+      <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+        Back
+      </button>
+      <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
+        Next
+      </button>
+    </div>
+  </div>
+)}
+
+{step === 4 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__container">
+      <div className="job-posting-form__column-right">
+        <h2 className="job-posting-form__title">Project Details and Files</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Provide a detailed description of your project.</p>
+        <p className="job-posting-form__paragraph">&nbsp; Upload any relevant files or folders, including graphics, code, and existing works.</p>
+        <p className="job-posting-form__paragraph">&nbsp; Specify the file permissions for these uploads.</p>
+      </div>
+      <div className="job-posting-form__column-left">
+        <p className='Required'> Required Field </p>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Project Description
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Provide a full detailed description of your project</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <textarea
+            name="projectDescription"
+            className={`job-posting-form__textarea job-posting-form__textarea-auto-grow ${validationErrors.projectDescription ? 'error' : ''}`}
+            value={formData.projectDescription}
+            onChange={handleChange}
+            onInput={handleTextareaInput}
+          ></textarea>
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Upload Project Files
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Add any files related to the project files</span>
+            </span>
+          </label>
+          <div
+            className={`job-posting-form__file-drop ${isDragOver ? 'dragover' : ''} ${validationErrors.projectFiles ? 'error' : ''}`}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleFileDrop}
+            onClick={() => document.getElementById('projectFileInput').click()}
+          >
+            <FontAwesomeIcon icon={faUpload} className="job-posting-form__file-drop-icon" />
+            <div className="job-posting-form__file-drop-text">
+              Choose files/folders or drag them here.
+            </div>
+            <input
+              type="file"
+              id="projectFileInput"
+              name="projectFiles"
+              className="job-posting-form__file-drop-input"
+              multiple
+              onChange={handleProjectFileUpload}
+            />
+          </div>
+          <div className="job-posting-form__file-list-container">
+            <div className="job-posting-form__file-list">
+              {formData.projectFiles.map((file, index) => (
+                <div key={index} className="job-posting-form__file-item">
+                  <span>{file.name}</span>
+                  <button
+                    type="button"
+                    className="job-posting-form__remove-button"
+                    onClick={() => removeProjectFile(index)}
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
+        </div>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            File Permissions Control
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Set who can view the files related to the job</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <div className={`job-posting-form__permissions ${validationErrors.filePermissions ? 'error' : ''}`}>
+            <label>
+              <input
+                type="radio"
+                name="filePermissions"
+                value="public"
+                checked={formData.filePermissions === 'public'}
+                onChange={handleFilePermissionsChange}
+              />
+              Public
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="filePermissions"
+                value="applicants"
+                checked={formData.filePermissions === 'applicants'}
+                onChange={handleFilePermissionsChange}
+              />
+              Open to those who apply
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="filePermissions"
+                value="hired"
+                checked={formData.filePermissions === 'hired'}
+                onChange={handleFilePermissionsChange}
+              />
+              Open to those who are hired
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className="job-posting-form__button-group">
+      <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+        Back
+      </button>
+      <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
+        Next
+      </button>
+    </div>
+  </div>
+)}
+{step === 5 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__container">
+      <div className="job-posting-form__column-right">
+        <h2 className="job-posting-form__title">Project Requirements and Deliverables</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Provide detailed requirements and deliverables for the project. Outline the project milestones and any other important details.</p>
+      </div>
+      <div className="job-posting-form__column-left">
+        <p className='Required'> Required Field </p>
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Project Deliverables
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Add specific deliverables to the project this will be used to judge completion of the project </span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <div className="job-posting-form__input-with-button">
+            <input
+              type="text"
+              className={`job-posting-form__input ${validationErrors.deliverables ? 'error' : ''}`}
+              value={deliverableInput}
+              onChange={(e) => setDeliverableInput(e.target.value)}
+              placeholder="Type a deliverable and press Add"
+            />
+            <button type="button" className="job-posting-form__add-button" onClick={handleAddDeliverable}>
+              +
+            </button>
+          </div>
+          <div className="job-posting-form__deliverable-list-container">
+            <div className="job-posting-form__deliverable-list">
+              {formData.deliverables.map((deliverable, index) => (
+                <div key={index} className="job-posting-form__deliverable-item">
+                  <span>{deliverable}</span>
+                  <button
+                    type="button"
+                    className="job-posting-form__remove-button"
+                    onClick={() => handleRemoveDeliverable(index)}
+                  >
+                    <FontAwesomeIcon icon={faTimes} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+          {validationErrors.deliverables && <p className="job-posting-form__error-message">{validationErrors.deliverables}</p>}
+        </div>
+        
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Amount of Prepaid Revisions
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Select the number of prepaid revisions</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <div className={`job-posting-form__revisions ${validationErrors.prepaidRevisions ? 'error' : ''}`}>
+            {[0, 1, 2, 3].map((revision) => (
+              <label key={revision}>
+                <input
+                  type="radio"
+                  name="prepaidRevisions"
+                  value={revision}
+                  checked={parseInt(formData.prepaidRevisions) === revision}
+                  onChange={handleChange}
+                />
+                {revision} Revision{revision !== 1 ? 's' : ''}
+              </label>
+            ))}
+          </div>
+          {validationErrors.prepaidRevisions && <p className="job-posting-form__error-message">{validationErrors.prepaidRevisions}</p>}
+        </div>
+        
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Cost of Additional Revisions
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Provide the price to request additional revisions past the prepaid ones</span>
+            </span>
+          </label>
+          <div className="job-posting-form__cost-input">
+            <span className="job-posting-form__currency-symbol">$</span>
+            <input
+              type="number"
+              name="revisionCost"
+              className={`job-posting-form__input ${validationErrors.revisionCost ? 'error' : ''}`}
+              value={formData.revisionCost}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+            />
+          </div>
+          {validationErrors.revisionCost && <p className="job-posting-form__error-message">{validationErrors.revisionCost}</p>}
+        </div>
+      </div>
+    </div>
+    <div className="job-posting-form__button-group">
+      <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+        Back
+      </button>
+      <button type="button" className="job-posting-form__next-button" onClick={nextStep}>
+        Next
+      </button>
+    </div>
+  </div>
+)}
+{step === 6 && (
+  <div className="job-posting-form__step-container">
+    <div className="job-posting-form__container">
+      <div className="job-posting-form__column-right">
+        <h2 className="job-posting-form__title">Project Timeline</h2>
+        <p className="job-posting-form__paragraph">&nbsp; Set the timeline for your project based on the selected job post type.</p>
+      </div>
+      <div className="job-posting-form__column-left">
+        <p className='Required'> Required Field </p>
+        
+        {formData.selectedJobPostType === "Bounty" && (
+          <>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Bounty Start Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the bounty start?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="bountyStartTime" 
+                className={`job-posting-form__input ${validationErrors.bountyStartTime ? 'error' : ''}`}
+                value={formData.bountyStartTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Bounty End Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the bounty end?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="bountyEndTime" 
+                className={`job-posting-form__input ${validationErrors.bountyEndTime ? 'error' : ''}`}
+                value={formData.bountyEndTime} 
+                onChange={handleChange} 
+              />
+            </div>
+          </>
         )}
+
+        {formData.selectedJobPostType === "Challenge" && (
+          <>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Challenge Start Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the challenge start?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="challengeStartTime" 
+                className={`job-posting-form__input ${validationErrors.challengeStartTime ? 'error' : ''}`}
+                value={formData.challengeStartTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Challenge End Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the challenge end?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="challengeEndTime" 
+                className={`job-posting-form__input ${validationErrors.challengeEndTime ? 'error' : ''}`}
+                value={formData.challengeEndTime} 
+                onChange={handleChange} 
+              />
+            </div>
+          </>
+        )}
+
+        {formData.selectedJobPostType === "Contract" && (
+          <>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Applications Open Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When do applications open?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="applicationsOpenTime" 
+                className={`job-posting-form__input ${validationErrors.applicationsOpenTime ? 'error' : ''}`}
+                value={formData.applicationsOpenTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Applications Close Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When do applications close?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="applicationsCloseTime" 
+                className={`job-posting-form__input ${validationErrors.applicationsCloseTime ? 'error' : ''}`}
+                value={formData.applicationsCloseTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Contract End Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the contract end?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="contractEndTime" 
+                className={`job-posting-form__input ${validationErrors.contractEndTime ? 'error' : ''}`}
+                value={formData.contractEndTime} 
+                onChange={handleChange} 
+              />
+            </div>
+          </>
+        )}
+
+        {formData.selectedJobPostType === "Auction" && (
+          <>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Auction Open Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the auction open?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="auctionOpenTime" 
+                className={`job-posting-form__input ${validationErrors.auctionOpenTime ? 'error' : ''}`}
+                value={formData.auctionOpenTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Auction Close Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the auction close?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="auctionCloseTime" 
+                className={`job-posting-form__input ${validationErrors.auctionCloseTime ? 'error' : ''}`}
+                value={formData.auctionCloseTime} 
+                onChange={handleChange} 
+              />
+            </div>
+            <div className="job-posting-form__field">
+              <label className="job-posting-form__label">
+                Project End Time
+                <span className="job-posting-form__tooltip">
+                  <FontAwesomeIcon icon={faQuestionCircle} />
+                  <span className="job-posting-form__tooltiptext">When does the project end?</span>
+                </span>
+                <span className='Required'></span>
+              </label>
+              <input 
+                type="datetime-local" 
+                name="projectEndTime" 
+                className={`job-posting-form__input ${validationErrors.projectEndTime ? 'error' : ''}`}
+                value={formData.projectEndTime} 
+                onChange={handleChange} 
+              />
+            </div>
+          </>
+        )}
+
+        <div className="job-posting-form__field">
+          <label className="job-posting-form__label">
+            Estimated Project Length
+            <span className="job-posting-form__tooltip">
+              <FontAwesomeIcon icon={faQuestionCircle} />
+              <span className="job-posting-form__tooltiptext">Select the estimated length of the project</span>
+            </span>
+            <span className='Required'></span>
+          </label>
+          <select
+            name="estimatedProjectLength"
+            className={`job-posting-form__select ${validationErrors.estimatedProjectLength ? 'error' : ''}`}
+            value={formData.estimatedProjectLength}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Select project length</option>
+            <option value="<1hour">Less than 1 hour</option>
+            <option value="1-3hours">1-3 hours</option>
+            <option value="3-6hours">3-6 hours</option>
+            <option value="6-12hours">6-12 hours</option>
+            <option value="12-24hours">12-24 hours</option>
+            <option value="1-3days">1-3 days</option>
+            <option value="3-7days">3-7 days</option>
+            <option value="1-2weeks">1-2 weeks</option>
+            <option value="2-4weeks">2-4 weeks</option>
+            <option value=">1month">More than 1 month</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div className="job-posting-form__button-group">
+      <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+        Back
+      </button>
+      <button type="button" className="job-posting-form__next-button" onClick={handleGeneratePreview}>
+        Generate Preview 
+      </button>
+    </div>
+  </div>
+)}
+{step === 7 && (
+  <div className="job-posting-form__review">
+    <div className="job-posting-form__header">
+      <h2 className="job-posting-form__project-title">{"Sample Project Title"}</h2>
+      <p className="job-posting-form__subline">
+  <span>{displayName}</span> |
+  <span className="company-name">{"Your Company Name"}</span>
+  <span className='sublineRight'>
+   <span>{formData.projectType}</span>
+   &nbsp;• <span>{formData.selectedJobPostType}</span>
+   &nbsp;•  <span>{"2 weeks"}</span>
+  </span>
+</p>
+
+
+    </div>
+    
+    <div className="job-posting-form__content">
+      <div className="job-posting-form__main-content">
+        {imageFiles.length > 0 && (
+          <div className="job-posting-form__carousel">
+            <div className="job-posting-form__carousel-image-wrapper">
+              <img 
+                src={imageFiles[carouselIndex].preview}
+                alt={`Project image ${carouselIndex + 1}`} 
+                className="job-posting-form__carousel-image"
+              />
+            </div>
+            <button onClick={handlePrevSlide} className="job-posting-form__carousel-button job-posting-form__carousel-button-left">&#10094;</button>
+            <button onClick={handleNextSlide} className="job-posting-form__carousel-button job-posting-form__carousel-button-right">&#10095;</button>
+          </div>
+        )}
+        
+        <div className="job-posting-form__project-overview">
+          <h3>Project Overview</h3>
+          <p>{"This is a sample project overview. It describes the main goals and scope of the project. This is a sample project overview. It describes the main goals and scope of the project.This is a sample project overview. It describes the main goals and scope of the project.This is a sample project overview. It describes the mThis is a sample project overview. It describes the main goals and scope of the project.ain goals and scope of the project.This is a sample project overview. It describes the main goals and scope of the project."}</p>
+        </div>
+      </div>
+      
+      <div className="job-posting-form__sidebar">
+        <div className="job-posting-form__sidebar-section">
+        <div className="compensation-wrapper">
+          <h4>Compensation</h4>
+          <p className='compNumber'>{formData.compensation }</p>
+        </div>
+        </ div>
+        
+        <div className="job-posting-form__sidebar-section">
+          <h4>Tools</h4>
+          <p className="job-posting-form__tools">
+      {formData.tools.map(tool => tool.name).join(', ')}
+    </p>
+        </div>
+        
+        <div className="job-posting-form__sidebar-section">
+          <h4>Tags</h4>
+          <p className="job-posting-form__tags">
+      {formData.tags.join(', ')}
+    </p>
+        </div>
+      </div>
+    </div>
+    
+    <div className="job-posting-form__button-group">
+          <button type="button" className="job-posting-form__back-button" onClick={prevStep}>
+            Back
+          </button>
+          <button type="button" className="job-posting-form__next-button" onClick={handlePublishJob}>
+            Publish Job
+          </button>
+        </div>
+  </div>
+)}
       </form>
     </div>
   );
