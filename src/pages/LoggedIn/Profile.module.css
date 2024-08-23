@@ -1,59 +1,206 @@
+h2 {
+  margin-bottom: 5px;
+  margin-top: 15px;
+}
+h3 {
+  margin-bottom: 5px;
+  margin-top: 15px;
+}
+
+.input-field, .textarea-field {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+}
+
+.textarea-field {
+  resize: vertical; /* Allow vertical resize of text areas */
+}
+
 .container {
-    display: grid;
-    grid-template-columns: 1fr 3fr;
-    padding-top: 8rem;
-    gap: 20px;
-    height: 100vh;
-    box-sizing: border-box;
-  }
-  
-  .sidebar {
-    background-color: #052141f4;
-    padding: 20px;
-    color: white;
-  }
-  
-  .main-content {
-    background-color: #052141f4;
-    padding: 20px;
-    overflow-y: auto;
-    color: white;
-  }
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  padding: 4rem 8rem;
+  gap: 20px;
+  height: 100vh;
+  box-sizing: border-box;
+}
 
-  .main-profile-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    margin-bottom: 10px;
-    margin-left: 8rem;
+/* Profile Section */
 
-  }
+.profile-card {
+  background-color: black;
+  color: white;
+  padding: 20px 10px;
+  border: white 1px solid;
+  border-radius: 10px;
+}
 
-  .horizontalBar {
-    display: flex;
-    justify-content: space-between;
-    margin: 20px 0;
-    padding: 100px;
-    background-color: #4114bb;
-    border: 1px solid #1c127a;
-    border-radius: 5px;
-  }
-  
-  .box {
-    flex: 1;
-    margin: 0 20px;
-    padding: 50px;
-    background-color: #7700a7;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    text-align: center;
-  }
-  
-  .box:first-child {
-    margin-left: 0;
-  }
-  
-  .box:last-child {
-    margin-right: 0;
-  }
-  
+.profile-card .avatar {
+  width: 250px;
+  height: 250px;
+  border-radius: 50%;
+  margin-bottom: 10px;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
+
+.profile-card p {
+  font-size: 0.8rem;
+}
+
+.profile-card .skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+.profile-card .skills div {
+  background-color: #444;
+  padding: 5px;
+  text-align: center;
+  border-radius: 5px;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.profile-card .skills .remove-skill {
+  background: none;
+  border: none;
+  color: #ff4d4f;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.profile-card .skills .add-skill {
+  display: flex;
+}
+
+.profile-card .skills .add-skill .input-field {
+  margin-bottom: 0px;
+}
+
+.profile-card .skills .add-skill .add-skill-button {
+  padding: 5px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  margin-left: 5px;
+  cursor: pointer;
+  height: 30px;
+}
+
+.profile-card .links {
+  margin-bottom: 20px;
+}
+
+.profile-card .links a {
+  display: block;
+  color: white;
+  text-decoration: none;
+  font-size: 0.8rem;
+  margin-bottom: 5px;
+}
+.profile-card .links a:hover {
+  color: #7707E7;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.action-buttons .primary{
+  background-color: #28a745;
+  color: white;
+  padding: 10px 20px;
+  cursor: pointer;
+  width: auto;
+  border: none;
+  border-radius: 5px;
+}
+
+.action-buttons .secondary{
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  border: white 1px solid;
+  border-radius: 5px;
+  cursor: pointer;
+  width: auto;
+}
+
+.edit-button {
+  background-color: black;
+  color: white;
+  padding: 10px 20px;
+  border: white 1px solid;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.edit-button:hover {
+  background-color: white;
+  color: black;
+}
+
+/* Main Content */
+.main-content {
+  background-color: #0F0F0F;
+  padding: 20px;
+  overflow-y: auto;
+  color: white;
+  border-radius: 10px;
+}
+
+.main-content .tab-header {
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.main-content .tab-header .tab-item {
+  padding: 10px 20px;
+  cursor: pointer;
+  color: #fff5;
+  background-color: #222;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.main-content .tab-header .tab-item.active {
+  background-color: transparent;
+  color: #fff;
+  font-weight: bold;
+}
+
+.main-content .tab-content {
+  display: flex;
+  justify-content: space-between;
+  text-align: center;
+  display: block;
+}
+
+.main-content .tab-content .stat-content {
+  display: flex;
+  flex-direction: row;
+  font-weight: bold;
+  justify-content: space-between;
+}
+
+.main-content .tab-content .stat-content .stat-box p {
+  font-size: 3rem;
+  margin-bottom: 0px;
+}
+
+.main-content .tab-content .stat-content .stat-box span {
+  font-size: 1.5rem;
+  color: #fff5;
+  margin-top: 0px;
+}
