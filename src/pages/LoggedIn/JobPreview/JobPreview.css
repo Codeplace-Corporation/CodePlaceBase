@@ -1,0 +1,55 @@
+.job-preview {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .back-button {
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .job-preview h1 {
+    color: #333;
+  }
+  
+  .job-preview h2 {
+    color: #666;
+    margin-top: 20px;
+  }
+  
+  .job-tags {
+    margin-top: 10px;
+  }
+  
+  .tag {
+    background-color: #e0e0e0;
+    padding: 5px 10px;
+    border-radius: 20px;
+    margin-right: 5px;
+    font-size: 14px;
+  }
+  
+  .apply-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .apply-button:hover {
+    background-color: #45a049;
+  }
+  
+  .apply-status {
+    margin-top: 10px;
+    font-weight: bold;
+  }
