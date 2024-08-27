@@ -4,6 +4,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc, getDoc, getFirestore } from "firebase/firestore";
 import styles from "./Profile.module.css"; // Import the CSS module
 import { firestore } from "../../firebase";
+import { FaCamera } from 'react-icons/fa';
 
 export default function Profile() {
   const auth = getAuth();
@@ -11,6 +12,15 @@ export default function Profile() {
   const [user, setUser] = useState(auth.currentUser);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [imageFile, setImageFile] = useState(null);
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [auth]);
 
   const ProfileCard = () => {
     const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +28,7 @@ export default function Profile() {
       displayName: '',
       bio: '',
       skills: [],
+      photoURL: '',
     });
     const [profileData, setProfileData] = useState(initialProfileData);
     const [newSkill, setNewSkill] = useState('');
@@ -48,6 +59,32 @@ export default function Profile() {
       fetchUserData();
     }, [user]);
 
+    const handleProfilePictureClick = () => {
+      document.getElementById('profilePictureInput').click(); // Trigger the hidden file input
+    };
+    const handleProfilePictureChange = async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // 
+      const storageRef = ref(storage, 'profile_images/' + auth.currentUser.uid);
+      try {
+        await uploadBytes(storageRef, file);
+        const downloadURL = await getDownloadURL(storageRef);
+
+        // Update the profile picture in the state
+        setProfileData((prevData) => ({
+          ...prevData,
+          profilePicture: downloadURL,
+        }));
+
+        // update the profile picture in the Firestore immediately
+        const profileDocRef = doc(db, "users", user.uid);
+        await updateDoc(profileDocRef, { profilePicture: downloadURL });
+      } catch (error) {
+        console.error("Error uploading profile picture: ", error);
+      }
+    };
     const handleEditClick = () => setIsEditing(true);
     const handleSaveClick = async () => {
       if (!user || !profileData) return;
@@ -92,11 +129,26 @@ export default function Profile() {
     return (
       <div className={styles["profile-card"]}>
         <h2>My Profile</h2>
-        <img
-          src={profileData.photoURL}
-          alt="Profile"
-          className={styles["avatar"]}
-        />
+        <div
+          className={styles['avatar-container']}
+          onClick={handleProfilePictureClick} >
+          <img
+            src={profileData.photoURL}
+            alt="Profile"
+            className={styles["avatar"]}
+          />
+          <div className={styles["overlay"]}>
+            <FaCamera className={styles["camera-icon"]} />
+          </div>
+          {/* Hidden File Input */}
+          <input
+            id="profilePictureInput"
+            type="file"
+            style={{ display: 'none' }}
+            accept="image/*"
+            onChange={handleProfilePictureChange}
+          />
+        </div>
         {isEditing ? (
           <input
             name="displayName"
