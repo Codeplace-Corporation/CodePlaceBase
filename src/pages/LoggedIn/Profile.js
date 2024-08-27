@@ -10,8 +10,6 @@ export default function Profile() {
   const auth = getAuth();
   const storage = getStorage();
   const [user, setUser] = useState(auth.currentUser);
-  const [newDisplayName, setNewDisplayName] = useState("");
-  const [imageFile, setImageFile] = useState(null);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -30,6 +28,7 @@ export default function Profile() {
       skills: [],
       photoURL: '',
     });
+    const something = null;
     const [profileData, setProfileData] = useState(initialProfileData);
     const [newSkill, setNewSkill] = useState('');
     const [loading, setLoading] = useState(true);
@@ -170,7 +169,7 @@ export default function Profile() {
         )}
         <h3>Skills:</h3>
         <div className={styles["skills"]}>
-          {profileData.skills.map((skill, index) => (
+          {!profileData.skills ? (<div></div>) : (profileData.skills.map((skill, index) => (
             <div key={index}>
               {skill}
               {isEditing && (
@@ -182,7 +181,8 @@ export default function Profile() {
                 </button>
               )}
             </div>
-          ))}
+          )))}
+
 
           {isEditing && (
             <div className={styles["add-skill"]}>
