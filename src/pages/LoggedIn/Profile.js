@@ -72,15 +72,13 @@ export default function Profile() {
         await uploadBytes(storageRef, file);
         const downloadURL = await getDownloadURL(storageRef);
 
-        // Update the profile picture in the state
+        // update the profile picture in the Firestore immediately
+        const profileDocRef = doc(firestore, "users", user.uid);
+        await updateDoc(profileDocRef, { photoURL: downloadURL });
         setProfileData((prevData) => ({
           ...prevData,
-          profilePicture: downloadURL,
+          photoURL: downloadURL,
         }));
-
-        // update the profile picture in the Firestore immediately
-        const profileDocRef = doc(db, "users", user.uid);
-        await updateDoc(profileDocRef, { profilePicture: downloadURL });
       } catch (error) {
         console.error("Error uploading profile picture: ", error);
       }
