@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { signOut, getAuth, updateProfile } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc, getDoc, getFirestore } from "firebase/firestore";
 import styles from "./Profile.module.css"; // Import the CSS module
+import { firestore } from "../../firebase";
 
 export default function Profile() {
   const auth = getAuth();
@@ -9,40 +11,55 @@ export default function Profile() {
   const [user, setUser] = useState(auth.currentUser);
   const [newDisplayName, setNewDisplayName] = useState("");
   const [imageFile, setImageFile] = useState(null);
-  const skills = [
-    "Java",
-    "Javascript",
-    "Python",
-    "Blender",
-    "Golang",
-    "Web Development",
-    "UI Design",
-    "Game Development",
-    "Flutter",
-  ];
 
   const ProfileCard = () => {
     const [isEditing, setIsEditing] = useState(false);
+    const [initialProfileData, setInitialProfileData] = useState({
+      displayName: '',
+      bio: '',
+      skills: [],
+    });
+    const [profileData, setProfileData] = useState(initialProfileData);
+    const [newSkill, setNewSkill] = useState('');
+    const [loading, setLoading] = useState(true);
+    useEffect(() => {
+      const fetchUserData = async () => {
+        // if (!user) return;
+
+        try {
+          const userDocRef = doc(firestore, "users", user.uid); // Assuming 'users' is the collection
+          const userDocSnap = await getDoc(userDocRef);
+
+          if (userDocSnap.exists()) {
+            console.log('weee',)
+            const data = userDocSnap.data();
+            setInitialProfileData(data)
+            setProfileData(data);
+          } else {
+            console.log("No such document!");
+          }
+        } catch (error) {
+          console.log('Error fetching user data~!', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      fetchUserData();
+    }, [user]);
+
     const handleEditClick = () => setIsEditing(true);
-    const handleSaveClick = () => {
-      // Update database record with the `profileData`
+    const handleSaveClick = async () => {
+      if (!user || !profileData) return;
+      const userDocRef = doc(firestore, 'users', user.uid)
+      await updateDoc(userDocRef, profileData);
+      setInitialProfileData(profileData);
       setIsEditing(false)
     }
     const handleCancelClick = () => {
       setProfileData(initialProfileData)
       setIsEditing(false)
     }
-    const initialProfileData = {
-      name: user.displayName,
-      bio: 'Lorem ipsum dolor sit amet...',
-      website: 'http://PortfolioSite.com',
-      linkedIn: 'http://LinkedIn.com',
-      socialMedia: 'http://SocialMedia.com',
-      skills: ['JavaScript', 'React', 'CSS'], // Initial skills
-    };
-    const [profileData, setProfileData] = useState(initialProfileData);
-    const [newSkill, setNewSkill] = useState('');
-
     const handleChange = (e) => {
       const { name, value } = e.target;
       setProfileData((prevData) => ({
@@ -69,24 +86,27 @@ export default function Profile() {
       }));
     };
 
+    if (loading) {
+      return <div>Loading...</div>;
+    }
     return (
       <div className={styles["profile-card"]}>
         <h2>My Profile</h2>
         <img
-          src={user.photoURL}
+          src={profileData.photoURL}
           alt="Profile"
           className={styles["avatar"]}
         />
         {isEditing ? (
           <input
-            type="text"
-            name="name"
-            value={profileData.name}
+            name="displayName"
+            placeholder="Enter name"
+            value={profileData.displayName}
             onChange={handleChange}
             className={styles['input-field']}
           />
         ) :
-          (<h2>{profileData.name}</h2>)}
+          (<h2>{profileData.displayName}</h2>)}
         {isEditing ? (
           <textarea
             name="bio"
