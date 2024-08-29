@@ -10,8 +10,6 @@ export default function Profile() {
   const auth = getAuth();
   const storage = getStorage();
   const [user, setUser] = useState(auth.currentUser);
-  const [newDisplayName, setNewDisplayName] = useState("");
-  const [imageFile, setImageFile] = useState(null);
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setUser(user);
@@ -35,8 +33,6 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     useEffect(() => {
       const fetchUserData = async () => {
-        // if (!user) return;
-
         try {
           const userDocRef = doc(firestore, "users", user.uid); // Assuming 'users' is the collection
           const userDocSnap = await getDoc(userDocRef);
@@ -66,7 +62,6 @@ export default function Profile() {
       const file = event.target.files[0];
       if (!file) return;
 
-      // 
       const storageRef = ref(storage, 'profile_images/' + auth.currentUser.uid);
       try {
         await uploadBytes(storageRef, file);
@@ -170,7 +165,7 @@ export default function Profile() {
         )}
         <h3>Skills:</h3>
         <div className={styles["skills"]}>
-          {profileData.skills.n((skill, index) => (
+          {!profileData.skills ? (<div></div>) : (profileData.skills.map((skill, index) => (
             <div key={index}>
               {skill}
               {isEditing && (
@@ -182,7 +177,7 @@ export default function Profile() {
                 </button>
               )}
             </div>
-          ))}
+          )))}
 
           {isEditing && (
             <div className={styles["add-skill"]}>
@@ -240,7 +235,6 @@ export default function Profile() {
             </div>
           ))}
         </div>
-        {/*  */}
         <div className={styles['tab-content']}>
           {activeTab === 'developer' ? (<DeveloperContent />) : (<ClientContent />)}
         </div>
