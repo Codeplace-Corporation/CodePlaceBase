@@ -170,7 +170,7 @@ export default function Profile() {
         )}
         <h3>Skills:</h3>
         <div className={styles["skills"]}>
-          {profileData.skills.map((skill, index) => (
+          {profileData.skills.n((skill, index) => (
             <div key={index}>
               {skill}
               {isEditing && (
