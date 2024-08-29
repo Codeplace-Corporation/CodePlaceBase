@@ -28,14 +28,11 @@ export default function Profile() {
       skills: [],
       photoURL: '',
     });
-    const something = null;
     const [profileData, setProfileData] = useState(initialProfileData);
     const [newSkill, setNewSkill] = useState('');
     const [loading, setLoading] = useState(true);
     useEffect(() => {
       const fetchUserData = async () => {
-        // if (!user) return;
-
         try {
           const userDocRef = doc(firestore, "users", user.uid); // Assuming 'users' is the collection
           const userDocSnap = await getDoc(userDocRef);
@@ -65,7 +62,6 @@ export default function Profile() {
       const file = event.target.files[0];
       if (!file) return;
 
-      // 
       const storageRef = ref(storage, 'profile_images/' + auth.currentUser.uid);
       try {
         await uploadBytes(storageRef, file);
@@ -183,7 +179,6 @@ export default function Profile() {
             </div>
           )))}
 
-
           {isEditing && (
             <div className={styles["add-skill"]}>
               <input
@@ -240,7 +235,6 @@ export default function Profile() {
             </div>
           ))}
         </div>
-        {/*  */}
         <div className={styles['tab-content']}>
           {activeTab === 'developer' ? (<DeveloperContent />) : (<ClientContent />)}
         </div>

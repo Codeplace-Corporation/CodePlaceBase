@@ -1,12 +1,14 @@
 body {
   background-color: #000000;
   color: #ffffff;
-  font-family:Inter, Arial, sans-serif;
+  font-family: Inter, Arial, sans-serif;
 }
+
 .jobs-list {
   max-height: 550px; /* Adjust this height as needed to fit 6 job entries */
   overflow-y: auto;
 }
+
 .jobs-list::-webkit-scrollbar {
   width: 8px; /* Adjust the width of the scrollbar */
 }
@@ -16,11 +18,10 @@ body {
 }
 
 .jobs-list::-webkit-scrollbar-thumb {
-  background-color: #7d4cdb; /* Color of the scrollbar thumb */
+  background-color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
   border-radius: 10px; /* Roundness of the scrollbar thumb */
   border: 2px solid #121212; /* Padding around the scrollbar thumb */
 }
-
 
 .jobs-container {
   width: 80%;
@@ -29,7 +30,7 @@ body {
 }
 
 h1 {
-  color: #7d4cdb;
+  color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
   margin-bottom: 20px;
 }
 
@@ -56,7 +57,7 @@ h1 {
 }
 
 .filter-button.active {
-  background-color: #7d4cdb;
+  background-color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
 }
 
 .filter-button.selected {
@@ -254,7 +255,7 @@ h1 {
 }
 
 .job-box {
-  background-color: hsl(0, 0%, 12%);
+  background-color:  #26262B;
   border-radius: 8px;
   padding: 0px 10px;
   display: flex;
@@ -269,7 +270,7 @@ h1 {
 }
 
 .job-icon {
-  color: #7d4cdb;
+  color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
   font-size: 1.5em;
   margin-right: 10px;
 }
@@ -308,19 +309,24 @@ h1 {
 }
 
 .subtitle-separator {
-  color: #7d4cdb;
+  color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
   margin: 0 5px;
 }
 
 .subtitle-arrow {
   margin-left: 5px;
-  color: #32CD32; /* Set arrow color to green */
+  color: #32CD32;
   transition: transform 0.3s ease;
   transform-origin: center;
 }
 
+.filter-button.active .subtitle-arrow,
+.job-container.active .subtitle-arrow {
+  color: #ffffff; /* Changed to white when active/selected */
+}
+
 .subtitle-arrow.rotated {
-  transform: rotate(90deg); /* Rotate only 90 degrees */
+  transform: rotate(90deg);
 }
 
 .job-extra {
@@ -404,7 +410,7 @@ h1 {
 }
 
 .line {
-  color: #6c4da6;
+  color: #32CD32; /* Changed from #6c4da6 to #32CD32 */
 }
 
 .part2 {
@@ -456,7 +462,7 @@ h1 {
   flex-direction: column;
   gap: 10px;
   padding: 20px;
-  align-items: center; /* Center content horizontally */
+  align-items: center;
 }
 
 .filter-compensation-heading {
@@ -470,12 +476,12 @@ h1 {
   margin-top: -15px;
   display: flex;
   gap: 10px;
-  justify-content: center; /* Center input fields horizontally */
+  justify-content: center;
 }
 
 .filter-compensation label {
   color: #ffffff;
-  text-align: center; /* Center text inside labels */
+  text-align: center;
 }
 
 .filter-compensation input {
@@ -486,7 +492,7 @@ h1 {
   color: #32CD32;
   width: 100px;
   padding: 2.5px 0px;
-  text-align: center; /* Center text inside input fields */
+  text-align: center;
 }
 
 .filter-compensation input.error {
@@ -498,6 +504,65 @@ h1 {
   color: red;
   font-size: 0.8em;
   margin-top: 10px;
-  text-align: center; /* Center error messages */
+  text-align: center;
   position: inherit;
+}
+
+/* New styles for loading and error states */
+.loading-message, .error-message {
+  text-align: center;
+  padding: 20px;
+  background-color: #151518;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.error-message {
+  color: #ff6347;
+}
+
+.interested-jobs-title {
+  color: #32CD32; /* Changed from #7d4cdb to #32CD32 */
+  margin-top: 30px;
+  margin-bottom: 20px;
+}
+.sorting-section {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 0px;
+  padding: 10px;
+  background-color: #ffffff00;
+  border-radius: 8px;
+  margin-top: -20px;
+}
+
+.sort-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.sort-button {
+  background-color: #2d2d2d00;
+  color: #FFFFFF;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.sort-button:hover {
+  background-color: #3d3d3d00;
+}
+
+.sort-button.active {
+
+  color: #32CD32;
+}
+
+.sort-icon {
+  margin-left: 5px;
 }
