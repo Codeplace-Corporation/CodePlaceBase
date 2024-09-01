@@ -1,0 +1,28 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    h1 {
+        @apply text-4xl font-normal;
+    }
+    h2 {
+        @apply text-2xl font-extralight;
+    }
+    h3 {
+        @apply text-xl;
+    }
+    h3 {
+        @apply text-lg;
+    }
+
+    p {
+        @apply text-sm text-white;
+    }
+}
+
+body {
+    background-color: black;
+    color: white;
+}
