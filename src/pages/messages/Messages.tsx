@@ -18,7 +18,7 @@ const Messages = () => {
                 {conversations.map((conv, index) => (
                     <div
                         key={index}
-                        className="hover:bg-card flex items-center gap-2 py-2 cursor-pointer"
+                        className="hover:bg-card flex items-center gap-2 py-2 px-3 cursor-pointer"
                     >
                         <img
                             className="w-10 aspect-square rounded-full"
@@ -28,8 +28,8 @@ const Messages = () => {
                         <div className="flex-1 flex flex-col overflow-hidden max-w-52">
                             <p>conversation name</p>
                             <p className="text-xs text-white/50 truncate">
-                                You: i think i said something weirdsad and this
-                                is why i belive i should be president
+                                You: i think i said something weirdly sad and
+                                this is why i belive i should be president
                             </p>
                         </div>
                         <button className="hover:bg-black text-white bg-transparent px-3 rounded-full">
@@ -51,7 +51,7 @@ const Messages = () => {
 
     return (
         <div className="grid grid-cols-profile h-screen pt-20 pb-10">
-            <div className="flex flex-col bg-card-dark rounded-md pt-3 px-3">
+            <div className="flex flex-col bg-card-dark rounded-md pt-3">
                 <form
                     action="#"
                     onSubmit={() => console.log("Search submitted")}
