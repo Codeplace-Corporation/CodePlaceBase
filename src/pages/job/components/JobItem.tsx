@@ -6,18 +6,18 @@ const JobItem = () => {
                 <h3>A good job</h3>
                 <div className="flex flex-row items-center gap-1">
                     <p className="text-white/50 text-xs">jobType</p>
-                    <p className="text-green-600">|</p>
+                    <p className="text-accent">|</p>
                     <p className="text-white/50 text-xs">jobCategory</p>
-                    <p className="text-green-600">|</p>
+                    <p className="text-accent">|</p>
                     <p className="text-white/50 text-xs">jobTechnology</p>
-                    <p className="text-green-600">|</p>
+                    <p className="text-accent">|</p>
                     <p className="text-white/50 text-xs">jobTags</p>
                 </div>
             </div>
             <div className="p-2 rounded-md bg-card text-sm">
                 Unknown 1-3 days
             </div>
-            <div className="p-2 rounded-md bg-card text-sm text-green-600 font-bold">
+            <div className="p-2 rounded-md bg-card text-sm text-accent font-bold">
                 $1.00
             </div>
         </div>

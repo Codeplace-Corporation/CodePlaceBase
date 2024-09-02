@@ -26,14 +26,17 @@ const JobSearch = () => {
             type: prevState.type[0] === type ? [] : [type],
         }));
     };
-    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCheckboxChange = (
+        e: React.ChangeEvent<HTMLInputElement>,
+        filterType: "category" | "tools",
+    ) => {
         const { name, checked } = e.target;
         setFilters((prevState) => {
             const newFilter = checked
-                ? [...prevState["category"], name]
-                : prevState["category"].filter((item) => item !== name);
+                ? [...prevState[filterType], name]
+                : prevState[filterType].filter((item) => item !== name);
 
-            return { ...prevState, category: newFilter };
+            return { ...prevState, [filterType]: newFilter };
         });
     };
 
@@ -93,7 +96,7 @@ const JobSearch = () => {
                                         name={cat}
                                         checked={filters.category.includes(cat)}
                                         onChange={(e) =>
-                                            handleCheckboxChange(e)
+                                            handleCheckboxChange(e, "category")
                                         }
                                     />
                                     <span className="absolute w-4 h-4 rounded"></span>
@@ -113,7 +116,7 @@ const JobSearch = () => {
                                         name={tool}
                                         checked={filters.tools.includes(tool)}
                                         onChange={(e) =>
-                                            handleCheckboxChange(e)
+                                            handleCheckboxChange(e, "tools")
                                         }
                                     />
                                     <span className="absolute w-4 h-4 rounded"></span>
