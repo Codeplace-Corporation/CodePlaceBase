@@ -13,7 +13,7 @@ export type JobItem = {
     filePermissions: string;
     prepaidRevisions: string;
     projectDescription: string;
-    projectFiles: [];
+    projectFiles: string[];
     projectOverview: string;
     projectTitle: string;
     projectType: string;
