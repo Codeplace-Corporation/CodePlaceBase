@@ -1,9 +1,14 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StyledButton from "../../components/styled/StyledButton";
-import { StyledInput } from "../../components/styled/StyledInput";
+import {
+    StyledInput,
+    StyledInputArea,
+} from "../../components/styled/StyledInput";
 import {
     faSearch,
     faEllipsisVertical,
+    faArrowRight,
+    faPaperclip,
 } from "@fortawesome/free-solid-svg-icons";
 import ProfilePlaceholder from "../../assets/profile_placeholder.png";
 
@@ -44,8 +49,40 @@ const Messages = () => {
         );
     };
     const Messages = () => {
+        const chats = [
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0,
+        ];
+
         return (
-            <div>{/* Return list of messages for selected conversation */}</div>
+            <>
+                <div className="flex flex-col flex-1 h-full justify-end">
+                    <div className="flex-1 overflow-y-auto">
+                        {chats.map((chat, index) => (
+                            <div className="py-4 bg-black">weee</div>
+                        ))}
+                    </div>
+                </div>
+                {/*  */}
+
+                <div className="flex items-center gap-4 p-2.5 w-full border-t border-white/30">
+                    <label className="text-sm cursor-pointer">
+                        <input type="file" />
+                        <FontAwesomeIcon icon={faPaperclip} />
+                    </label>
+                    <StyledInputArea
+                        rows={1}
+                        required
+                        variant="filled"
+                        inputSize="small"
+                        placeholder="Type a message"
+                        className="flex-1"
+                    />
+                    <button>
+                        <FontAwesomeIcon icon={faArrowRight} />
+                    </button>
+                </div>
+            </>
         );
     };
 
@@ -85,7 +122,7 @@ const Messages = () => {
                 <div className="bg-card-dark py-4 px-3 flex flex-col items-end">
                     <span>Messenger</span>
                 </div>
-                <div className="flex-1 max-h-screen w-full">
+                <div className="flex-1 w-full flex flex-col h-vp">
                     <Messages />
                 </div>
             </div>

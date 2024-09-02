@@ -15,10 +15,14 @@ module.exports = {
         primary: '#7d4cdb',
         accent: '#32CD32',
         card: '#0F0F0F',
-        'card-dark': '#0c0c0c'
+        'card-dark': '#0c0c0c',
+        'chat-box': '#111111'
       },
       gridTemplateColumns: {
         'profile': '1fr 3fr'
+      },
+      height: {
+        vp: 'calc(100vh - 108px)'
       },
     },
   },
