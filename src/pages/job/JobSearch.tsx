@@ -1,13 +1,41 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
 import StyledButton from "../../components/styled/StyledButton";
 import { StyledInput } from "../../components/styled/StyledInput";
 import JobItem from "./components/JobItem";
+import DropdownButton from "../../components/DropdownButton";
+import { categories, jobTypes } from "../../data/jobTypes";
+import { useState } from "react";
 
 const JobSearch = () => {
+    const [filters, setFilters] = useState({
+        type: [""],
+        category: [""],
+        tools: [""],
+        language: "",
+        compensation: [0, 10000],
+        timing: [0, 85],
+    });
+
     const jobs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const bookmarkedJobs = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    const handleFilterJobTypeItemClicked = (type: string) => {
+        setFilters((prevState) => ({
+            ...prevState,
+            type: prevState.type[0] === type ? [] : [type],
+        }));
+    };
+    const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, checked } = e.target;
+        setFilters((prevState) => {
+            const newFilter = checked
+                ? [...prevState["category"], name]
+                : prevState["category"].filter((item) => item !== name);
+
+            return { ...prevState, category: newFilter };
+        });
+    };
 
     const JobList = ({ jobs }: { jobs: any[] }) => {
         return (
@@ -36,71 +64,49 @@ const JobSearch = () => {
                 </p>
             </div>
             <div className="flex flex-row gap-2 items-center mt-4">
-                <StyledButton
-                    size="small"
-                    variant="primary"
-                    children={
-                        <>
-                            Job Types{" "}
-                            <FontAwesomeIcon
-                                icon={faChevronRight}
-                                className="ml-1 text-accent transition ease-linear transform"
-                            />
-                        </>
-                    }
-                />
-                <StyledButton
-                    size="small"
-                    variant="primary"
-                    children={
-                        <>
-                            Job Categories{" "}
-                            <FontAwesomeIcon
-                                icon={faChevronRight}
-                                className="ml-1 text-accent transition ease-linear transform"
-                            />
-                        </>
-                    }
-                />
-                <StyledButton
-                    size="small"
-                    variant="primary"
-                    children={
-                        <>
-                            Job Tools{" "}
-                            <FontAwesomeIcon
-                                icon={faChevronRight}
-                                className="ml-1 text-accent transition ease-linear transform"
-                            />
-                        </>
-                    }
-                />
-                <StyledButton
-                    size="small"
-                    variant="primary"
-                    children={
-                        <>
-                            Compensation{" "}
-                            <FontAwesomeIcon
-                                icon={faChevronRight}
-                                className="ml-1 text-accent transition ease-linear transform"
-                            />
-                        </>
-                    }
-                />
-                <StyledButton
-                    size="small"
-                    variant="primary"
-                    children={
-                        <>
-                            Timing{" "}
-                            <FontAwesomeIcon
-                                icon={faChevronRight}
-                                className="ml-1 text-accent transition ease-linear transform"
-                            />
-                        </>
-                    }
-                />
+                <DropdownButton label="Job Type">
+                    <div className="m-8 flex flex-row justify-between gap-32">
+                        {jobTypes.map((jobtype, index) => (
+                            <div
+                                key={index}
+                                className={`flex flex-col items-center cursor-pointer transition ease-linear ${
+                                    filters.type.includes(jobtype.type) &&
+                                    "text-accent"
+                                }`}
+                                onClick={() =>
+                                    handleFilterJobTypeItemClicked(jobtype.type)
+                                }
+                            >
+                                <FontAwesomeIcon icon={jobtype.icon} />
+                                <span>{jobtype.type}</span>
+                            </div>
+                        ))}
+                    </div>
+                </DropdownButton>
+                <DropdownButton label="Job Categories">
+                    <div className="m-8 flex flex-wrap w-[500px] gap-2">
+                        {categories.map((cat, index) => (
+                            <div className="w-1/5">
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        name={cat}
+                                        checked={filters.category.includes(cat)}
+                                        onChange={(e) =>
+                                            handleCheckboxChange(e)
+                                        }
+                                    />
+                                    <span className="absolute w-4 h-4 rounded"></span>
+                                    {cat}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </DropdownButton>
+                <DropdownButton label="Job Tools"></DropdownButton>
+                <DropdownButton label="Compensation"></DropdownButton>
+                <DropdownButton label="Timing"></DropdownButton>
+
                 <StyledInput
                     variant="filled"
                     className="flex-1"
