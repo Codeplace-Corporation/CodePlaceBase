@@ -4,7 +4,7 @@ import StyledButton from "../../components/styled/StyledButton";
 import { StyledInput } from "../../components/styled/StyledInput";
 import JobItem from "./components/JobItem";
 import DropdownButton from "../../components/DropdownButton";
-import { categories, jobTypes } from "../../data/jobTypes";
+import { categories, jobTypes, tools } from "../../data/jobTypes";
 import { useState } from "react";
 
 const JobSearch = () => {
@@ -86,8 +86,8 @@ const JobSearch = () => {
                 <DropdownButton label="Job Categories">
                     <div className="m-8 flex flex-wrap w-[500px] gap-2">
                         {categories.map((cat, index) => (
-                            <div className="w-1/5">
-                                <label>
+                            <div className="w-2/5">
+                                <label className="flex gap-2">
                                     <input
                                         type="checkbox"
                                         name={cat}
@@ -103,7 +103,26 @@ const JobSearch = () => {
                         ))}
                     </div>
                 </DropdownButton>
-                <DropdownButton label="Job Tools"></DropdownButton>
+                <DropdownButton label="Job Tools">
+                    <div className="m-8 flex flex-wrap w-[500px] gap-2">
+                        {tools.map((tool, index) => (
+                            <div className="w-2/5">
+                                <label className="flex gap-2">
+                                    <input
+                                        type="checkbox"
+                                        name={tool}
+                                        checked={filters.tools.includes(tool)}
+                                        onChange={(e) =>
+                                            handleCheckboxChange(e)
+                                        }
+                                    />
+                                    <span className="absolute w-4 h-4 rounded"></span>
+                                    {tool}
+                                </label>
+                            </div>
+                        ))}
+                    </div>
+                </DropdownButton>
                 <DropdownButton label="Compensation"></DropdownButton>
                 <DropdownButton label="Timing"></DropdownButton>
 
