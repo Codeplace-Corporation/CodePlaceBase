@@ -4,6 +4,8 @@ import { faCircleQuestion } from "@fortawesome/free-regular-svg-icons";
 import StyledButton from "../../components/styled/StyledButton";
 import { StyledInput } from "../../components/styled/StyledInput";
 
+const count = [0, 0, 0, 0, 0, 0, 0];
+
 const JobSearch = () => {
     return (
         <div>
@@ -94,6 +96,37 @@ const JobSearch = () => {
                     variant="success"
                     children={"Reset Search"}
                 />
+            </div>
+            {/* Add div here for filter-toggle */}
+            <div className="flex flex-col gap-2 mt-8 min-h-[550px] max-h-[750px] overflow-y-scroll">
+                {/*  */}
+                {count.map((c, index) => (
+                    <div className="flex flex-row gap-4 items-center w-auto mx-4 bg-card-light h-20 rounded-lg px-4 cursor-pointer">
+                        <div className="w-6 h-6 bg-primary"></div>
+                        <div className="flex flex-col flex-1 gap-1">
+                            <h3>A good job</h3>
+                            <div className="flex flex-row items-center gap-1">
+                                <p className="text-white/50 text-xs">jobType</p>
+                                <p className="text-green-600">|</p>
+                                <p className="text-white/50 text-xs">
+                                    jobCategory
+                                </p>
+                                <p className="text-green-600">|</p>
+                                <p className="text-white/50 text-xs">
+                                    jobTechnology
+                                </p>
+                                <p className="text-green-600">|</p>
+                                <p className="text-white/50 text-xs">jobTags</p>
+                            </div>
+                        </div>
+                        <div className="p-2 rounded-md bg-card text-sm">
+                            Unknown 1-3 days
+                        </div>
+                        <div className="p-2 rounded-md bg-card text-sm text-green-600 font-bold">
+                            $1.00
+                        </div>
+                    </div>
+                ))}
             </div>
         </div>
     );
