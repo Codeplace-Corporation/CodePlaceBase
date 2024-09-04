@@ -30,7 +30,7 @@ export const NavBar = () => {
     };
 
     return (
-        <nav className="flex justify-between items-center px-12 py-4 fixed z-10 flex-wrap w-full text-sm bg-black/55">
+        <nav className="flex justify-between backdrop-blur-md shadow-md items-center px-12 py-4 fixed z-10 flex-wrap w-full text-sm bg-black/55">
             <div className="w-40">
                 <a href="/">
                     <img
