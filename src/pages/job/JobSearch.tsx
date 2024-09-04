@@ -7,7 +7,6 @@ import DropdownButton from "../../components/DropdownButton";
 import { categories, jobTypes, tools } from "../../data/jobTypes";
 import { useState } from "react";
 import CompensationSlider from "./components/CompensationSlider";
-import Slider from "rc-slider";
 
 const JobSearch = () => {
     const [filters, setFilters] = useState({
