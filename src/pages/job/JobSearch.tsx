@@ -7,6 +7,7 @@ import DropdownButton from "../../components/DropdownButton";
 import { categories, jobTypes, tools } from "../../data/jobTypes";
 import { useState } from "react";
 import CompensationSlider from "./components/CompensationSlider";
+import ProjectLengthSlider from "./components/ProjectLengthSlider";
 
 const JobSearch = () => {
     const [filters, setFilters] = useState({
@@ -18,6 +19,7 @@ const JobSearch = () => {
         timing: [0, 85],
     });
 
+    // ! Remove these guys and replace them with Jobs fetched state
     const jobs = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     const bookmarkedJobs = [0, 0, 0, 0, 0, 0, 0, 0, 0];
 
@@ -44,6 +46,12 @@ const JobSearch = () => {
         setFilters((prevState) => ({
             ...prevState,
             compensation: value,
+        }));
+    };
+    const handleTimingChange = (value: number[]) => {
+        setFilters((prevState) => ({
+            ...prevState,
+            timing: value,
         }));
     };
 
@@ -150,7 +158,15 @@ const JobSearch = () => {
                         />
                     </div>
                 </DropdownButton>
-                <DropdownButton label="Timing"></DropdownButton>
+                <DropdownButton label="Timing">
+                    <div className="m-8 flex flex-col w-[500px]">
+                        <h3>Project Length</h3>
+                        <ProjectLengthSlider
+                            value={filters.timing}
+                            onChange={handleTimingChange}
+                        />
+                    </div>
+                </DropdownButton>
 
                 <StyledInput
                     variant="filled"
