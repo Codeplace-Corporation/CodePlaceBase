@@ -26,7 +26,7 @@ export const Signup = () => {
     };
 
     return (
-        <div className="flex justify-center items-center">
+        <div className="flex justify-center items-center pt-16">
             <div className="text-center mb-6 p-8 rounded-lg max-w-md w-full">
                 <img
                     src={Logo}

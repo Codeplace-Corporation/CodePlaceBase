@@ -26,7 +26,7 @@ export const Login = () => {
     };
 
     return (
-        <div className="flex items-center justify-center">
+        <div className="flex items-center justify-center pt-16">
             <div className="text-center mb-6 p-8 rounded-lg max-w-md w-full">
                 <img
                     src={Logo}
