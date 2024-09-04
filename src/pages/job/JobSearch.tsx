@@ -6,6 +6,8 @@ import JobItem from "./components/JobItem";
 import DropdownButton from "../../components/DropdownButton";
 import { categories, jobTypes, tools } from "../../data/jobTypes";
 import { useState } from "react";
+import CompensationSlider from "./components/CompensationSlider";
+import Slider from "rc-slider";
 
 const JobSearch = () => {
     const [filters, setFilters] = useState({
@@ -39,12 +41,18 @@ const JobSearch = () => {
             return { ...prevState, [filterType]: newFilter };
         });
     };
+    const handleCompensationChange = (value: number[]) => {
+        setFilters((prevState) => ({
+            ...prevState,
+            compensation: value,
+        }));
+    };
 
     const JobList = ({ jobs }: { jobs: any[] }) => {
         return (
             <>
                 {jobs.map((job, index) => (
-                    <JobItem />
+                    <JobItem key={index} />
                 ))}
             </>
         );
@@ -89,7 +97,10 @@ const JobSearch = () => {
                 <DropdownButton label="Job Categories">
                     <div className="m-8 flex flex-wrap w-[500px] gap-2">
                         {categories.map((cat, index) => (
-                            <div className="w-2/5">
+                            <div
+                                key={index}
+                                className="w-2/5"
+                            >
                                 <label className="flex gap-2">
                                     <input
                                         type="checkbox"
@@ -109,7 +120,10 @@ const JobSearch = () => {
                 <DropdownButton label="Job Tools">
                     <div className="m-8 flex flex-wrap w-[500px] gap-2">
                         {tools.map((tool, index) => (
-                            <div className="w-2/5">
+                            <div
+                                key={index}
+                                className="w-2/5"
+                            >
                                 <label className="flex gap-2">
                                     <input
                                         type="checkbox"
@@ -126,7 +140,17 @@ const JobSearch = () => {
                         ))}
                     </div>
                 </DropdownButton>
-                <DropdownButton label="Compensation"></DropdownButton>
+                <DropdownButton label="Compensation">
+                    <div className="m-8 flex flex-col w-[500px]">
+                        <h3>Compensation Range</h3>
+                        <CompensationSlider
+                            value={filters.compensation}
+                            onChange={handleCompensationChange}
+                            minInputValue={filters.compensation[0]}
+                            maxInputValue={filters.compensation[1]}
+                        />
+                    </div>
+                </DropdownButton>
                 <DropdownButton label="Timing"></DropdownButton>
 
                 <StyledInput
