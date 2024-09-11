@@ -30,10 +30,13 @@ const Dashboard = () => {
     return (
         <div className=" flex flex-col pb-10">
             {/* Head */}
+            <h2 className="text-3xl mb-3 mt-3 font-normal">
+                Welcome back, {currentUser?.displayName} 👋
+            </h2>
             <div className="w-full rounded-lg bg-primary p-2">
-                <h2 className="text-3xl mb-3 mt-3 font-normal">
-                    Welcome back, {currentUser?.displayName}
-                </h2>
+                {/* <h2 className="text-3xl mb-3 mt-3 font-normal">
+                    Welcome back, {currentUser?.displayName} 👋
+                </h2> */}
                 <div className="flex flex-row gap-5">
                     {metrics.map((metric, index) => (
                         <div className="flex-1 rounded-md bg-black/20 p-2 flex flex-col">
@@ -50,7 +53,7 @@ const Dashboard = () => {
                 </div>
             </div>
             {/*  */}
-            <div className="w-full flex flex-wrap gap-4 mt-3">
+            <div className="w-full flex flex-row gap-4 mt-3">
                 <div className="flex-1 h-80 bg-card-light rounded-lg"></div>
                 <div className="flex-1 h-80 bg-card-light rounded-lg"></div>
             </div>
