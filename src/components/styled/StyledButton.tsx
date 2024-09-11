@@ -2,7 +2,13 @@ import React from "react";
 import { Link, LinkProps } from "react-router-dom";
 
 type StyledButtonProps = {
-    variant?: "primary" | "secondary" | "success" | "danger" | "outline";
+    variant?:
+        | "primary"
+        | "secondary"
+        | "inactive"
+        | "success"
+        | "danger"
+        | "outline";
     size?: "small" | "medium" | "large";
     className?: string;
     to?: string;
@@ -18,9 +24,6 @@ const buttonBaseStyles = `
   rounded-md
   transition
   ease-linear
-  focus:outline-none
-  focus:ring-2
-  focus:ring-offset-2
   cursor-pointer
 `;
 
@@ -35,7 +38,11 @@ const variantStyles = {
     bg-white/10
     text-white
     hover:bg-white/15
-    focus:ring-white/30
+  `,
+    inactive: `
+    bg-transparent
+    text-white/50
+    hover:bg-white/15
   `,
     outline: `
     text-white
@@ -43,26 +50,22 @@ const variantStyles = {
     border-white
     hover:bg-white
     hover:text-black 
-    focus:ring-white/20
   `,
     secondary: `
     bg-white
     text-black
     hover:bg-white-600
     hover:text-primary
-    focus:ring-primary
   `,
     success: `
     bg-accent
     text-white
     hover:bg-accent/50
-    focus:ring-white-500
     `,
     danger: `
     bg-red-600 
     text-white 
     hover:bg-red-700 
-    focus:ring-red-500
   `,
 };
 
