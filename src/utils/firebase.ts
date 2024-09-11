@@ -23,4 +23,13 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 const storage = getStorage(app);
 
-export { app, analytics, firestore, auth, googleProvider, collection, addDoc }; // Export collection and addDoc
+export {
+    app,
+    analytics,
+    firestore,
+    auth,
+    storage,
+    googleProvider,
+    collection,
+    addDoc,
+}; // Export collection and addDoc

@@ -87,7 +87,7 @@ const Messages = () => {
     };
 
     return (
-        <div className="grid grid-cols-profile h-screen pt-20 pb-10">
+        <div className="grid grid-cols-profile h-screen pb-10">
             <div className="flex flex-col bg-card-dark rounded-md pt-3">
                 <form
                     action="#"

@@ -8,6 +8,7 @@ import { Signup } from "../pages/auth/Signup";
 import JobSearch from "../pages/job/JobSearch";
 import Profile from "../pages/profile/Profile";
 import Messages from "../pages/messages/Messages";
+import Dashboard from "../pages/dashboard";
 
 const ProtectedRoute = () => {
     // If user is not authenticated, return user to homepage
@@ -67,6 +68,10 @@ const Router = () => {
                 />
             </Route>
             <Route element={<ProtectedRoute />}>
+                <Route
+                    path="/dashboard"
+                    element={<Dashboard />}
+                />
                 <Route path="/profile">
                     <Route
                         index

@@ -66,7 +66,7 @@ const JobSearch = () => {
     };
 
     return (
-        <div className="pt-16 pb-16">
+        <div className="pb-16">
             <div>
                 <h1>Job Search</h1>
                 <p>

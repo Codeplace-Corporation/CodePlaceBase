@@ -6,7 +6,7 @@ import { Footer } from "./components/Footer";
 
 const Landing = () => {
     return (
-        <div className="justify-center items-center pt-16">
+        <div className="justify-center items-center">
             <Hero />
             <Screenshot />
             <Features />

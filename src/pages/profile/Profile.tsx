@@ -16,7 +16,7 @@ const Profile = () => {
     }, [user]);
 
     return (
-        <div className="grid grid-cols-profile gap-5 h-screen py-20">
+        <div className="grid grid-cols-profile gap-5 h-screen pb-20 pt-4">
             <div className="border border-white rounded-md px-4 py-3">
                 <ProfileCard />
             </div>

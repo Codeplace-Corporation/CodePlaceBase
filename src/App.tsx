@@ -8,7 +8,7 @@ const App = () => {
         <AuthProvider>
             <div className="h-screen overflow-auto">
                 <NavBar />
-                <Container className="">
+                <Container className="pt-16">
                     <Router />
                 </Container>
             </div>
