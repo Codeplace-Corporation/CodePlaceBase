@@ -117,6 +117,7 @@ const Dashboard = () => {
             <h2 className="text-3xl mb-3 mt-3 font-normal">
                 Welcome back, {currentUser?.displayName} 👋
             </h2>
+            {/* Purple Pane */}
             <div className="w-full rounded-lg bg-primary p-2">
                 {/* <h2 className="text-3xl mb-3 mt-3 font-normal">
                     Welcome back, {currentUser?.displayName} 👋
@@ -142,7 +143,7 @@ const Dashboard = () => {
                     ))}
                 </div>
             </div>
-            {/*  */}
+            {/* Middle Side-By-Side Pane */}
             <div className="w-full flex flex-row gap-4 mt-3">
                 <JobsPane />
                 <div className="flex flex-col flex-1 h-80 bg-card-light rounded-lg">
@@ -153,8 +154,8 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
-            {/*  */}
-            <div className="w-full bg-card-light rounded-lg mt-3 mb-6 min-h-40 "></div>
+            {/* Bottom Pane */}
+            <div className="w-full bg-card-light rounded-lg mt-3 mb-6 min-h-52 "></div>
         </div>
     );
 };
