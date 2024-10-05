@@ -12,6 +12,7 @@ import {
 import { ActiveJobItem, AppliedJobItem } from "./components/JobItem";
 import { useState } from "react";
 import StyledButton from "../../components/styled/StyledButton";
+import JobItem from "../job/components/JobItem";
 
 const metrics = [
     {
@@ -62,7 +63,7 @@ const Dashboard = () => {
         const [activeTab, setActiveTab] = useState("Active Jobs");
 
         return (
-            <div className="flex flex-col flex-1 h-80 bg-card-light rounded-lg">
+            <div className="flex flex-col flex-1 h-96 bg-card-light rounded-lg">
                 <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
                     {/* <p className="font-semibold text-white/50">
                         Active Jobs Overview
@@ -110,6 +111,72 @@ const Dashboard = () => {
             </div>
         );
     };
+    const RightPane = () => {
+        const tabs = ["Upcoming Deadlines"];
+        const [activeTab, setActiveTab] = useState(tabs[0]);
+
+        return (
+            <div className="flex flex-col flex-1 h-96 bg-card-light rounded-lg">
+                <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
+                    {/* <p className="font-semibold text-white/50">
+                        Active Jobs Overview
+                    </p> */}
+                    {tabs.map((tab, index) => (
+                        <StyledButton
+                            size="small"
+                            variant={`${
+                                activeTab === tab ? "primary" : "inactive"
+                            }`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab}
+                        </StyledButton>
+                    ))}
+                </div>
+                <div className="flex-1 h-full overflow-scroll">
+                    {/*  */}
+                    <div className="flex flex-row py-4 px-5 items-center border-b border-card-dark hover:bg-card-dark cursor-pointer">
+                        <div className="flex flex-col justify-center items-center pr-5 mr-5 border-r border-card">
+                            <p className="text-2xl">20</p>
+                            <p className="text-md">Dec</p>
+                        </div>
+                        <div className="flex flex-col items-start">
+                            <h3>Deliverable Name</h3>
+                            <p className="text-white/50 text-xs">
+                                Project: Project Name
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+    const BottomPane = () => { 
+        const tabs = ['Job Recommendations'];
+        const [activeTab, setActiveTab] = useState(tabs[0]);
+
+        return (
+            <div className="flex flex-col flex-1 bg-card-light rounded-lg">
+                <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
+                    {tabs.map((tab, index) => (
+                        <StyledButton
+                            size="small"
+                            variant={`${
+                                activeTab === tab ? "primary" : "inactive"
+                            }`}
+                            onClick={() => setActiveTab(tab)}
+                        >
+                            {tab}
+                        </StyledButton>
+                    ))}
+                </div>
+                <div className="flex-1 h-full overflow-scroll">
+                    {/*  */}
+                    <JobItem />
+                </div>
+            </div>
+        );
+    };
 
     return (
         <div className=" flex flex-col pb-10">
@@ -146,16 +213,13 @@ const Dashboard = () => {
             {/* Middle Side-By-Side Pane */}
             <div className="w-full flex flex-row gap-4 mt-3">
                 <JobsPane />
-                <div className="flex flex-col flex-1 h-80 bg-card-light rounded-lg">
-                    <div className="px-5 py-3 border-b border-card-dark">
-                        <p className="font-semibold text-white/50">
-                            Something else should come here
-                        </p>
-                    </div>
-                </div>
+                <RightPane />
             </div>
             {/* Bottom Pane */}
-            <div className="w-full bg-card-light rounded-lg mt-3 mb-6 min-h-52 "></div>
+            <div className="w-full flex flex-row bg-card-light rounded-lg mt-3 mb-6 min-h-52">
+                {/* Job Feed could go here (Job recommendations) */}
+                <BottomPane />
+            </div>
         </div>
     );
 };
