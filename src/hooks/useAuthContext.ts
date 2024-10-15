@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { FirebaseError } from "firebase/app";
 
 export const useAuthStatus = () => {
     const { currentUser } = useAuth();
@@ -26,6 +27,7 @@ export const useLoginWithEmail = () => {
             await loginWithEmail(email, password);
         } catch (err) {
             setError("Failed to log in");
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -42,6 +44,7 @@ export const useLoginWithGoogle = () => {
             await loginWithGoogle();
         } catch (error) {
             console.error("Google login failed", error);
+            throw error;
         }
     };
 
@@ -64,7 +67,9 @@ export const useSignUpWithEmail = () => {
         try {
             await signupWithEmail(email, password, displayName);
         } catch (err) {
+            console.log(` Error is :: ${(err as FirebaseError).code}`);
             setError("Failed to sign up");
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -86,6 +91,7 @@ export const useLogout = () => {
             await logout();
         } catch (err) {
             setError("Failed to log out");
+            throw err;
         } finally {
             setLoading(false);
         }

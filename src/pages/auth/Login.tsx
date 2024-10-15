@@ -16,13 +16,23 @@ export const Login = () => {
     const { handleLoginWithGoogle } = useLoginWithGoogle();
 
     const handleLogin = async () => {
-        await handleLoginWithEmail(email, password);
-        navigate("/"); // Redirect to home page after login
+        await handleLoginWithEmail(email, password)
+            .then((v) => {
+                navigate("/"); // Redirect to home page after login
+            })
+            .catch((e) => {
+                // show error
+            });
     };
 
     const handleGoogleLogin = async () => {
-        await handleLoginWithGoogle();
-        navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+        await handleLoginWithGoogle()
+            .then((e) => {
+                navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+            })
+            .catch((e) => {
+                // show error
+            });
     };
 
     return (

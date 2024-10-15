@@ -17,12 +17,22 @@ export const Signup = () => {
     const { handleLoginWithGoogle } = useLoginWithGoogle();
 
     const handleSignup = async () => {
-        await handleSignUp(email, password, displayName);
-        navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+        await handleSignUp(email, password, displayName)
+            .then((v) => {
+                navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+            })
+            .catch((e) => {
+                // show error
+            });
     };
     const handleGoogleLogin = async () => {
-        await handleLoginWithGoogle();
-        navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+        await handleLoginWithGoogle()
+            .then((v) => {
+                navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+            })
+            .catch((e) => {
+                // show error
+            });
     };
 
     return (
