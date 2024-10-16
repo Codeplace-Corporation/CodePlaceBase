@@ -30,7 +30,7 @@ export const SignupForm = () => {
     const handleGoogleLogin = async () => {
         await handleLoginWithGoogle()
             .then((v) => {
-                navigate("/"); // Redirect to the homepage or dashboard after successful sign-up
+                navigate("/dashboard"); // Redirect to the homepage or dashboard after successful sign-up
             })
             .catch((e) => {
                 // show error
