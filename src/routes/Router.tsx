@@ -35,11 +35,12 @@ const Router = () => {
     useEffect(() => {
         if (
             auth.currentUser &&
-            (location.pathname === "/login" ||
+            (location.pathname === "/" ||
+                location.pathname === "/login" ||
                 location.pathname === "/signup" ||
                 location.pathname === "/forgot-password")
         )
-            navigate("/");
+            navigate("/dashboard");
     }, [navigate]);
 
     return (
