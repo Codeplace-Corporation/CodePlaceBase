@@ -21,6 +21,10 @@
     p {
         @apply text-sm text-white;
     }
+
+    a {
+        @apply text-white hover:text-primary
+    }
 }
 
 body {
