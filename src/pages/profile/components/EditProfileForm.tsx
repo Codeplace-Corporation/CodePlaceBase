@@ -10,11 +10,15 @@ type EditProfileProp = {
 };
 
 const EditProfileForm = ({ onCancelClick }: EditProfileProp) => {
-    const [initialData, setInitialData] = useState({
-        displayName: "",
-        bio: "",
+    const [initialData] = useState({
+        displayName: "John SNow",
+        bio: "this is a very cool wee",
         skills: ["CSS", "UI/UX", "React", "Something else", "one more thing"],
-        links: [""],
+        links: [
+            "https://linkedin.com/someone",
+            "https://linkedin.com/someone",
+            "https://linkedin.com/someone",
+        ],
     });
     const [form, setForm] = useState(initialData);
     const [newSkill, setNewSkill] = useState("");
@@ -100,11 +104,13 @@ const EditProfileForm = ({ onCancelClick }: EditProfileProp) => {
                     children="Save"
                     variant="success"
                     onClick={handleSaveClick}
+                    size="small"
                 />
                 <StyledButton
                     children="Cancel"
                     variant="outline"
                     onClick={handleCancelClick}
+                    size="small"
                 />
             </div>
         </div>
