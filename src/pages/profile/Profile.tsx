@@ -1,3 +1,4 @@
+import MainContent from "./components/MainContent";
 import ProfileCard from "./components/ProfileCard";
 
 const Profile = () => {
@@ -6,7 +7,9 @@ const Profile = () => {
             <div className="border border-white rounded-md px-4 py-3">
                 <ProfileCard />
             </div>
-            <div className="bg-card rounded-md"></div>
+            <div className="bg-card rounded-md">
+                <MainContent />
+            </div>
         </div>
     );
 };

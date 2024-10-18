@@ -18,6 +18,7 @@ module.exports = {
         'card-dark': '#0c0c0c',
         'chat-box': '#111111',
         'card-light': '#1F1F1F',
+        'tab-item': '#222222',
       },
       gridTemplateColumns: {
         'profile': '1fr 3fr'
