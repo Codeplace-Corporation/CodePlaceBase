@@ -88,8 +88,36 @@ export const useSignUpWithEmail = () => {
         try {
             await signupWithEmail(email, password, displayName);
         } catch (err) {
-            console.log(` Error is :: ${(err as FirebaseError).code}`);
-            setError("Failed to sign up");
+            if (err instanceof FirebaseError) {
+                // Handle different Firebase error codes
+                switch (err.code) {
+                    case "auth/email-already-in-use":
+                        setError(
+                            "This email is already associated with an account.",
+                        );
+                        break;
+                    case "auth/invalid-email":
+                        setError("Please enter a valid email address.");
+                        break;
+                    case "auth/operation-not-allowed":
+                        setError(
+                            "Signup is currently disabled. Please contact support.",
+                        );
+                        break;
+                    case "auth/weak-password":
+                        setError(
+                            "Password is too weak. Please use a stronger password.",
+                        );
+                        break;
+                    default:
+                        setError(
+                            "Failed to create an account. Please try again.",
+                        );
+                }
+            } else {
+                // Handle non-Firebase errors
+                setError("An unexpected error occurred. Please try again.");
+            }
             throw err;
         } finally {
             setLoading(false);
