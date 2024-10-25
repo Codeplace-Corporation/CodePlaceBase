@@ -26,7 +26,28 @@ export const useLoginWithEmail = () => {
         try {
             await loginWithEmail(email, password);
         } catch (err) {
-            setError("Failed to log in");
+            if (err instanceof FirebaseError) {
+                console.log("err", err.code);
+                switch (err.code) {
+                    case "auth/user-not-found":
+                    case "auth/invalid-credential":
+                        setError(
+                            "Invalid login credentials. Please try again.",
+                        );
+                        break;
+                    case "auth/invalid-email":
+                        setError("Please enter a valid email address.");
+                        break;
+                    case "auth/too-many-requests":
+                        setError(
+                            "Too many login attempts. Please try again later",
+                        );
+                        break;
+                    default:
+                        setError("Failed to login. Please try again.");
+                }
+            }
+
             throw err;
         } finally {
             setLoading(false);
