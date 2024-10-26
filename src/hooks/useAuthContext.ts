@@ -59,23 +59,17 @@ export const useLoginWithEmail = () => {
 
 export const useLoginWithGoogle = () => {
     const { loginWithGoogle } = useAuth();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    setLoading(true);
 
     const handleLoginWithGoogle = async () => {
         try {
             await loginWithGoogle();
         } catch (error) {
             console.error("Google login failed", error);
-            setError("Failed to login. Please try again.");
             throw error;
-        } finally {
-            setLoading(false);
         }
     };
 
-    return { handleLoginWithGoogle, loading, error };
+    return { handleLoginWithGoogle };
 };
 
 // Hook to handle sign-up
@@ -124,7 +118,6 @@ export const useSignUpWithEmail = () => {
                 // Handle non-Firebase errors
                 setError("An unexpected error occurred. Please try again.");
             }
-            throw err;
         } finally {
             setLoading(false);
         }
