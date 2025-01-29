@@ -39,6 +39,7 @@ function JobPostingForm({ closeForm }) {
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [tempJobId, setTempJobId] = useState(null);
 
   const validateForm = () => {
   const errors = {};
