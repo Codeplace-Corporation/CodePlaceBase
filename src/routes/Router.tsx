@@ -1,14 +1,16 @@
 /* eslint-disable no-restricted-globals */
-import { Navigate, Outlet, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { useEffect } from "react";
 import Landing from "../pages/landing/Landing";
 import { Login } from "../pages/auth/Login";
 import { Signup } from "../pages/auth/Signup";
-import JobSearch from "../pages/job/JobSearch";
+import JobSearch from "../pages/jobSearch/JobSearch";
 import Profile from "../pages/profile/Profile";
 import Messages from "../pages/messages/Messages";
 import Dashboard from "../pages/dashboard";
+import JobDetails from "../DataManegment/JobPreview/JobDetails";
+import MyJobs from "../pages/LoggedIn/MyJobs/MyJobs";
 
 const ProtectedRoute = () => {
     // If user is not authenticated, return user to homepage
@@ -31,6 +33,7 @@ const NoNav = () => (
 
 const Router = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         if (
@@ -41,7 +44,7 @@ const Router = () => {
                 location.pathname === "/forgot-password")
         )
             navigate("/dashboard");
-    }, [navigate]);
+    }, [navigate, location.pathname]);
 
     return (
         <Routes>
@@ -63,6 +66,11 @@ const Router = () => {
                     path="/jobs"
                     element={<JobSearch />}
                 />
+                {/* Job Details Route - Make sure this comes AFTER the /jobs route */}
+                <Route
+                    path="/jobs/:jobId"
+                    element={<JobDetails />}
+                />
                 <Route
                     path="*"
                     element={<h1>404, page not found</h1>}
@@ -73,6 +81,15 @@ const Router = () => {
                     path="/dashboard"
                     element={<Dashboard />}
                 />
+                {/* Add MyJobs routes - handle both URL patterns */}
+                <Route
+                    path="/my-jobs"
+                    element={<MyJobs />}
+                />
+                <Route
+                    path="/MyJobs"
+                    element={<MyJobs />}
+                />
                 <Route path="/profile">
                     <Route
                         index
@@ -82,17 +99,17 @@ const Router = () => {
                         path="messages"
                         element={<Messages />}
                     />
+                    <Route
+                        path="jobs"
+                        element={<MyJobs />}
+                    />
                 </Route>
+
                 <Route
                     path="*"
                     element={<h1>404, page not found</h1>}
                 />
             </Route>
-
-            <Route
-                path="*"
-                element={<h1>404, page not found</h1>}
-            />
         </Routes>
     );
 };

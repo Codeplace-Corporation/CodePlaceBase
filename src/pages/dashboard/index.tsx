@@ -12,7 +12,8 @@ import {
 import { ActiveJobItem, AppliedJobItem } from "./components/JobItem";
 import { useState } from "react";
 import StyledButton from "../../components/styled/StyledButton";
-import JobItem from "../job/components/JobItem";
+// FIXED: Changed from "../job/components/JobItem" to "../jobSearch/components/JobItem"
+import JobItem from "../jobSearch/components/JobItem";
 
 const metrics = [
     {
@@ -55,6 +56,20 @@ const appliedJobs = [
     },
 ];
 
+// Sample job data for JobItem component
+const sampleJob = {
+    id: "sample-job-1",
+    projectTitle: "Build a React Dashboard",
+    projectType: "Frontend",
+    tools: [{ name: "React" }, { name: "TypeScript" }, { name: "Tailwind CSS" }],
+    tags: ["urgent", "remote"],
+    selectedJobPostType: "Contract",
+    compensation: "2500.00",
+    estimatedProjectLength: "2-4weeks",
+    projectDescription: "We're looking for an experienced React developer to build a modern dashboard application with real-time data visualization and responsive design.",
+    applicationsCloseTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+};
+
 const Dashboard = () => {
     const { currentUser } = useAuth();
 
@@ -65,11 +80,9 @@ const Dashboard = () => {
         return (
             <div className="flex flex-col flex-1 h-96 bg-card-light rounded-lg">
                 <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
-                    {/* <p className="font-semibold text-white/50">
-                        Active Jobs Overview
-                    </p> */}
                     {tabs.map((tab, index) => (
                         <StyledButton
+                            key={index}
                             size="small"
                             variant={`${
                                 activeTab === tab ? "primary" : "inactive"
@@ -118,11 +131,9 @@ const Dashboard = () => {
         return (
             <div className="flex flex-col flex-1 h-96 bg-card-light rounded-lg">
                 <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
-                    {/* <p className="font-semibold text-white/50">
-                        Active Jobs Overview
-                    </p> */}
                     {tabs.map((tab, index) => (
                         <StyledButton
+                            key={index}
                             size="small"
                             variant={`${
                                 activeTab === tab ? "primary" : "inactive"
@@ -134,7 +145,6 @@ const Dashboard = () => {
                     ))}
                 </div>
                 <div className="flex-1 h-full overflow-scroll">
-                    {/*  */}
                     <div className="flex flex-row py-4 px-5 items-center border-b border-card-dark hover:bg-card-dark cursor-pointer">
                         <div className="flex flex-col justify-center items-center pr-5 mr-5 border-r border-card">
                             <p className="text-2xl">20</p>
@@ -160,6 +170,7 @@ const Dashboard = () => {
                 <div className="flex flex-row px-5 py-3 gap-1 border-b border-card-dark">
                     {tabs.map((tab, index) => (
                         <StyledButton
+                            key={index}
                             size="small"
                             variant={`${
                                 activeTab === tab ? "primary" : "inactive"
@@ -171,8 +182,7 @@ const Dashboard = () => {
                     ))}
                 </div>
                 <div className="flex-1 h-full overflow-scroll">
-                    {/*  */}
-                    <JobItem />
+                    <JobItem job={sampleJob} />
                 </div>
             </div>
         );
@@ -186,12 +196,9 @@ const Dashboard = () => {
             </h2>
             {/* Purple Pane */}
             <div className="w-full rounded-lg bg-primary p-2">
-                {/* <h2 className="text-3xl mb-3 mt-3 font-normal">
-                    Welcome back, {currentUser?.displayName} 👋
-                </h2> */}
                 <div className="flex flex-row gap-5">
                     {metrics.map((metric, index) => (
-                        <div className="flex-1 rounded-md bg-black/20 p-2 flex flex-col">
+                        <div key={index} className="flex-1 rounded-md bg-black/20 p-2 flex flex-col">
                             <div className="flex flex-row items-center">
                                 <h3 className="flex-1 font-bold">
                                     <FontAwesomeIcon
@@ -217,7 +224,6 @@ const Dashboard = () => {
             </div>
             {/* Bottom Pane */}
             <div className="w-full flex flex-row bg-card-light rounded-lg mt-3 mb-6 min-h-52">
-                {/* Job Feed could go here (Job recommendations) */}
                 <BottomPane />
             </div>
         </div>

@@ -1,16 +1,18 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ["./src/**/*.{html,js,tsx}"],
+  content: ["./src/**/*.{html,js,jsx,ts,tsx}"],
+
   theme: {
     extend: {
       fontSize: {
-        '2xl': '1.25rem', // h2 size
-        '4xl': '2.5rem', // h1 size
+        '2xl': '1.25rem',  // h2 size
+        '4xl': '2.5rem',   // h1 size
+      },
 
-      },
       fontFamily: {
-        sans: ['Inter', 'sans-serif']
+        sans: ['Inter', 'sans-serif'], // Inter as default sans
       },
+
       colors: {
         primary: '#7d4cdb',
         accent: '#32CD32',
@@ -20,17 +22,19 @@ module.exports = {
         'card-light': '#1F1F1F',
         'tab-item': '#222222',
       },
+
       gridTemplateColumns: {
-        'profile': '1fr 3fr'
+        profile: '1fr 3fr',
       },
+
       height: {
-        vp: 'calc(100vh - 108px)'
+        vp: 'calc(100vh - 108px)',
       },
     },
   },
+
   plugins: [
     require('@tailwindcss/typography'),
     require('tailwind-scrollbar'),
   ],
-}
-
+};
