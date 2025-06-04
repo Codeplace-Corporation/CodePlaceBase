@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { FirebaseError } from "firebase/app";
 
 export const useAuthStatus = () => {
     const { currentUser } = useAuth();
@@ -25,7 +26,29 @@ export const useLoginWithEmail = () => {
         try {
             await loginWithEmail(email, password);
         } catch (err) {
-            setError("Failed to log in");
+            if (err instanceof FirebaseError) {
+                console.log("err", err.code);
+                switch (err.code) {
+                    case "auth/user-not-found":
+                    case "auth/invalid-credential":
+                        setError(
+                            "Invalid login credentials. Please try again.",
+                        );
+                        break;
+                    case "auth/invalid-email":
+                        setError("Please enter a valid email address.");
+                        break;
+                    case "auth/too-many-requests":
+                        setError(
+                            "Too many login attempts. Please try again later",
+                        );
+                        break;
+                    default:
+                        setError("Failed to login. Please try again.");
+                }
+            }
+
+            throw err;
         } finally {
             setLoading(false);
         }
@@ -42,6 +65,7 @@ export const useLoginWithGoogle = () => {
             await loginWithGoogle();
         } catch (error) {
             console.error("Google login failed", error);
+            throw error;
         }
     };
 
@@ -64,7 +88,36 @@ export const useSignUpWithEmail = () => {
         try {
             await signupWithEmail(email, password, displayName);
         } catch (err) {
-            setError("Failed to sign up");
+            if (err instanceof FirebaseError) {
+                // Handle different Firebase error codes
+                switch (err.code) {
+                    case "auth/email-already-in-use":
+                        setError(
+                            "This email is already associated with an account.",
+                        );
+                        break;
+                    case "auth/invalid-email":
+                        setError("Please enter a valid email address.");
+                        break;
+                    case "auth/operation-not-allowed":
+                        setError(
+                            "Signup is currently disabled. Please contact support.",
+                        );
+                        break;
+                    case "auth/weak-password":
+                        setError(
+                            "Password is too weak. Please use a stronger password.",
+                        );
+                        break;
+                    default:
+                        setError(
+                            "Failed to create an account. Please try again.",
+                        );
+                }
+            } else {
+                // Handle non-Firebase errors
+                setError("An unexpected error occurred. Please try again.");
+            }
         } finally {
             setLoading(false);
         }
@@ -86,6 +139,7 @@ export const useLogout = () => {
             await logout();
         } catch (err) {
             setError("Failed to log out");
+            throw err;
         } finally {
             setLoading(false);
         }

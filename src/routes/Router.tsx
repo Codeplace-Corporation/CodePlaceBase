@@ -7,6 +7,8 @@ import { Login } from "../pages/auth/Login";
 import { Signup } from "../pages/auth/Signup";
 import JobSearch from "../pages/job/JobSearch";
 import Profile from "../pages/profile/Profile";
+import Messages from "../pages/messages/Messages";
+import Dashboard from "../pages/dashboard";
 
 const ProtectedRoute = () => {
     // If user is not authenticated, return user to homepage
@@ -33,11 +35,12 @@ const Router = () => {
     useEffect(() => {
         if (
             auth.currentUser &&
-            (location.pathname === "/login" ||
+            (location.pathname === "/" ||
+                location.pathname === "/login" ||
                 location.pathname === "/signup" ||
                 location.pathname === "/forgot-password")
         )
-            navigate("/");
+            navigate("/dashboard");
     }, [navigate]);
 
     return (
@@ -67,9 +70,19 @@ const Router = () => {
             </Route>
             <Route element={<ProtectedRoute />}>
                 <Route
-                    path="/profile"
-                    element={<Profile />}
+                    path="/dashboard"
+                    element={<Dashboard />}
                 />
+                <Route path="/profile">
+                    <Route
+                        index
+                        element={<Profile />}
+                    />
+                    <Route
+                        path="messages"
+                        element={<Messages />}
+                    />
+                </Route>
                 <Route
                     path="*"
                     element={<h1>404, page not found</h1>}

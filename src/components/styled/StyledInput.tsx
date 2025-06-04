@@ -5,6 +5,13 @@ type StyledInputProps = {
     disabled?: boolean;
 } & React.InputHTMLAttributes<HTMLInputElement>;
 
+type StyledInputAreaProps = {
+    variant?: "outline" | "filled";
+    inputSize?: "small" | "medium" | "large";
+    className?: string;
+    disabled?: boolean;
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>;
+
 const inputBaseStyles = `
     rounded-md
     text-white
@@ -51,4 +58,26 @@ const StyledInput: React.FC<StyledInputProps> = ({
     );
 };
 
-export { StyledInput };
+const StyledInputArea: React.FC<StyledInputAreaProps> = ({
+    inputSize = "medium",
+    variant = "outline",
+    disabled,
+    className,
+    ...rest
+}) => {
+    const classes = `
+        ${inputBaseStyles}
+        ${sizeStyles[inputSize]}
+        ${variantStyles[variant]}
+        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+        ${className}
+        `;
+    return (
+        <textarea
+            className={classes}
+            {...rest}
+        />
+    );
+};
+
+export { StyledInput, StyledInputArea };

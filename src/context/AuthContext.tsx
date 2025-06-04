@@ -56,12 +56,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password: string,
         displayName: string,
     ) => {
-        await createUserWithEmailAndPassword(auth, email, password).then(
-            async (credential) =>
-                await updateProfile(credential.user, {
-                    displayName: displayName,
-                }),
-        );
+        await createUserWithEmailAndPassword(auth, email, password)
+            .then(
+                async (credential) =>
+                    await updateProfile(credential.user, {
+                        displayName: displayName,
+                    }),
+            )
+            .catch((e) => {
+                throw e;
+            });
     };
 
     const loginWithGoogle = async () => {

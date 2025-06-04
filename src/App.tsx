@@ -6,12 +6,12 @@ import Router from "./routes/Router";
 const App = () => {
     return (
         <AuthProvider>
-            <>
+            <div className="h-screen overflow-auto">
                 <NavBar />
-                <Container className="">
+                <Container className="pt-20">
                     <Router />
                 </Container>
-            </>
+            </div>
         </AuthProvider>
     );
 };

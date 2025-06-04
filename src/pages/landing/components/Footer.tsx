@@ -1,5 +1,12 @@
+import { useState } from "react";
+import StyledButton from "../../../components/styled/StyledButton";
+import Modal from "../../../components/Modal";
+
 export const Footer = () => {
-    const handleToggleContactInfo = () => {};
+    const [showContactInfo, setShowContactInfo] = useState(false);
+    const handleToggleContactInfo = () => {
+        setShowContactInfo(!showContactInfo);
+    };
     const handleShowMessage = (content?: string) => {};
 
     return (
@@ -9,14 +16,14 @@ export const Footer = () => {
                 <div className="flex gap-5">
                     <a
                         className="hover:underline"
-                        href="/#"
+                        href="/terms"
                         onClick={() => handleShowMessage()}
                     >
                         Terms of Service
                     </a>
                     <a
                         className="hover:underline"
-                        href="/#"
+                        href="/privacy"
                         onClick={() => handleShowMessage()}
                     >
                         Privacy Policy
@@ -30,6 +37,26 @@ export const Footer = () => {
                     </a>
                 </div>
             </div>
+            {showContactInfo && (
+                <Modal
+                    barrierDismissable={false}
+                    onClose={handleToggleContactInfo}
+                    body={
+                        <ul>
+                            <li>E: contact@codeplace.com</li>
+                            <li>P: +1 (555) 234 567</li>
+                        </ul>
+                    }
+                    footer={
+                        <StyledButton
+                            variant="outline"
+                            size="small"
+                            children={"Close"}
+                            onClick={handleToggleContactInfo}
+                        />
+                    }
+                />
+            )}
         </footer>
     );
 };
