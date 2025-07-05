@@ -2,7 +2,6 @@
 import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
 import { auth } from "../utils/firebase";
 import { useEffect } from "react";
-import Landing from "../pages/landing/Landing";
 import { Login } from "../pages/auth/Login";
 import { Signup } from "../pages/auth/Signup";
 import JobSearch from "../pages/jobSearch/JobSearch";
@@ -10,7 +9,7 @@ import Profile from "../pages/profile/Profile";
 import Messages from "../pages/messages/Messages";
 import Dashboard from "../pages/dashboard";
 import JobDetails from "../DataManegment/JobPreview/JobDetails";
-import MyJobs from "../pages/LoggedIn/MyJobs/MyJobs";
+import PostJobs from "../pages/LoggedIn/MyJobs/PostJobs";
 
 const ProtectedRoute = () => {
     // If user is not authenticated, return user to homepage
@@ -52,7 +51,7 @@ const Router = () => {
                 {/* Unprotected Routes [home, about, privacy, login, signup, forgot password] */}
                 <Route
                     path="/"
-                    element={<Landing />}
+                    element={<Dashboard />}
                 />
                 <Route
                     path="/login"
@@ -83,13 +82,10 @@ const Router = () => {
                 />
                 {/* Add MyJobs routes - handle both URL patterns */}
                 <Route
-                    path="/my-jobs"
-                    element={<MyJobs />}
+                    path="/PostJobs"
+                    element={<PostJobs />}
                 />
-                <Route
-                    path="/MyJobs"
-                    element={<MyJobs />}
-                />
+             
                 <Route path="/profile">
                     <Route
                         index
@@ -99,10 +95,7 @@ const Router = () => {
                         path="messages"
                         element={<Messages />}
                     />
-                    <Route
-                        path="jobs"
-                        element={<MyJobs />}
-                    />
+                   
                 </Route>
 
                 <Route

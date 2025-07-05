@@ -37,6 +37,7 @@ interface JobData {
   applicationCount?: number;
   status?: string;
   category?: string;
+  eprojectlength?: string; // Added to match ChallengeJobDetails requirements
   [key: string]: any; // Allow for additional fields
 }
 
@@ -118,8 +119,11 @@ const JobDetails: React.FC = () => {
       return <BountyJobDetails job={job} onBack={handleBack} />;
     case 'Auction':
       return <AuctionJobDetails job={job} onBack={handleBack} />;
-    case 'Challenge':
-      return <ChallengeJobDetails job={job} onBack={handleBack} />;
+    case 'Challenge': {
+      // Ensure eprojectlength is always a string
+      const challengeJob = { ...job, eprojectlength: job.eprojectlength ?? "" };
+      return <ChallengeJobDetails job={challengeJob} onBack={handleBack} />;
+    }
     default:
       // Fallback to Contract component for unknown types
       return <ContractJobDetails job={job} onBack={handleBack} />;

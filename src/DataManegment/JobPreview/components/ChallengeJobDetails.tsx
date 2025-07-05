@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTrophy,
@@ -40,7 +40,7 @@ interface JobData {
   tags: string[];
   selectedJobPostType: string;
   compensation: string | number;
-  estimatedProjectLength: string;
+  eprojectlength: string;
   projectDescription: string;
   projectOverview?: string;
   challengeCloseTime?: string;
@@ -77,6 +77,12 @@ interface JobData {
   challengeStartTime?: string;
   submissionFormat?: string;
   testCases?: string[];
+  bountyAmount?: string;
+  bountyStartDate?: string;
+  bountyStartTime?: string;
+  bountyDeadline?: string;
+  bountyExpiryTime?: string;
+  estimatedProjectLength?: string;
   [key: string]: any;
 }
 
@@ -217,9 +223,8 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
         {/* Sortable Score Header */}
         <div className="text-xs font-semibold text-white/70 w-16 flex items-center justify-start gap-1">
           <span 
-            className={`transition-all duration-200 ${
-              sortConfig.key === 'score' ? 'text-green-400' : 'text-white/70'
-            }`}
+            className={'transition-all duration-200 ' + 
+              (sortConfig.key === 'score' ? 'text-green-400' : 'text-white/70')}
           >
             Score
           </span>
@@ -229,7 +234,7 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
           >
             <FontAwesomeIcon 
               icon={getSortIcon('score').icon}
-              className={`text-[0.6rem] ${getSortIcon('score').className}`}
+              className={'text-[0.6rem] ' + getSortIcon('score').className}
             />
           </button>
         </div>
@@ -237,9 +242,8 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
         {/* Sortable Status Header */}
         <div className="text-xs font-semibold text-white/70 w-20 ml-1 flex items-center justify-start -mr-4 ml-3 gap-1">
           <span 
-            className={`transition-all duration-200 ${
-              sortConfig.key === 'status' ? 'text-green-400' : 'text-white/70'
-            }`}
+            className={'transition-all duration-200 ' + 
+              (sortConfig.key === 'status' ? 'text-green-400' : 'text-white/70')}
           >
             Status
           </span>
@@ -249,7 +253,7 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
           >
             <FontAwesomeIcon 
               icon={getSortIcon('status').icon}
-              className={`text-[0.6rem] ${getSortIcon('status').className}`}
+              className={'text-[0.6rem] ' + getSortIcon('status').className}
             />
           </button>
         </div>
@@ -260,17 +264,17 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
         <div className="space-y-1">
           {sortedEntries.map((entry: LeaderboardEntry, index: number) => (
             <div 
-              key={`${entry.name}-${index}`} 
+              key={entry.name + '-' + index} 
               className="flex items-center pl-1 pr-1 hover:bg-white/5 rounded-[1rem] transition-all duration-200 bg-black/40 hover:border-green-500/30 cursor-pointer"
               style={{
-                animationDelay: `${index * 50}ms`,
+                animationDelay: (index * 50) + 'ms',
                 animation: sortConfig.key ? 'fadeInSlide 0.3s ease-out forwards' : 'none'
               }}
-              title={`${entry.name} - Status: ${entry.status || 'Interested'}${entry.score ? ` - Score: ${entry.score}` : ''}${entry.completionTime ? ` - Time: ${entry.completionTime}` : ''}`}
+              title={entry.name + ' - Status: ' + (entry.status || 'Interested') + (entry.score ? ' - Score: ' + entry.score : '') + (entry.completionTime ? ' - Time: ' + entry.completionTime : '')}
             >
               <div className="flex items-center gap-1 min-w-0 flex-1">
                 <img 
-                  src={entry.avatar || `https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face`} 
+                  src={entry.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face'} 
                   alt={entry.name}
                   className="w-3.5 h-3.5 rounded-full bg-gray-600 border border-green-500/30 flex-shrink-0"
                 />
@@ -281,9 +285,8 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
               
               <div className="w-16">
                 <span 
-                  className={`text-[0.65rem] transition-all duration-200 ${
-                    sortConfig.key === 'score' ? 'text-green-300 transform scale-105' : 'text-green-300'
-                  }`}
+                  className={'text-[0.65rem] transition-all duration-200 ' + 
+                    (sortConfig.key === 'score' ? 'text-green-300 transform scale-105' : 'text-green-300')}
                 >
                   {entry.score || 'N/A'}
                 </span>
@@ -291,9 +294,9 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
               
               <div className="w-20 -mr-2">
                 <span 
-                  className={`font-semibold text-[0.65rem] transition-all duration-200 ${
-                    sortConfig.key === 'status' ? 'transform scale-105' : ''
-                  } ${getStatusColor(entry.status)}`}
+                  className={'font-semibold text-[0.65rem] transition-all duration-200 ' + 
+                    (sortConfig.key === 'status' ? 'transform scale-105' : '') + ' ' + 
+                    getStatusColor(entry.status)}
                 >
                   {entry.status || 'Interested'}
                 </span>
@@ -322,6 +325,17 @@ const SortableLeaderboard: React.FC<SortableLeaderboardProps> = ({
 // Windows-style File System Component
 const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+
+  // Add logging to see what files we're receiving
+  useEffect(() => {
+    console.log('🗂️ WindowsFileExplorer received files:', files);
+    console.log('🗂️ Files length:', files?.length || 0);
+    console.log('🗂️ Files structure:', files?.map(f => ({ 
+      name: f.name || f.fileName, 
+      type: f.type || f.fileType,
+      url: f.url || f.downloadUrl 
+    })));
+  }, [files]);
 
   const toggleFolder = (folderName: string) => {
     const newExpanded = new Set(expandedFolders);
@@ -366,186 +380,237 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
       case 'css':
       case 'py':
       case 'java':
+      case 'cpp':
+      case 'c':
+      case 'cs':
         return { icon: faFileCode, color: 'text-cyan-400' };
       default:
         return { icon: faFile, color: 'text-gray-400' };
     }
   };
 
-  // Organize files into folders
-  const organizedFiles = {
-    'Challenge Resources': [
-      {
-        name: "algorithm_challenges.pdf",
-        type: "document",
-        size: "3.2 MB",
-        modified: "2025-01-28 14:30",
-        url: "#"
-      },
-      {
-        name: "coding_guidelines.pdf",
-        type: "document",
-        size: "1.1 MB",
-        modified: "2025-01-29 09:15",
-        url: "#"
-      },
-      {
-        name: "submission_template.docx",
-        type: "document",
-        size: "245 KB",
-        modified: "2025-01-30 08:20",
-        url: "#"
-      },
-      {
-        name: "challenge_overview.pdf",
-        type: "document",
-        size: "1.8 MB",
-        modified: "2025-01-27 16:45",
-        url: "#"
-      }
-    ],
-    'Test Data': [
-      {
-        name: "sample_inputs.zip",
-        type: "archive",
-        size: "2.8 MB",
-        modified: "2025-01-30 11:45",
-        url: "#"
-      },
-      {
-        name: "expected_outputs.zip",
-        type: "archive",
-        size: "1.9 MB",
-        modified: "2025-01-30 16:20",
-        url: "#"
-      },
-      {
-        name: "test_cases.json",
-        type: "data",
-        size: "456 KB",
-        modified: "2025-01-30 10:30",
-        url: "#"
-      },
-      {
-        name: "large_dataset.zip",
-        type: "archive",
-        size: "15.7 MB",
-        modified: "2025-01-29 14:15",
-        url: "#"
-      },
-      {
-        name: "edge_cases.txt",
-        type: "text",
-        size: "89 KB",
-        modified: "2025-01-30 09:30",
-        url: "#"
-      }
-    ],
-    'Reference Materials': [
-      {
-        name: "algorithm_complexity_guide.xlsx",
-        type: "spreadsheet",
-        size: "892 KB",
-        modified: "2025-01-27 15:45",
-        url: "#"
-      },
-      {
-        name: "best_practices.pdf",
-        type: "document",
-        size: "2.1 MB",
-        modified: "2025-01-28 13:20",
-        url: "#"
-      },
-      {
-        name: "solution_template.py",
-        type: "code",
-        size: "12 KB",
-        modified: "2025-01-29 16:45",
-        url: "#"
-      },
-      {
-        name: "data_structures_cheat_sheet.pdf",
-        type: "document",
-        size: "3.4 MB",
-        modified: "2025-01-26 11:30",
-        url: "#"
-      },
-      {
-        name: "optimization_techniques.docx",
-        type: "document",
-        size: "1.2 MB",
-        modified: "2025-01-28 10:15",
-        url: "#"
-      },
-      {
-        name: "example_solutions.zip",
-        type: "archive",
-        size: "5.6 MB",
-        modified: "2025-01-29 13:45",
-        url: "#"
-      }
-    ],
-    'Starter Code': [
-      {
-        name: "python_template.py",
-        type: "code",
-        size: "8 KB",
-        modified: "2025-01-30 12:00",
-        url: "#"
-      },
-      {
-        name: "javascript_template.js",
-        type: "code",
-        size: "6 KB",
-        modified: "2025-01-30 12:05",
-        url: "#"
-      },
-      {
-        name: "java_template.java",
-        type: "code",
-        size: "10 KB",
-        modified: "2025-01-30 12:10",
-        url: "#"
-      },
-      {
-        name: "cpp_template.cpp",
-        type: "code",
-        size: "7 KB",
-        modified: "2025-01-30 12:15",
-        url: "#"
-      },
-      {
-        name: "utility_functions.py",
-        type: "code",
-        size: "15 KB",
-        modified: "2025-01-29 17:30",
-        url: "#"
-      }
-    ],
-    'Video Tutorials': [
-      {
-        name: "dynamic_programming_explained.mp4",
-        type: "video",
-        size: "45.2 MB",
-        modified: "2025-01-25 14:20",
-        url: "#"
-      },
-      {
-        name: "graph_algorithms_walkthrough.mp4",
-        type: "video",
-        size: "62.8 MB",
-        modified: "2025-01-26 09:45",
-        url: "#"
-      },
-      {
-        name: "optimization_strategies.mp4",
-        type: "video",
-        size: "38.1 MB",
-        modified: "2025-01-27 11:15",
-        url: "#"
-      }
-    ]
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
+
+  const formatDate = (dateString: string | Date): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Check if GitHub repository is accessible
+  const isGitHubRepoAccessible = async (repoUrl: string): Promise<boolean> => {
+    try {
+      // Extract owner/repo from GitHub URL
+      const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) return false;
+      
+      const [, owner, repo] = match;
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+      
+      const response = await fetch(apiUrl);
+      return response.status === 200;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // GitHub Repository Component
+  const GitHubRepoLink: React.FC<{ repoUrl: string; isPrivate?: boolean }> = ({ repoUrl, isPrivate }) => {
+    const [isAccessible, setIsAccessible] = useState<boolean | null>(null);
+    const [isChecking, setIsChecking] = useState(false);
+
+    useEffect(() => {
+      if (repoUrl && !isPrivate) {
+        setIsChecking(true);
+        isGitHubRepoAccessible(repoUrl).then(accessible => {
+          setIsAccessible(accessible);
+          setIsChecking(false);
+        });
+      }
+    }, [repoUrl, isPrivate]);
+
+    if (!repoUrl) return null;
+
+    const getRepoName = (url: string) => {
+      const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      return match ? `${match[1]}/${match[2]}` : 'Repository';
+    };
+
+    const handleRepoClick = () => {
+      if (isPrivate) {
+        alert('This repository is private and cannot be accessed publicly.');
+        return;
+      }
+      if (isAccessible === false) {
+        alert('This repository appears to be private or inaccessible.');
+        return;
+      }
+      window.open(repoUrl, '_blank');
+    };
+
+    return (
+      <div className="flex items-center gap-2 px-2 py-1 bg-gray-700/30 rounded-md border border-gray-600/50">
+        <FontAwesomeIcon 
+          icon={faFileCode} 
+          className={`text-sm ${isPrivate ? 'text-red-400' : isAccessible === false ? 'text-orange-400' : 'text-green-400'}`} 
+        />
+        <button
+          onClick={handleRepoClick}
+          disabled={isPrivate || isAccessible === false || isChecking}
+          className={`text-xs font-medium transition-colors ${
+            isPrivate || isAccessible === false 
+              ? 'text-gray-400 cursor-not-allowed' 
+              : 'text-blue-400 hover:text-blue-300 cursor-pointer'
+          }`}
+          title={
+            isPrivate 
+              ? 'Private repository - access restricted' 
+              : isAccessible === false 
+                ? 'Repository is private or inaccessible'
+                : 'Open GitHub repository'
+          }
+        >
+          {isChecking ? 'Checking...' : getRepoName(repoUrl)}
+          {isPrivate && ' 🔒'}
+          {!isPrivate && isAccessible === false && ' 🔒'}
+        </button>
+      </div>
+    );
+  };
+
+  // Organize submitted files into folders based on file type or submission data
+  const organizeSubmittedFiles = (submittedFiles: any[]) => {
+    if (!submittedFiles || submittedFiles.length === 0) {
+      // Return empty objects if no files are provided
+      return { organized: {}, folderMetadata: {} };
+    }
+
+    const organized: { [key: string]: any[] } = {};
+    const folderMetadata: { [key: string]: { githubRepos: Array<{ url: string; isPrivate: boolean; name?: string }> } } = {};
+
+    submittedFiles.forEach(file => {
+      console.log('🔍 Processing file:', file);
+      let category = 'Other Files';
+      let githubRepo: { url: string; isPrivate: boolean; name?: string } | null = null;
+
+      // Handle GitHub repositories stored as pseudo-files (name starts with "github:")
+      if (file.name?.startsWith('github:')) {
+        const repoUrl = file.name.replace('github:', '');
+        console.log('🔗 Found GitHub repo:', repoUrl);
+        
+        githubRepo = { 
+          url: repoUrl, 
+          isPrivate: false, // Default to false, could be enhanced later
+          name: repoUrl.split('/').slice(-2).join('/') // Extract owner/repo from URL
+        };
+        
+        // Use the repository URL/name as the category instead of "Code Files"
+        category = repoUrl;
+      }
+      // Handle direct GitHub repository properties
+      else if (file.githubRepo || file.repositoryUrl) {
+        const repoUrl = file.githubRepo || file.repositoryUrl;
+        const isPrivate = file.isPrivateRepo || file.privateRepository || false;
+        const repoName = file.repoName || file.repositoryName;
+        
+        console.log('🔗 Found GitHub repo (direct):', repoUrl);
+        
+        githubRepo = { url: repoUrl, isPrivate, name: repoName };
+        // Use the repository URL/name as the category
+        category = repoName || repoUrl;
+      }
+      // Regular file processing
+      else if ((file.name || file.fileName) && !file.name?.startsWith('github:')) {
+        // Determine category based on file properties
+        if (file.category) {
+          category = file.category;
+        } else if (file.type || file.fileType) {
+          const fileType = file.type || file.fileType;
+          
+          // Skip GitHub pseudo-files by type
+          if (fileType === 'application/x-git-url') {
+            console.log('🔗 Skipping GitHub pseudo-file by type:', file);
+            return;
+          }
+          
+          if (fileType.includes('image')) category = 'Images';
+          else if (fileType.includes('video')) category = 'Videos';
+          else if (fileType.includes('application/pdf')) category = 'Documents';
+          else if (fileType.includes('text') || fileType.includes('code')) category = 'Code Files';
+          else if (fileType.includes('zip') || fileType.includes('archive')) category = 'Archives';
+        } else {
+          // Categorize by file extension
+          const extension = (file.name || file.fileName || '').split('.').pop()?.toLowerCase();
+          switch (extension) {
+            case 'pdf': case 'doc': case 'docx': category = 'Documents'; break;
+            case 'jpg': case 'jpeg': case 'png': case 'gif': category = 'Images'; break;
+            case 'mp4': case 'avi': case 'mov': category = 'Videos'; break;
+            case 'js': case 'ts': case 'py': case 'java': case 'cpp': case 'html': case 'css': category = 'Code Files'; break;
+            case 'zip': case 'rar': case '7z': category = 'Archives'; break;
+            default: category = 'Other Files';
+          }
+        }
+      }
+
+      // Initialize category if it doesn't exist
+      if (!organized[category]) {
+        organized[category] = [];
+        folderMetadata[category] = { githubRepos: [] };
+      }
+
+      // Add GitHub repo to folder metadata
+      if (githubRepo) {
+        console.log(`🔗 Adding GitHub repo to ${category} folder:`, githubRepo);
+        
+        // Check if this repo URL is already added to this category
+        const existingRepo = folderMetadata[category].githubRepos.find(repo => repo.url === githubRepo!.url);
+        if (!existingRepo) {
+          folderMetadata[category].githubRepos.push(githubRepo);
+        }
+        return; // Don't add GitHub repos as files
+      }
+
+      // Add regular files
+      if ((file.name || file.fileName) && !file.name?.startsWith('github:') && file.type !== 'application/x-git-url') {
+        console.log('📁 Processing file for category:', category, file);
+
+        // Normalize file object
+        const normalizedFile = {
+          name: file.name || file.fileName || 'Unknown File',
+          type: file.type || file.fileType || 'unknown',
+          size: file.size ? formatFileSize(file.size) : (file.fileSize || 'Unknown'),
+          modified: file.modified || file.lastModified || file.createdAt || file.uploadedAt || new Date().toISOString(),
+          url: file.url || file.downloadUrl || file.path || '#',
+          bytes: file.size || file.fileSize || 0,
+          id: file.id || file._id,
+          uploadedBy: file.uploadedBy || file.submittedBy
+        };
+
+        organized[category].push(normalizedFile);
+      }
+    });
+
+    console.log('📊 Final organization result:');
+    console.log('  - Folder metadata:', folderMetadata);
+    console.log('  - Organized files:', organized);
+
+    return { organized, folderMetadata };
+  };
+
+  const fileOrganization = organizeSubmittedFiles(files);
+  const organizedFiles = fileOrganization.organized;
+  const folderMetadata = fileOrganization.folderMetadata;
 
   return (
     <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
@@ -554,89 +619,251 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
         Challenge Files & Resources
       </h2>
       
-      {/* Windows-style file explorer */}
-      <div className="bg-gray-900/50 border border-gray-600 rounded-lg overflow-hidden">
-        {/* Header bar */}
-        <div className="bg-gray-800/70 px-4 py-2 border-b border-gray-600">
-          <div className="flex items-center text-xs text-white/70">
-            <div className="flex-1">Name</div>
-            <div className="w-20 text-center">Size</div>
-            <div className="w-32 text-center">Date Modified</div>
-            <div className="w-16 text-center">Actions</div>
+      {Object.keys(organizedFiles).length === 0 ? (
+        <div className="text-center py-8 text-white/50">
+          <FontAwesomeIcon icon={faFolder} className="text-4xl mb-4" />
+          <p>No files have been submitted yet.</p>
+        </div>
+      ) : (
+        /* Windows-style file explorer */
+        <div className="bg-gray-900/50 border border-gray-600 rounded-lg overflow-hidden">
+          {/* Header bar */}
+          <div className="bg-gray-800/70 px-4 py-2 border-b border-gray-600">
+            <div className="flex items-center text-xs text-white/70">
+              <div className="flex-1">Name</div>
+              <div className="w-20 text-center">Size</div>
+              <div className="w-32 text-center">Date Modified</div>
+              <div className="w-16 text-center">Actions</div>
+            </div>
+          </div>
+          
+          {/* File list */}
+          <div className="max-h-96 overflow-y-auto">
+            {Object.entries(organizedFiles).map(([folderName, folderFiles]) => (
+              <div key={folderName}>
+                {/* Folder header */}
+                <div 
+                  className="flex items-center px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
+                  onClick={() => toggleFolder(folderName)}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    {/* Show code brackets for GitHub repo folders, regular folder icon for others */}
+                    {folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 ? (
+                      <span className="text-yellow-400 text-sm font-mono font-bold">
+                        {expandedFolders.has(folderName) ? '</>' : '</>'}
+                      </span>
+                    ) : (
+                      <FontAwesomeIcon 
+                        icon={expandedFolders.has(folderName) ? faFolderOpen : faFolder}
+                        className="text-yellow-400 text-sm" 
+                      />
+                    )}
+                    <span 
+                      className={`text-sm font-medium ${
+                        folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 
+                          ? 'text-blue-400 hover:text-blue-300 cursor-pointer' 
+                          : ''
+                      }`}
+                      onClick={(e) => {
+                        // If it's a GitHub repo folder, open the repo instead of toggling folder
+                        if (folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0) {
+                          e.stopPropagation();
+                          const repo = folderMetadata[folderName].githubRepos[0];
+                          if (!repo.isPrivate) {
+                            window.open(repo.url, '_blank');
+                          } else {
+                            alert('This repository is private and cannot be accessed publicly.');
+                          }
+                        }
+                      }}
+                    >
+                      {(() => {
+                        // If it's a GitHub repo folder, handle private repo blurring
+                        if (folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0) {
+                          const repo = folderMetadata[folderName].githubRepos[0];
+                          if (repo.isPrivate && folderName.includes('.com')) {
+                            const [domain, ...pathParts] = folderName.split('.com');
+                            const path = pathParts.join('.com');
+                            return (
+                              <>
+                                {domain}.com
+                                <span className="blur-sm select-none">{path}</span>
+                                <span className="ml-1 text-red-400">🔒</span>
+                              </>
+                            );
+                          }
+                        }
+                        return folderName;
+                      })()}
+                    </span>
+                    
+                    {/* Don't show GitHubRepoLink since the folder name IS the repo */}
+                  </div>
+                  <div className="w-20 text-center text-xs text-white/50">
+                    {folderFiles.length} items
+                    {folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 && 
+                      ` + ${folderMetadata[folderName].githubRepos.length} repo${folderMetadata[folderName].githubRepos.length > 1 ? 's' : ''}`
+                    }
+                  </div>
+                  <div className="w-32 text-center text-xs text-white/50">
+                    Folder
+                  </div>
+                  <div className="w-16"></div>
+                </div>
+                
+                {/* Folder contents */}
+                {expandedFolders.has(folderName) && (
+                  <div className="bg-gray-800/20">
+                    {folderFiles.map((file, index) => {
+                      const fileIcon = getWindowsFileIcon(file.name, file.type);
+                      return (
+                        <div 
+                          key={`${folderName}-${file.id || index}`}
+                          className="flex items-center px-8 py-2 hover:bg-green-600/20 cursor-pointer border-b border-gray-700/30 last:border-b-0"
+                          title={`${file.name}${file.uploadedBy ? ` - Uploaded by: ${file.uploadedBy}` : ''}`}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <FontAwesomeIcon 
+                              icon={fileIcon.icon}
+                              className={fileIcon.color + ' text-sm'} 
+                            />
+                            <span className="text-sm">{file.name}</span>
+                            {file.uploadedBy && (
+                              <span className="text-xs text-white/40 ml-2">by {file.uploadedBy}</span>
+                            )}
+                          </div>
+                          <div className="w-20 text-center text-xs text-white/70">
+                            {file.size}
+                          </div>
+                          <div className="w-32 text-center text-xs text-white/70">
+                            {formatDate(file.modified)}
+                          </div>
+                          <div className="w-16 text-center">
+                            <button 
+                              className="text-green-400 hover:text-green-300 transition-colors p-1"
+                              title="Download file"
+                              onClick={() => {
+                                if (file.url && file.url !== '#') {
+                                  window.open(file.url, '_blank');
+                                }
+                              }}
+                            >
+                              <FontAwesomeIcon icon={faDownload} className="text-xs" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-        
-        {/* File list */}
-        <div className="max-h-96 overflow-y-auto">
-          {Object.entries(organizedFiles).map(([folderName, folderFiles]) => (
-            <div key={folderName}>
-              {/* Folder header */}
-              <div 
-                className="flex items-center px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
-                onClick={() => toggleFolder(folderName)}
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <FontAwesomeIcon 
-                    icon={expandedFolders.has(folderName) ? faFolderOpen : faFolder}
-                    className="text-yellow-400 text-sm" 
-                  />
-                  <span className="text-sm font-medium">{folderName}</span>
-                </div>
-                <div className="w-20 text-center text-xs text-white/50">
-                  {folderFiles.length} items
-                </div>
-                <div className="w-32 text-center text-xs text-white/50">
-                  Folder
-                </div>
-                <div className="w-16"></div>
-              </div>
-              
-              {/* Folder contents */}
-              {expandedFolders.has(folderName) && (
-                <div className="bg-gray-800/20">
-                  {folderFiles.map((file, index) => {
-                    const fileIcon = getWindowsFileIcon(file.name, file.type);
-                    return (
-                      <div 
-                        key={`${folderName}-${index}`}
-                        className="flex items-center px-8 py-2 hover:bg-green-600/20 cursor-pointer border-b border-gray-700/30 last:border-b-0"
-                      >
-                        <div className="flex items-center gap-2 flex-1">
-                          <FontAwesomeIcon 
-                            icon={fileIcon.icon}
-                            className={`${fileIcon.color} text-sm`} 
-                          />
-                          <span className="text-sm">{file.name}</span>
-                        </div>
-                        <div className="w-20 text-center text-xs text-white/70">
-                          {file.size}
-                        </div>
-                        <div className="w-32 text-center text-xs text-white/70">
-                          {file.modified}
-                        </div>
-                        <div className="w-16 text-center">
-                          <button 
-                            className="text-green-400 hover:text-green-300 transition-colors p-1"
-                            title="Download file"
-                          >
-                            <FontAwesomeIcon icon={faDownload} className="text-xs" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
 const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }) => {
   const [isFavorite, setIsFavorite] = useState(false);
+
+  // Developer Score Calculation Function
+  const getRecommendedDeveloperScore = (jobData: JobData): number => {
+    const complexityBaseScores: { [key: string]: number } = {
+      'easy': 1000,
+      'simple': 1000,
+      'moderate': 1400,
+      'medium': 1400,
+      'complex': 1800,
+      'hard': 1800,
+      'expert': 2200,
+    };
+
+    const getCompensationAdjustment = (compensation: string | number): number => {
+      const numericCompensation = typeof compensation === 'number' 
+        ? compensation 
+        : parseFloat(String(compensation).replace(/[^0-9.-]+/g, "")) || 0;
+      
+      return Math.log10(numericCompensation + 1) * 100;
+    };
+
+    const difficulty = (jobData.difficulty || 'simple').toLowerCase();
+    const finalCompensation = jobData.bountyAmount || jobData.compensation || 0;
+    
+    const base = complexityBaseScores[difficulty] || complexityBaseScores['simple'];
+    const adjustment = getCompensationAdjustment(finalCompensation);
+    
+    return Math.round(base + adjustment);
+  };
+
+  // Calculate the recommended score
+  const recommendedScore = getRecommendedDeveloperScore(job);
+
+  // Helper functions for displaying score breakdown
+  const getBaseScore = (difficulty?: string): number => {
+    const complexityBaseScores: { [key: string]: number } = {
+      'easy': 1000, 'simple': 1000, 'moderate': 1400, 'medium': 1400,
+      'complex': 1800, 'hard': 1800, 'expert': 2200,
+    };
+    return complexityBaseScores[(difficulty || 'simple').toLowerCase()] || 1000;
+  };
+
+  const getCompensationBonus = (compensation?: string | number): number => {
+    const numericCompensation = typeof compensation === 'number' 
+      ? compensation 
+      : parseFloat(String(compensation || 0).replace(/[^0-9.-]+/g, "")) || 0;
+    return Math.round(Math.log10(numericCompensation + 1) * 100);
+  };
+
+  // ADD COMPREHENSIVE CONSOLE LOGGING
+  useEffect(() => {
+    console.log('='.repeat(80));
+    console.log('🎯 CHALLENGE JOB DETAILS - RECEIVED DATA');
+    console.log('='.repeat(80));
+    
+    // Log the entire job object
+    console.log('📋 Complete Job Object:', job);
+    console.log('');
+    
+    // Log specific fields that are relevant to the bug
+    console.log('🔍 KEY FIELDS ANALYSIS:');
+    console.log('- Job ID:', job.id);
+    console.log('- Project Title:', job.projectTitle);
+    console.log('- Selected Job Post Type:', job.selectedJobPostType);
+    console.log('- Estimated Project Length:', job.eprojectlength);
+    console.log('- Job SubType (if exists):', job.JobSubType || 'NOT SET');
+    console.log('- Challenge Type:', job.challengeType || 'NOT SET');
+    console.log('- Compensation:', job.compensation);
+    console.log('- Bounty Amount:', job.bountyAmount || 'NOT SET');
+    console.log('- Difficulty:', job.difficulty);
+    console.log('- Recommended Score (Calculated):', recommendedScore);
+    console.log('');
+
+    // Log all available properties
+    console.log('📝 ALL AVAILABLE PROPERTIES:');
+    Object.keys(job).forEach(key => {
+      const value = job[key];
+      console.log(`- ${key}:`, value);
+    });
+    console.log('');
+
+    // Check for the specific bug we're tracking
+    if (job.eprojectlength === 'open-challenge') {
+      console.error('🚨 BUG DETECTED: eprojectlength contains "open-challenge"');
+      console.error('This should contain a duration value like "1-day", "2-weeks", etc.');
+    } else {
+      console.log('✅ eprojectlength appears to have valid value:', job.eprojectlength);
+    }
+
+    // Check data types
+    console.log('🔍 DATA TYPES:');
+    console.log('- typeof eprojectlength:', typeof job.eprojectlength);
+    console.log('- typeof compensation:', typeof job.compensation);
+    console.log('- typeof bountyAmount:', typeof job.bountyAmount);
+    
+    console.log('='.repeat(80));
+  }, [job, recommendedScore]);
 
   const handleFavoriteClick = () => {
     setIsFavorite(!isFavorite);
@@ -646,45 +873,45 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
     console.log("Joining challenge:", job.id);
   };
 
-  const formatCompensation = (compensation: string | number) => {
-    if (typeof compensation === 'number') {
-      return compensation.toFixed(2);
+  const formatCompensation = (amount?: string | number) => {
+    // Use bountyAmount first (for challenges), then fall back to compensation
+    const value = job.bountyAmount || amount;
+    console.log('💰 formatCompensation called with:', { bountyAmount: job.bountyAmount, amount, finalValue: value });
+    
+    if (typeof value === 'number') {
+      return value.toFixed(2);
     }
-    const amount = parseFloat(compensation.toString().replace(/[^0-9.-]+/g, ""));
-    return isNaN(amount) ? compensation : amount.toFixed(2);
+    if (typeof value === 'string') {
+      const parsed = parseFloat(value.replace(/[^0-9.-]+/g, ""));
+      return isNaN(parsed) ? value : parsed.toFixed(2);
+    }
+    return '0.00';
   };
 
-  const formatProjectLength = (length: string) => {
-    const lengthMap: { [key: string]: string } = {
-      "<1hour": "Less than 1 hour",
-      "1-3hours": "1-3 hours",
-      "3-6hours": "3-6 hours",
-      "6-12hours": "6-12 hours",
-      "12-24hours": "12-24 hours",
-      "1-3days": "1-3 days",
-      "3-7days": "3-7 days",
-      "1-2weeks": "1-2 weeks",
-      "2-4weeks": "2-4 weeks",
-      ">1month": "More than 1 month",
-    };
-    return lengthMap[length] || length;
-  };
+ const getTimeRemaining = (): string | null => {
+  const { bountyDeadline, bountyExpiryTime } = job;
+  if (!bountyDeadline || !bountyExpiryTime) return null;
 
-  const getTimeRemaining = () => {
-    if (!job.challengeCloseTime) return null;
+  // Combine into full date-time string
+  const deadlineString = `${bountyDeadline}T${bountyExpiryTime}:00`; // assumes UTC or local depending on input
+  const deadline = new Date(deadlineString);
+  const now = new Date();
 
-    const end = new Date(job.challengeCloseTime);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
+  const diff = deadline.getTime() - now.getTime();
+  if (diff <= 0) return "Expired";
 
-    if (diff <= 0) return "Challenge Ended";
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+  const minutes = Math.floor((diff / (1000 * 60)) % 60);
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  let result = '';
+  if (days > 0) result += `${days}d `;
+  if (hours > 0 || days > 0) result += `${hours}h `;
+  result += `${minutes}m remaining`;
 
-    if (days > 0) return `${days}d ${hours}h remaining`;
-    return `${hours}h remaining`;
-  };
+  return result;
+};
+
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "Unknown";
@@ -736,11 +963,11 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
     const weeks = Math.floor(days / 7);
     const months = Math.floor(days / 30);
     
-    if (months > 0) return `${months}mo ago`;
-    if (weeks > 0) return `${weeks}w ago`;
-    if (days > 0) return `${days}d ago`;
-    if (hours > 0) return `${hours}h ago`;
-    if (minutes > 0) return `${minutes}m ago`;
+    if (months > 0) return months + 'mo ago';
+    if (weeks > 0) return weeks + 'w ago';
+    if (days > 0) return days + 'd ago';
+    if (hours > 0) return hours + 'h ago';
+    if (minutes > 0) return minutes + 'm ago';
     return 'Just now';
   };
 
@@ -788,6 +1015,9 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
     }
   ];
 
+  // Log the eprojectlength when it's being displayed
+  console.log('🎯 DISPLAYING ESTIMATED PROJECT LENGTH:', job.eprojectlength);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="max-w-6xl mx-auto px-6 pt-20 pb-8">
@@ -812,14 +1042,13 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
                 <h1 className="text-4xl font-bold mb-2">{job.projectTitle}</h1>
                 <div className="flex items-center gap-4 text-white/70">
                   <span className="flex items-center gap-1 bg-green-500/20 px-3 py-1 rounded-full">
-                    <FontAwesomeIcon icon={faTrophy} className="text-sm" />
-                    Coding Challenge
+                    {job.estimatedProjectLength || job.eprojectlength}
                   </span>
                   <span>{job.projectType}</span>
                   {job.difficulty && (
                     <>
                       <span>•</span>
-                      <span className={`font-semibold ${getDifficultyColor(job.difficulty)}`}>
+                      <span className={'font-semibold ' + getDifficultyColor(job.difficulty)}>
                         {job.difficulty}
                       </span>
                     </>
@@ -835,7 +1064,7 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
               >
                 <FontAwesomeIcon
                   icon={isFavorite ? faHeartSolid : faHeartRegular}
-                  className={`text-xl ${isFavorite ? "text-[#00FF00]" : "text-white/70"}`}
+                  className={'text-xl ' + (isFavorite ? "text-[#00FF00]" : "text-white/70")}
                 />
               </button>
               <button
@@ -855,7 +1084,7 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
                 <span className="text-sm text-white/70">Compensation</span>
               </div>
               <div className="text-2xl font-bold text-green-400">
-                ${formatCompensation(job.compensation)}
+                ${formatCompensation()}
               </div>
             </div>
             
@@ -875,7 +1104,7 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
                 <span className="text-sm text-white/70">Estimated Length</span>
               </div>
               <div className="text-lg font-semibold">
-                {formatProjectLength(job.estimatedProjectLength)}
+                {job.estimatedProjectLength || job.eprojectlength || 'Not specified'}
               </div>
             </div>
             
@@ -900,7 +1129,7 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
               Tags
             </h3>
             <div className="flex flex-wrap gap-2">
-              {job.tags.map((tag, index) => (
+              {job.tags?.map((tag, index) => (
                 <span
                   key={index}
                   className="px-3 py-1 bg-[rgba(255,255,255,0.1)] rounded-full text-sm"
@@ -935,8 +1164,8 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
               <FontAwesomeIcon icon={faChartLine} className="text-green-400" />
               Recommended Developer Score
             </h3>
-            <div className={`text-3xl font-bold ${getDeveloperScoreColor(job.developerScore || 750)}`}>
-              {job.developerScore || '750'}
+            <div className={'text-3xl font-bold ' + getDeveloperScoreColor(recommendedScore)}>
+              {recommendedScore}
             </div>
           </div>
         </div>
@@ -1006,7 +1235,6 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
 
           {/* Right Column - Sidebar */}
           <div className="space-y-3">
-           
             {/* Current Leaderboard with Sorting */}
             <SortableLeaderboard 
               leaderboard={mockLeaderboard} 
@@ -1021,34 +1249,67 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
                 Challenge Terms
               </h2>
               <div className="grid grid-cols-1 gap-3 text-sm">
-                {job.challengeStartTime && (
+                {/* Challenge Start - using bountyStartDate and bountyStartTime */}
+                {(job.bountyStartDate || job.bountyStartTime) && (
                   <div>
                     <span className="text-white/50">Challenge Start:</span>
-                    <div className="font-semibold">{formatDate(job.challengeStartTime)}</div>
+                    <div className="font-semibold">
+                      {job.bountyStartDate && job.bountyStartTime 
+                        ? formatDate(`${job.bountyStartDate}T${job.bountyStartTime}:00`)
+                        : formatDate(job.bountyStartDate || job.bountyStartTime)
+                      }
+                    </div>
                   </div>
                 )}
-                {job.challengeCloseTime && (
+                
+                {/* Challenge End - using bountyDeadline and bountyExpiryTime */}
+                {(job.bountyDeadline || job.bountyExpiryTime) && (
                   <div>
                     <span className="text-white/50">Challenge End:</span>
-                    <div className="font-semibold">{formatDate(job.challengeCloseTime)}</div>
+                    <div className="font-semibold">
+                      {job.bountyDeadline && job.bountyExpiryTime 
+                        ? formatDate(`${job.bountyDeadline}T${job.bountyExpiryTime}:00`)
+                        : formatDate(job.bountyDeadline || job.bountyExpiryTime)
+                      }
+                    </div>
                   </div>
                 )}
+                
+                {/* If no start time is available, show default */}
+                {!(job.bountyStartDate || job.bountyStartTime) && (
+                  <div>
+                    <span className="text-white/50">Challenge Start:</span>
+                    <div className="font-semibold">Immediately upon joining</div>
+                  </div>
+                )}
+                
+                {/* If no end time is available, show default */}
+                {!(job.bountyDeadline || job.bountyExpiryTime) && (
+                  <div>
+                    <span className="text-white/50">Challenge End:</span>
+                    <div className="font-semibold">No fixed deadline</div>
+                  </div>
+                )}
+                
                 <div>
                   <span className="text-white/50">Duration:</span>
-                  <div className="font-semibold">{formatProjectLength(job.estimatedProjectLength)}</div>
+                  <div className="font-semibold">{job.estimatedProjectLength || job.eprojectlength || 'Not specified'}</div>
                 </div>
+                
                 {job.challengeType && (
                   <div>
                     <span className="text-white/50">Challenge Type:</span>
                     <div className="font-semibold text-green-300">{job.challengeType}</div>
                   </div>
                 )}
+                
                 {job.submissionFormat && (
                   <div>
                     <span className="text-white/50">Submission Format:</span>
                     <div className="font-semibold">{job.submissionFormat}</div>
                   </div>
                 )}
+                
                 <div>
                   <span className="text-white/50">Prize Distribution:</span>
                   <div className="font-semibold">Winner takes all</div>
@@ -1120,7 +1381,23 @@ const ChallengeJobDetails: React.FC<ChallengeJobDetailsProps> = ({ job, onBack }
 
         {/* Windows-style Challenge Files Section */}
         <div className="mt-6">
-          <WindowsFileExplorer files={[]} />
+          {(() => {
+            const allFiles = [
+              ...(job.projectFiles || []),
+              ...(job.imageFiles || []),
+              ...(job.submittedFiles || []),
+              ...(job.challengeFiles || []),
+              ...(job.files || [])
+            ];
+            console.log('🎯 ChallengeJobDetails - All collected files:', allFiles);
+            console.log('🎯 Individual arrays:');
+            console.log('  - projectFiles:', job.projectFiles);
+            console.log('  - imageFiles:', job.imageFiles);
+            console.log('  - submittedFiles:', job.submittedFiles);
+            console.log('  - challengeFiles:', job.challengeFiles);
+            console.log('  - files:', job.files);
+            return <WindowsFileExplorer files={allFiles} />;
+          })()}
         </div>
       </div>
     </div>

@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { doc, updateDoc, getDoc, setDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { updateProfile } from "firebase/auth";
 import { firestore } from "../../../firebase";
 
 // Modern Twitter-style Image Cropper Component
@@ -57,9 +55,9 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
         // Store natural image dimensions
         setImageSize({ width: img.naturalWidth, height: img.naturalHeight });
         
-        // Force container dimensions to be 400px height
-        const containerWidth = container.clientWidth || 512;
-        const containerHeight = 400; // Fixed height
+        // Use container's actual dimensions (400px height)
+        const containerWidth = container.clientWidth;
+        const containerHeight = container.clientHeight;
         
         // Calculate initial scale to ensure image fills the circle
         const minDimension = Math.min(img.naturalWidth, img.naturalHeight);
@@ -86,8 +84,6 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
             containerWidth,
             containerHeight,
             initialScale,
-            scaledWidth,
-            scaledHeight,
             position: {
                 x: (containerWidth - scaledWidth) / 2,
                 y: (containerHeight - scaledHeight) / 2
@@ -109,42 +105,18 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
     const handleMouseMove = useCallback((e: React.MouseEvent) => {
         if (!isDragging) return;
         
-        const newX = e.clientX - dragStart.x;
-        const newY = e.clientY - dragStart.y;
-        
-        // Calculate constraints to keep image within crop circle
-        const containerWidth = containerRef.current?.clientWidth || 512;
-        const containerHeight = 400;
-        const circleCenterX = containerWidth / 2;
-        const circleCenterY = containerHeight / 2;
-        const circleRadius = CIRCLE_SIZE / 2;
-        
-        // Calculate scaled image dimensions
-        const scaledWidth = imageSize.width * scale;
-        const scaledHeight = imageSize.height * scale;
-        
-        // Minimum boundaries - image must cover the entire circle
-        const minX = circleCenterX - scaledWidth + circleRadius;
-        const maxX = circleCenterX - circleRadius;
-        const minY = circleCenterY - scaledHeight + circleRadius;
-        const maxY = circleCenterY - circleRadius;
-        
-        // Constrain position
-        const constrainedX = Math.max(minX, Math.min(maxX, newX));
-        const constrainedY = Math.max(minY, Math.min(maxY, newY));
-        
         setPosition({
-            x: constrainedX,
-            y: constrainedY
+            x: e.clientX - dragStart.x,
+            y: e.clientY - dragStart.y
         });
-    }, [isDragging, dragStart, scale, imageSize]);
+    }, [isDragging, dragStart]);
 
     // Handle mouse up
     const handleMouseUp = useCallback(() => {
         setIsDragging(false);
     }, []);
 
-    // Handle wheel zoom with position constraints
+    // Handle wheel zoom
     const handleWheel = useCallback((e: React.WheelEvent) => {
         e.preventDefault();
         
@@ -161,35 +133,14 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
             
             const scaleRatio = newScale / scale;
             
-            const newX = mouseX - (mouseX - position.x) * scaleRatio;
-            const newY = mouseY - (mouseY - position.y) * scaleRatio;
-            
-            // Apply constraints after scaling
-            const containerWidth = container.clientWidth || 512;
-            const containerHeight = 400;
-            const circleCenterX = containerWidth / 2;
-            const circleCenterY = containerHeight / 2;
-            const circleRadius = CIRCLE_SIZE / 2;
-            
-            const scaledWidth = imageSize.width * newScale;
-            const scaledHeight = imageSize.height * newScale;
-            
-            const minX = circleCenterX - scaledWidth + circleRadius;
-            const maxX = circleCenterX - circleRadius;
-            const minY = circleCenterY - scaledHeight + circleRadius;
-            const maxY = circleCenterY - circleRadius;
-            
-            const constrainedX = Math.max(minX, Math.min(maxX, newX));
-            const constrainedY = Math.max(minY, Math.min(maxY, newY));
-            
-            setPosition({
-                x: constrainedX,
-                y: constrainedY
-            });
+            setPosition(prev => ({
+                x: mouseX - (mouseX - prev.x) * scaleRatio,
+                y: mouseY - (mouseY - prev.y) * scaleRatio
+            }));
             
             setScale(newScale);
         }
-    }, [scale, imageSize, CIRCLE_SIZE, position]);
+    }, [scale, imageSize, CIRCLE_SIZE]);
 
     // Handle touch events for mobile - simplified without Touch type issues
     const [touchData, setTouchData] = useState<{
@@ -231,30 +182,9 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
         
         if (e.touches.length === 1 && isDragging) {
             const touch = e.touches[0];
-            const newX = touch.clientX - dragStart.x;
-            const newY = touch.clientY - dragStart.y;
-            
-            // Apply same constraints as mouse move
-            const containerWidth = containerRef.current?.clientWidth || 512;
-            const containerHeight = 400;
-            const circleCenterX = containerWidth / 2;
-            const circleCenterY = containerHeight / 2;
-            const circleRadius = CIRCLE_SIZE / 2;
-            
-            const scaledWidth = imageSize.width * scale;
-            const scaledHeight = imageSize.height * scale;
-            
-            const minX = circleCenterX - scaledWidth + circleRadius;
-            const maxX = circleCenterX - circleRadius;
-            const minY = circleCenterY - scaledHeight + circleRadius;
-            const maxY = circleCenterY - circleRadius;
-            
-            const constrainedX = Math.max(minX, Math.min(maxX, newX));
-            const constrainedY = Math.max(minY, Math.min(maxY, newY));
-            
             setPosition({
-                x: constrainedX,
-                y: constrainedY
+                x: touch.clientX - dragStart.x,
+                y: touch.clientY - dragStart.y
             });
         } else if (e.touches.length === 2 && touchData.initialDistance > 0) {
             const distance = getTouchDistance(e.touches);
@@ -265,7 +195,7 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
             
             setScale(newScale);
         }
-    }, [isDragging, dragStart, touchData, imageSize, scale]);
+    }, [isDragging, dragStart, touchData, imageSize, CIRCLE_SIZE]);
 
     const handleTouchEnd = useCallback(() => {
         setIsDragging(false);
@@ -407,12 +337,11 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
                 </div>
 
                 {/* Main crop area */}
-                <div className="relative overflow-hidden bg-gray-900" style={{ height: '400px', minHeight: '400px' }}>
+                <div className="flex-1 relative overflow-hidden bg-gray-900" style={{ height: '400px' }}>
                     {imageSrc && (
                         <div
                             ref={containerRef}
-                            className="w-full h-full relative cursor-move bg-gray-800 overflow-visible"
-                            style={{ height: '400px' }}
+                            className="w-full h-full relative cursor-move bg-gray-800"
                             onWheel={handleWheel}
                             onTouchStart={handleTouchStart}
                             onTouchMove={handleTouchMove}
@@ -422,34 +351,17 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
                                 ref={imageRef}
                                 src={imageSrc}
                                 alt="Crop preview"
-                                className="absolute origin-top-left select-none block"
+                                className="absolute origin-top-left select-none"
                                 onLoad={handleImageLoad}
                                 style={{
                                     transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
                                     touchAction: 'none',
                                     zIndex: 1,
                                     maxWidth: 'none',
-                                    maxHeight: 'none',
-                                    width: 'auto',
-                                    height: 'auto',
-                                    display: 'block',
-                                    opacity: imageLoaded ? 1 : 0.5,
-                                    border: '2px solid red' // Debug border to see if image is there
+                                    maxHeight: 'none'
                                 }}
                                 draggable={false}
                             />
-                            
-                            {/* Debug info overlay */}
-                            {imageLoaded && (
-                                <div 
-                                    className="absolute top-4 left-4 bg-red-500 text-white p-2 text-xs z-50"
-                                    style={{ pointerEvents: 'none' }}
-                                >
-                                    Image: {imageSize.width}x{imageSize.height}<br/>
-                                    Scale: {scale.toFixed(2)}<br/>
-                                    Position: {Math.round(position.x)}, {Math.round(position.y)}
-                                </div>
-                            )}
                             
                             {/* Debug info */}
                             {!imageLoaded && (
@@ -472,13 +384,25 @@ const ImageCropper = ({ isOpen, imageFile, onClose, onCropComplete }: ImageCropp
                                 <>
                                     {/* Overlay with circle cutout */}
                                     <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 3 }}>
-                                        {/* Simple radial gradient overlay */}
-                                        <div 
-                                            className="absolute inset-0"
-                                            style={{
-                                                background: `radial-gradient(circle ${CIRCLE_SIZE / 2}px at 50% 50%, transparent ${CIRCLE_SIZE / 2}px, rgba(0, 0, 0, 0.7) ${CIRCLE_SIZE / 2 + 1}px)`
-                                            }}
-                                        />
+                                        <svg width="100%" height="100%" className="absolute inset-0">
+                                            <defs>
+                                                <mask id="cropMask">
+                                                    <rect width="100%" height="100%" fill="white" />
+                                                    <circle 
+                                                        cx="50%" 
+                                                        cy="50%" 
+                                                        r={CIRCLE_SIZE / 2} 
+                                                        fill="black" 
+                                                    />
+                                                </mask>
+                                            </defs>
+                                            <rect 
+                                                width="100%" 
+                                                height="100%" 
+                                                fill="rgba(0, 0, 0, 0.7)" 
+                                                mask="url(#cropMask)" 
+                                            />
+                                        </svg>
                                         
                                         {/* Circle border */}
                                         <div 
@@ -550,10 +474,7 @@ interface UserProfile {
     displayLocalTime?: boolean;
     portfolioSite?: string;
     github?: string;
-    socials?: string;
     resume?: string;
-    resumeURL?: string;
-    resumeFileName?: string;
 }
 
 const ProfileCard = ({ className = "" }: ProfileCardProps) => {
@@ -573,7 +494,6 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
         displayLocalTime: false,
         portfolioSite: "",
         github: "",
-        socials: "",
         resume: ""
     });
 
@@ -595,7 +515,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                     displayLocalTime: data.displayLocalTime,
                     portfolioSite: data.portfolioSite,
                     github: data.github,
-                    socials: data.socials
+                    resume: data.resume
                 };
 
                 if (userDoc.exists()) {
@@ -673,8 +593,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                         displayLocalTime: userData.displayLocalTime || false,
                         portfolioSite: userData.portfolioSite || "",
                         github: userData.github || "",
-                        socials: userData.socials || "",
-                        resume: userData.resumeURL || ""
+                        resume: userData.resume || ""
                     });
                 } else {
                     // New user - set default display name from firstName + lastName or fallback
@@ -701,20 +620,8 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
         };
         setFormData(newFormData);
         
-        // Auto-save after user stops typing (exclude resume field as it's handled separately)
-        if (field !== 'resume') {
-            autoSave(newFormData);
-        }
-    };
-
-    const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        handleInputChange('bio', e.target.value);
-        
-        // Auto-resize textarea without max height restriction
-        const textarea = e.target;
-        textarea.style.height = 'auto';
-        textarea.style.height = textarea.scrollHeight + 2 + 'px'; // Add 2px buffer
-        textarea.style.overflow = 'hidden'; // Always hidden to prevent scrollbars
+        // Auto-save after user stops typing
+        autoSave(newFormData);
     };
 
     const handleAvatarSelect = (file: File) => {
@@ -725,145 +632,27 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
 
     const handleCropComplete = async (croppedImageBlob: Blob) => {
         try {
-            setSaveStatus("saving");
-            
-            if (!currentUser?.uid) {
-                throw new Error("No user authenticated");
-            }
-
-            // Upload to Firebase Storage
-            const storage = getStorage();
-            const avatarRef = ref(storage, `avatars/${currentUser.uid}`);
-            
-            console.log("Uploading cropped image to Firebase Storage...");
-            await uploadBytes(avatarRef, croppedImageBlob);
-            
-            // Get download URL
-            const downloadURL = await getDownloadURL(avatarRef);
-            console.log("Image uploaded, download URL:", downloadURL);
-            
-            // Update Firebase Auth profile
-            await updateProfile(currentUser, {
-                photoURL: downloadURL
-            });
-            
-            // Update Firestore user document
-            const userDocRef = doc(firestore, "users", currentUser.uid);
-            await updateDoc(userDocRef, {
-                photoURL: downloadURL
-            });
-            
-            // Update local state for immediate preview
-            setProfileImageUrl(downloadURL);
-            
-            console.log("Profile image updated successfully");
-            setSaveStatus("saved");
-            setTimeout(() => setSaveStatus("idle"), 2000);
-            
-        } catch (error) {
-            console.error("Error uploading avatar:", error);
-            setSaveStatus("error");
-            setTimeout(() => setSaveStatus("idle"), 3000);
-            
-            // Still show local preview even if upload fails
+            // Convert blob to data URL for immediate preview
             const reader = new FileReader();
             reader.onload = (e) => {
                 setProfileImageUrl(e.target?.result as string);
             };
             reader.readAsDataURL(croppedImageBlob);
-        }
-    };
 
-    const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
+            // Here you would typically upload to Firebase Storage
+            // const storage = getStorage();
+            // const avatarRef = ref(storage, `avatars/${currentUser?.uid}`);
+            // await uploadBytes(avatarRef, croppedImageBlob);
+            // const downloadURL = await getDownloadURL(avatarRef);
+            // setProfileImageUrl(downloadURL);
 
-        // Validate file type
-        if (file.type !== 'application/pdf') {
-            alert('Please select a PDF file only.');
-            return;
-        }
-
-        // Validate file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert('File size must be less than 10MB.');
-            return;
-        }
-
-        try {
-            setSaveStatus("saving");
-            
-            if (!currentUser?.uid) {
-                throw new Error("No user authenticated");
-            }
-
-            // Upload to Firebase Storage
-            const storage = getStorage();
-            const resumeRef = ref(storage, `resumes/${currentUser.uid}/${file.name}`);
-            
-            console.log("Uploading resume to Firebase Storage...");
-            await uploadBytes(resumeRef, file);
-            
-            // Get download URL
-            const downloadURL = await getDownloadURL(resumeRef);
-            console.log("Resume uploaded, download URL:", downloadURL);
-            
-            // Update Firestore user document
-            const userDocRef = doc(firestore, "users", currentUser.uid);
-            await updateDoc(userDocRef, {
-                resumeURL: downloadURL,
-                resumeFileName: file.name
-            });
-            
-            // Update local state
-            setFormData(prev => ({
-                ...prev,
-                resume: downloadURL
-            }));
-            
-            console.log("Resume updated successfully");
+            console.log("Cropped image ready for upload:", croppedImageBlob);
             setSaveStatus("saved");
             setTimeout(() => setSaveStatus("idle"), 2000);
-            
         } catch (error) {
-            console.error("Error uploading resume:", error);
+            console.error("Error processing avatar:", error);
             setSaveStatus("error");
             setTimeout(() => setSaveStatus("idle"), 3000);
-            alert('Error uploading resume. Please try again.');
-        }
-
-        // Clear the input
-        e.target.value = '';
-    };
-
-    const handleResumeRemove = async () => {
-        if (!currentUser?.uid) return;
-
-        try {
-            setSaveStatus("saving");
-            
-            // Update Firestore user document
-            const userDocRef = doc(firestore, "users", currentUser.uid);
-            await updateDoc(userDocRef, {
-                resumeURL: "",
-                resumeFileName: ""
-            });
-            
-            // Update local state
-            setFormData(prev => ({
-                ...prev,
-                resume: ""
-            }));
-            
-            console.log("Resume removed successfully");
-            setSaveStatus("saved");
-            setTimeout(() => setSaveStatus("idle"), 2000);
-            
-        } catch (error) {
-            console.error("Error removing resume:", error);
-            setSaveStatus("error");
-            setTimeout(() => setSaveStatus("idle"), 3000);
-            alert('Error removing resume. Please try again.');
         }
     };
 
@@ -879,13 +668,13 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
     ];
 
     return (
-        <div className={`bg-[#0F0F0F] text-white p-3 rounded-lg max-w-md mx-auto border border-[#333] ${className}`}>
+        <div className={`bg-gray-900 text-white p-6 rounded-lg max-w-md mx-auto ${className}`}>
             {/* Avatar Section */}
-            <div className="flex justify-center mb-3">
+            <div className="flex justify-center mb-6">
                 <div className="relative">
                     <button 
                         type="button"
-                        className="relative w-16 h-16 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden hover:opacity-80 transition-all duration-300 focus:outline-none focus:ring focus:ring-white/50 focus:ring-offset-1 focus:ring-offset-[#0F0F0F] shadow-lg"
+                        className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-300 via-blue-400 to-blue-500 flex items-center justify-center overflow-hidden hover:opacity-80 transition-opacity duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                         onClick={() => document.getElementById('avatar-file')?.click()}
                         aria-label="Change profile picture"
                     >
@@ -896,16 +685,16 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                                 className="w-full h-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center">
-                                <div className="text-white text-sm font-bold">
-                                    {formData.displayName?.[0]?.toUpperCase() || 'U'}
-                                </div>
+                            <div className="w-full h-full bg-gradient-to-br from-blue-300 via-blue-400 to-blue-500 flex items-center justify-center">
+                                <div className="w-8 h-8 bg-white rounded transform rotate-45"></div>
+                                <div className="w-4 h-12 bg-white absolute"></div>
+                                <div className="w-12 h-4 bg-white absolute"></div>
                             </div>
                         )}
                         
                         {/* Overlay with camera icon - shows on hover */}
                         <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
-                            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v.93a2 2 0 001.664 1.973l.06.017A1 1 0 004 8h12a1 1 0 00.276-.027l.06-.017A2 2 0 0018 5.93V5a2 2 0 00-2-2H4zm8 5a4 4 0 11-8 0 4 4 0 018 0zm-2 0a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd" />
                             </svg>
                         </div>
@@ -927,8 +716,8 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                     />
                     
                     {/* Edit indicator icon in bottom right */}
-                    <div className="absolute bottom-0 right-0 bg-[#1F1F1F] rounded-full p-1.5 border-2 border-[#0F0F0F] pointer-events-none shadow-lg">
-                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="absolute bottom-0 right-0 bg-gray-700 rounded-full p-2 border-2 border-gray-900 pointer-events-none">
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                             <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
                         </svg>
                     </div>
@@ -937,15 +726,15 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
 
             {/* Auto-save Status */}
             {saveStatus !== "idle" && (
-                <div className="flex justify-center mb-2">
-                    <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
-                        saveStatus === "saving" ? "bg-white/20 text-white" :
+                <div className="flex justify-center mb-4">
+                    <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs ${
+                        saveStatus === "saving" ? "bg-blue-500/20 text-blue-400" :
                         saveStatus === "saved" ? "bg-green-500/20 text-green-400" :
                         "bg-red-500/20 text-red-400"
                     }`}>
                         {saveStatus === "saving" && (
                             <>
-                                <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                                <div className="w-3 h-3 border border-blue-400 border-t-transparent rounded-full animate-spin"></div>
                                 Saving...
                             </>
                         )}
@@ -970,42 +759,44 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
             )}
 
             {/* Form Fields */}
-            <div className="space-y-2">
+            <div className="space-y-4">
                 {/* Display Name */}
                 <div>
-                    <label className="block text-xs font-medium mb-0.5 text-white">Display Name</label>
+                    <label className="block text-sm font-medium mb-1">Display Name</label>
                     <input
                         type="text"
                         value={formData.displayName}
                         onChange={(e) => handleInputChange('displayName', e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="Display Name"
                     />
                 </div>
 
                 {/* Bio */}
                 <div>
-                    <label className="block text-xs font-medium mb-0.5 text-white">Bio</label>
+                    <label className="block text-sm font-medium mb-1">Bio</label>
                     <textarea
                         value={formData.bio}
-                        onChange={handleBioChange}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white resize-none transition-all duration-200 min-h-[2rem] overflow-hidden"
+                        onChange={(e) => handleInputChange('bio', e.target.value)}
+                        rows={3}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                         placeholder="Tell us about yourself..."
-                        style={{ height: '2rem' }}
                     />
-                   
+                    <p className="text-xs text-gray-400 mt-1">
+                        You can @mention other users and organizations to link to them.
+                    </p>
                 </div>
 
                 {/* Pronouns */}
                 <div>
-                    <label className="block text-xs font-medium mb-0.5 text-white">Pronouns</label>
+                    <label className="block text-sm font-medium mb-1">Pronouns</label>
                     <select
                         value={formData.pronouns}
                         onChange={(e) => handleInputChange('pronouns', e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white focus:outline-none focus:ring focus:ring-white/50 focus:border-white appearance-none transition-all duration-200"
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                     >
                         {pronounOptions.map((pronoun) => (
-                            <option key={pronoun} value={pronoun} className="bg-[#000000] text-white">
+                            <option key={pronoun} value={pronoun}>
                                 {pronoun}
                             </option>
                         ))}
@@ -1014,149 +805,132 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
 
                 {/* Company */}
                 <div>
-                    <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-6a1 1 0 00-1-1H9a1 1 0 00-1 1v6a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 8a1 1 0 011-1h4a1 1 0 011 1v4H7v-4z" clipRule="evenodd" />
                         </svg>
-                        <input
-                            type="text"
-                            value={formData.company}
-                            onChange={(e) => handleInputChange('company', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="Company"
-                        />
+                        <span className="text-sm font-medium text-gray-300">Company</span>
                     </div>
+                    <input
+                        type="text"
+                        value={formData.company}
+                        onChange={(e) => handleInputChange('company', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Company"
+                    />
                 </div>
 
                 {/* Location */}
                 <div>
-                    <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                         </svg>
+                        <span className="text-sm font-medium text-gray-300">Location</span>
+                    </div>
+                    <input
+                        type="text"
+                        value={formData.location}
+                        onChange={(e) => handleInputChange('location', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Location"
+                    />
+                </div>
+
+                {/* Display local time */}
+                <div>
+                    <div className="flex items-center">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
                         <input
-                            type="text"
-                            value={formData.location}
-                            onChange={(e) => handleInputChange('location', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="Location"
+                            type="checkbox"
+                            id="displayLocalTime"
+                            checked={formData.displayLocalTime}
+                            onChange={(e) => handleInputChange('displayLocalTime', e.target.checked)}
+                            className="mr-2 w-4 h-4 text-blue-600 bg-gray-800 border-gray-600 rounded focus:ring-blue-500"
                         />
+                        <label htmlFor="displayLocalTime" className="text-sm text-gray-300">
+                            Display current local time
+                        </label>
                     </div>
                 </div>
 
-
                 {/* Portfolio Site */}
                 <div>
-                    <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z" clipRule="evenodd" />
                         </svg>
-                        <input
-                            type="text"
-                            value={formData.portfolioSite}
-                            onChange={(e) => handleInputChange('portfolioSite', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="Portfolio Site URL"
-                        />
+                        <span className="text-sm font-medium text-gray-300">Portfolio Site</span>
                     </div>
+                    <input
+                        type="text"
+                        value={formData.portfolioSite}
+                        onChange={(e) => handleInputChange('portfolioSite', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Portfolio Site URL"
+                    />
                 </div>
 
                 {/* GitHub */}
                 <div>
-                    <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center mb-1">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clipRule="evenodd" />
                         </svg>
-                        <input
-                            type="text"
-                            value={formData.github}
-                            onChange={(e) => handleInputChange('github', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="GitHub Profile URL"
-                        />
+                        <span className="text-sm font-medium text-gray-300">GitHub</span>
                     </div>
-                </div>
-
-                {/* Socials */}
-                <div>
-                    <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
-                        <input
-                            type="text"
-                            value={formData.socials}
-                            onChange={(e) => handleInputChange('socials', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="Social Media Links"
-                        />
-                    </div>
+                    <input
+                        type="text"
+                        value={formData.github}
+                        onChange={(e) => handleInputChange('github', e.target.value)}
+                        className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="GitHub Profile URL"
+                    />
                 </div>
 
                 {/* Resume PDF */}
                 <div>
-                    {formData.resume ? (
-                        <div className="bg-[#000000] border border-[#1a1a1a] rounded p-2">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-900 rounded flex items-center justify-center">
-                                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-medium text-white">Resume.pdf</div>
-                                        <div className="text-xs text-white/60">PDF Document</div>
-                                    </div>
-                                </div>
-                                <div className="flex gap-1.5">
-                                    <button
-                                        type="button"
-                                        onClick={() => window.open(formData.resume, '_blank')}
-                                        className="p-1.5 bg-white hover:bg-gray-200 text-black rounded-md transition-colors"
-                                        title="View Resume"
-                                    >
-                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                        </svg>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleResumeRemove()}
-                                        className="p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
-                                        title="Remove Resume"
-                                    >
-                                        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clipRule="evenodd" />
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
+                    <div className="flex items-center mb-2">
+                        <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                        </svg>
+                        <span className="text-sm font-medium text-gray-300">Resume (PDF)</span>
+                    </div>
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                className="px-3 py-1 text-xs bg-gray-700 hover:bg-gray-600 text-white rounded transition-colors"
+                                onClick={() => document.getElementById('resume-file')?.click()}
+                            >
+                                Upload PDF
+                            </button>
+                            <span className="text-xs text-gray-400 self-center">or</span>
                         </div>
-                    ) : (
-                        <div 
-                            className="bg-[#000000] border border-[#1a1a1a] border-dashed rounded-lg p-4 text-center cursor-pointer hover:border-white transition-colors"
-                            onClick={() => document.getElementById('resume-file')?.click()}
-                        >
-                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
-                                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                                </svg>
-                            </div>
-                            <div className="text-xs font-medium text-white mb-1">Upload your resume</div>
-                            <div className="text-xs text-white/60">Click to select a PDF file</div>
-                        </div>
-                    )}
-                    
-                    <input
-                        type="file"
-                        id="resume-file"
-                        className="hidden"
-                        accept=".pdf"
-                        onChange={handleResumeUpload}
-                    />
+                        <input
+                            type="file"
+                            id="resume-file"
+                            className="hidden"
+                            accept=".pdf"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    // Handle file upload here - you'd typically upload to Firebase Storage
+                                    console.log("Resume file selected:", file.name);
+                                    handleInputChange('resume', `Uploaded: ${file.name}`);
+                                }
+                            }}
+                        />
+                        <input
+                            type="text"
+                            value={formData.resume}
+                            onChange={(e) => handleInputChange('resume', e.target.value)}
+                            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Resume PDF Link"
+                        />
+                    </div>
                 </div>
             </div>
 

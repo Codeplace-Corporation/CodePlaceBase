@@ -501,7 +501,7 @@ const BountyJobDetails: React.FC<BountyJobDetailsProps> = ({ job, onBack }) => {
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">*
               <button
                 onClick={handleFavoriteClick}
                 className="p-3 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] transition-colors"

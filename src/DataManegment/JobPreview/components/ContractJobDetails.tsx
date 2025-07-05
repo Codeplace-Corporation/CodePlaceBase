@@ -181,10 +181,10 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
   const totalProposals = mockProposals.length;
 
   return (
-    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-4 pl-1 pr-2 pt-0 mt-4">
+    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-4 pl-1 pr-2 pt-0 mt-4">
       <div className="flex items-center justify-between mb-0">
-        <h3 className="text-lg font-bold flex items-center gap-2">
-          <FontAwesomeIcon icon={faGavel} className="text-blue-400 text-sm" />
+        <h3 className="text-sm lg:text-lg font-bold flex items-center gap-2">
+          <FontAwesomeIcon icon={faGavel} className="text-blue-400 text-xs lg:text-sm" />
           Current Proposals
         </h3>
         <span className="text-xs text-white/80 bg-blue-500/20 px-2 py-1 rounded-full mt-3 font-semibold">
@@ -193,11 +193,11 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
       </div>
       
       {/* Table Header with sortable arrows */}
-      <div className="flex items-center px-3 pt-2 mb-0 mt-0">
+      <div className="flex items-center px-2 lg:px-3 pt-2 mb-0 mt-0">
         <div className="text-xs font-semibold text-white/70 flex-1">Developer</div>
         
         {/* Sortable Score Header */}
-        <div className="text-xs font-semibold text-white/70 w-16 ml-1 flex items-center justify-start gap-1">
+        <div className="text-xs font-semibold text-white/70 w-12 lg:w-16 ml-1 flex items-center justify-start gap-1">
           <span 
             className={`transition-all duration-200 ${
               sortConfig.key === 'rating' ? 'text-blue-400' : 'text-white/70'
@@ -217,7 +217,7 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
         </div>
         
         {/* Sortable Date Header */}
-        <div className="text-xs font-semibold text-white/70 w-20 flex items-center justify-start gap-1 ml-3 -mr-4">
+        <div className="text-xs font-semibold text-white/70 w-16 lg:w-20 flex items-center justify-start gap-1 ml-2 lg:ml-3 -mr-2 lg:-mr-4">
           <span 
             className={`transition-all duration-200 ${
               sortConfig.key === 'time' ? 'text-blue-400' : 'text-white/70'
@@ -254,16 +254,16 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
                 <img 
                   src={proposal.avatar} 
                   alt={proposal.bidderName}
-                  className="w-3.5 h-3.5 rounded-full bg-gray-600 border border-blue-500/30 flex-shrink-0"
+                  className="w-3 lg:w-3.5 h-3 lg:h-3.5 rounded-full bg-gray-600 border border-blue-500/30 flex-shrink-0"
                 />
                 <div className="min-w-0">
-                  <h4 className="font-medium text-white text-[0.65rem] truncate">{proposal.bidderName}</h4>
+                  <h4 className="font-medium text-white text-[0.6rem] lg:text-[0.65rem] truncate">{proposal.bidderName}</h4>
                 </div>
               </div>
               
-              <div className="w-16 -mr-2">
+              <div className="w-12 lg:w-16 -mr-1 lg:-mr-2">
                 <span 
-                  className={`text-[0.65rem] transition-all duration-200 ${
+                  className={`text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
                     sortConfig.key === 'rating' ? 'text-blue-300 transform scale-105' : 'text-blue-300'
                   }`}
                 >
@@ -271,11 +271,11 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
                 </span>
               </div>
               
-              <div className="w-20 ">
+              <div className="w-16 lg:w-20">
                 <span 
-                  className={`font-semibold text-[0.65rem] transition-all duration-200 ${
+                  className={`font-semibold text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
                     sortConfig.key === 'time' ? 'text-orange-300 transform scale-105' : 'text-gray-300'
-                  } ml-2`}
+                  } ml-1 lg:ml-2`}
                 >
                   {getTimeAgo(proposal.submittedAt)}
                 </span>
@@ -414,8 +414,8 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
   };
 
   return (
-    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+      <h2 className="text-lg lg:text-2xl font-bold mb-4 lg:mb-6 flex items-center gap-2">
         <FontAwesomeIcon icon={faFolder} className="text-blue-400" />
         Project Files & Resources
       </h2>
@@ -423,38 +423,38 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
       {/* Windows-style file explorer */}
       <div className="bg-gray-900/50 border border-gray-600 rounded-lg overflow-hidden">
         {/* Header bar */}
-        <div className="bg-gray-800/70 px-4 py-2 border-b border-gray-600">
+        <div className="bg-gray-800/70 px-2 lg:px-4 py-2 border-b border-gray-600">
           <div className="flex items-center text-xs text-white/70">
             <div className="flex-1">Name</div>
-            <div className="w-20 text-center">Size</div>
-            <div className="w-32 text-center">Date Modified</div>
-            <div className="w-16 text-center">Actions</div>
+            <div className="w-16 lg:w-20 text-center">Size</div>
+            <div className="w-24 lg:w-32 text-center">Date Modified</div>
+            <div className="w-12 lg:w-16 text-center">Actions</div>
           </div>
         </div>
         
         {/* File list */}
-        <div className="max-h-96 overflow-y-auto">
+        <div className="max-h-80 lg:max-h-96 overflow-y-auto">
           {Object.entries(organizedFiles).map(([folderName, folderFiles]) => (
             <div key={folderName}>
               {/* Folder header */}
               <div 
-                className="flex items-center px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
+                className="flex items-center px-2 lg:px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
                 onClick={() => toggleFolder(folderName)}
               >
                 <div className="flex items-center gap-2 flex-1">
                   <FontAwesomeIcon 
                     icon={expandedFolders.has(folderName) ? faFolderOpen : faFolder}
-                    className="text-yellow-400 text-sm" 
+                    className="text-yellow-400 text-xs lg:text-sm" 
                   />
-                  <span className="text-sm font-medium">{folderName}</span>
+                  <span className="text-xs lg:text-sm font-medium">{folderName}</span>
                 </div>
-                <div className="w-20 text-center text-xs text-white/50">
+                <div className="w-16 lg:w-20 text-center text-xs text-white/50">
                   {folderFiles.length} items
                 </div>
-                <div className="w-32 text-center text-xs text-white/50">
+                <div className="w-24 lg:w-32 text-center text-xs text-white/50">
                   Folder
                 </div>
-                <div className="w-16"></div>
+                <div className="w-12 lg:w-16"></div>
               </div>
               
               {/* Folder contents */}
@@ -465,22 +465,22 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
                     return (
                       <div 
                         key={`${folderName}-${index}`}
-                        className="flex items-center px-8 py-2 hover:bg-blue-600/20 cursor-pointer border-b border-gray-700/30 last:border-b-0"
+                        className="flex items-center px-4 lg:px-8 py-2 hover:bg-blue-600/20 cursor-pointer border-b border-gray-700/30 last:border-b-0"
                       >
                         <div className="flex items-center gap-2 flex-1">
                           <FontAwesomeIcon 
                             icon={fileIcon.icon}
-                            className={`${fileIcon.color} text-sm`} 
+                            className={`${fileIcon.color} text-xs lg:text-sm`} 
                           />
-                          <span className="text-sm">{file.name}</span>
+                          <span className="text-xs lg:text-sm">{file.name}</span>
                         </div>
-                        <div className="w-20 text-center text-xs text-white/70">
+                        <div className="w-16 lg:w-20 text-center text-xs text-white/70">
                           {file.size}
                         </div>
-                        <div className="w-32 text-center text-xs text-white/70">
+                        <div className="w-24 lg:w-32 text-center text-xs text-white/70">
                           {file.modified}
                         </div>
-                        <div className="w-16 text-center">
+                        <div className="w-12 lg:w-16 text-center">
                           <button 
                             className="text-blue-400 hover:text-blue-300 transition-colors p-1"
                             title="Download file"
@@ -680,8 +680,8 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto px-6 pt-20 pb-8">
-        <div className="mb-6">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-16 md:pt-20 pb-6 md:pb-8">
+        <div className="mb-4 md:mb-6">
           <button 
             onClick={onBack}
             className="flex items-center gap-2 text-white/70 hover:text-[#00FF00] transition-colors mb-4"
@@ -692,43 +692,43 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
         </div>
 
         {/* Contract Job Header */}
-        <div className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg p-6 mb-6 border-l-4 border-blue-500">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 flex items-center justify-center">
-                <FontAwesomeIcon icon={faFileContract} className="text-blue-400 text-4xl" />
+        <div className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg p-4 md:p-6 mb-4 md:mb-6 border-l-4 border-blue-500">
+          <div className="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
+            <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
+              <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
+                <FontAwesomeIcon icon={faFileContract} className="text-blue-400 text-2xl md:text-4xl" />
               </div>
-              <div>
-                <h1 className="text-4xl font-bold mb-2">{job.projectTitle}</h1>
-                <div className="flex items-center gap-4 text-white/70">
-                  <span className="flex items-center gap-1 bg-blue-500/20 px-3 py-1 rounded-full">
-                    <FontAwesomeIcon icon={faFileContract} className="text-sm" />
+              <div className="flex-1 md:flex-none">
+                <h1 className="text-xl md:text-4xl font-bold mb-2">{job.projectTitle}</h1>
+                <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-white/70 text-sm lg:text-base">
+                  <span className="flex items-center gap-1 bg-blue-500/20 px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm">
+                    <FontAwesomeIcon icon={faFileContract} className="text-xs lg:text-sm" />
                     Contract Project
                   </span>
-                  <span>{job.projectType}</span>
+                  <span className="hidden lg:inline">{job.projectType}</span>
                   {job.category && (
                     <>
-                      <span>•</span>
-                      <span>{job.category}</span>
+                      <span className="hidden lg:inline">•</span>
+                      <span className="hidden lg:inline">{job.category}</span>
                     </>
                   )}
                 </div>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 lg:gap-3 w-full lg:w-auto justify-end">
               <button
                 onClick={handleFavoriteClick}
-                className="p-3 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] transition-colors"
+                className="p-2 lg:p-3 rounded-lg bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.2)] transition-colors"
               >
                 <FontAwesomeIcon
                   icon={isFavorite ? faHeartSolid : faHeartRegular}
-                  className={`text-xl ${isFavorite ? "text-[#00FF00]" : "text-white/70"}`}
+                  className={`text-lg lg:text-xl ${isFavorite ? "text-[#00FF00]" : "text-white/70"}`}
                 />
               </button>
               <button
                 onClick={handleSubmitProposal}
-                className="px-8 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all"
+                className="px-4 lg:px-8 py-2 lg:py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all text-sm lg:text-base"
               >
                 Submit Proposal
               </button>
@@ -736,43 +736,43 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
           </div>
 
           {/* Contract-specific Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-4 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-blue-500/20 to-cyan-500/20 p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <FontAwesomeIcon icon={faDollarSign} className="text-blue-400" />
-                <span className="text-sm text-white/70">Compentsation</span>
+                <FontAwesomeIcon icon={faDollarSign} className="text-blue-400 text-sm lg:text-base" />
+                <span className="text-xs lg:text-sm text-white/70">Compensation</span>
               </div>
-              <div className="text-2xl font-bold text-blue-400">
+              <div className="text-lg lg:text-2xl font-bold text-blue-400">
                 ${formatCompensation(job.compensation)}
               </div>
             </div>
             
-            <div className="bg-[rgba(255,255,255,0.05)] p-4 rounded-lg">
+            <div className="bg-[rgba(255,255,255,0.05)] p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <FontAwesomeIcon icon={faClock} className="text-white/70" />
-                <span className="text-sm text-white/70">Estimated Length</span>
+                <FontAwesomeIcon icon={faClock} className="text-white/70 text-sm lg:text-base" />
+                <span className="text-xs lg:text-sm text-white/70">Est. Length</span>
               </div>
-              <div className="text-lg font-semibold text-green-400">
+              <div className="text-sm lg:text-lg font-semibold text-green-400">
                 {formatProjectLength(job.estimatedProjectLength)}
               </div>
             </div>
             
-            <div className="bg-[rgba(255,255,255,0.05)] p-4 rounded-lg">
+            <div className="bg-[rgba(255,255,255,0.05)] p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <FontAwesomeIcon icon={faCalendarAlt} className="text-white/70" />
-                <span className="text-sm text-white/70">Applications Close</span>
+                <FontAwesomeIcon icon={faCalendarAlt} className="text-white/70 text-sm lg:text-base" />
+                <span className="text-xs lg:text-sm text-white/70">Apps Close</span>
               </div>
-              <div className="text-lg font-semibold text-orange-400">
+              <div className="text-sm lg:text-lg font-semibold text-orange-400">
                 {getTimeRemaining() || "No deadline"}
               </div>
             </div>
             
-            <div className="bg-[rgba(255,255,255,0.05)] p-4 rounded-lg">
+            <div className="bg-[rgba(255,255,255,0.05)] p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
-                <FontAwesomeIcon icon={faUser} className="text-white/70" />
-                <span className="text-sm text-white/70">Proposals</span>
+                <FontAwesomeIcon icon={faUser} className="text-white/70 text-sm lg:text-base" />
+                <span className="text-xs lg:text-sm text-white/70">Proposals</span>
               </div>
-              <div className="text-lg font-semibold">
+              <div className="text-lg lg:text-lg font-semibold">
                 {mockProposals.length}
               </div>
             </div>
@@ -780,10 +780,10 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
         </div>
 
         {/* Three boxes spanning full width */}
-        <div className="grid grid-cols-3 gap-6 mb-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-6 mb-3">
           {/* Tags */}
-          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg pt-0 p-6">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-4 md:p-6 pt-0">
+            <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faTag} className="text-blue-400" />
               Tags
             </h3>
@@ -800,8 +800,8 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
           </div>
 
           {/* Tools */}
-          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg pt-0 p-6">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-4 md:p-6 pt-0">
+            <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faTools} className="text-blue-400" />
               Required Tools
             </h3>
@@ -818,43 +818,43 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
           </div>
 
           {/* Developer Score */}
-          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-0">
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-4 md:p-6 pt-0">
+            <h3 className="text-lg md:text-xl font-bold mb-3 md:mb-4 flex items-center gap-2">
               <FontAwesomeIcon icon={faChartLine} className="text-green-400" />
-              Recommended Developer Score
+              Recommended Score
             </h3>
-            <div className="text-3xl font-bold text-green-400">800</div>
+            <div className="text-2xl md:text-3xl font-bold text-green-400">800</div>
           </div>
         </div>
 
         {/* Main Content - Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3 md:gap-6">
           {/* Left Column - Main Details */}
-          <div className="lg:col-span-2 space-y-3">
+          <div className="xl:col-span-2 space-y-3">
 
             {/* Project Overview */}
-            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2 ">
-                <FontAwesomeIcon icon={faFileText} className="text-blue-400"  />
+            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+              <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
+                <FontAwesomeIcon icon={faFileText} className="text-blue-400" />
                 Project Overview
               </h2>
-              <p className="text-white/80 leading-relaxed whitespace-pre-line">
+              <p className="text-white/80 leading-relaxed whitespace-pre-line text-sm lg:text-base">
                 {job.projectOverview || job.projectDescription}
               </p>
             </div>
 
             {/* Required Deliverables */}
             {job.deliverables && job.deliverables.length > 0 && (
-              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+                <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={faBullseye} className="text-green-400" />
                   Required Deliverables
                 </h2>
-                <ul className="space-y-3">
+                <ul className="space-y-2 lg:space-y-3">
                   {job.deliverables.map((deliverable, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <span className="text-green-400 mt-1">✓</span>
-                      <span className="text-white/80">{deliverable}</span>
+                      <span className="text-white/80 text-sm lg:text-base">{deliverable}</span>
                     </li>
                   ))}
                 </ul>
@@ -863,9 +863,9 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
 
             {/* Detailed Description */}
             {job.projectDescription && job.projectOverview && (
-              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-                <h2 className="text-2xl font-bold mb-4">Project Description</h2>
-                <p className="text-white/80 leading-relaxed whitespace-pre-line">
+              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+                <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4">Project Description</h2>
+                <p className="text-white/80 leading-relaxed whitespace-pre-line text-sm lg:text-base">
                   {job.projectDescription}
                 </p>
               </div>
@@ -873,13 +873,13 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
 
             {/* Requirements */}
             {job.requirements && job.requirements.length > 0 && (
-              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-                <h2 className="text-2xl font-bold mb-4">Contract Requirements</h2>
+              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+                <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4">Contract Requirements</h2>
                 <ul className="space-y-2">
                   {job.requirements.map((req, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <span className="text-blue-400 mt-1">•</span>
-                      <span className="text-white/80">{req}</span>
+                      <span className="text-white/80 text-sm lg:text-base">{req}</span>
                     </li>
                   ))}
                 </ul>
@@ -888,19 +888,19 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
 
             {/* Milestones */}
             {job.milestones && job.milestones.length > 0 && (
-              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-0">
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-0">
+                <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
                   <FontAwesomeIcon icon={faCalendarAlt} className="text-purple-400" />
                   Project Milestones
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-3 lg:space-y-4">
                   {job.milestones.map((milestone, index) => (
-                    <div key={index} className="bg-black/30 p-4 rounded-lg border border-purple-500/30">
+                    <div key={index} className="bg-black/30 p-3 lg:p-4 rounded-lg border border-purple-500/30">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-lg">{milestone.title}</h3>
-                        <span className="text-green-400 font-bold">${milestone.amount.toLocaleString()}</span>
+                        <h3 className="font-semibold text-base lg:text-lg">{milestone.title}</h3>
+                        <span className="text-green-400 font-bold text-sm lg:text-base">${milestone.amount.toLocaleString()}</span>
                       </div>
-                      <p className="text-white/70 text-sm">{milestone.description}</p>
+                      <p className="text-white/70 text-xs lg:text-sm">{milestone.description}</p>
                     </div>
                   ))}
                 </div>
@@ -918,12 +918,12 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
             />
 
             {/* Contract Terms */}
-            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 mt-4 pt-0 border border-blue-500/30">
-              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 mt-4 pt-0 border border-blue-500/30">
+              <h3 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
                 <FontAwesomeIcon icon={faHandshake} className="text-blue-400" />
                 Contract Terms
               </h3>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
                 {job.contractStartTime && (
                   <div className="flex justify-between">
                     <span className="text-white/50">Project Start:</span>
@@ -957,9 +957,9 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
             </div>
 
             {/* Client Information */}
-            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-1">
-              <h3 className="text-xl font-bold mb-4">Client Information</h3>
-              <div className="space-y-3 text-sm">
+            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
+              <h3 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4">Client Information</h3>
+              <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
                 <div className="flex justify-between">
                   <span className="text-white/50">Client Rating:</span>
                   <div className="flex items-center gap-1">
