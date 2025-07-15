@@ -551,6 +551,9 @@ interface UserProfile {
     portfolioSite?: string;
     github?: string;
     socials?: string;
+    twitter?: string;
+    instagram?: string;
+    youtube?: string;
     resume?: string;
     resumeURL?: string;
     resumeFileName?: string;
@@ -562,6 +565,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
     const [cropperOpen, setCropperOpen] = useState(false);
     const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
     const [profileImageUrl, setProfileImageUrl] = useState("");
+    const [isUploadingResume, setIsUploadingResume] = useState(false);
     
     // Form state
     const [formData, setFormData] = useState({
@@ -574,6 +578,9 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
         portfolioSite: "",
         github: "",
         socials: "",
+        twitter: "",
+        instagram: "",
+        youtube: "",
         resume: ""
     });
 
@@ -674,6 +681,9 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                         portfolioSite: userData.portfolioSite || "",
                         github: userData.github || "",
                         socials: userData.socials || "",
+                        twitter: userData.twitter || "",
+                        instagram: userData.instagram || "",
+                        youtube: userData.youtube || "",
                         resume: userData.resumeURL || ""
                     });
                 } else {
@@ -791,6 +801,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
         }
 
         try {
+            setIsUploadingResume(true);
             setSaveStatus("saving");
             
             if (!currentUser?.uid) {
@@ -830,6 +841,8 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
             setSaveStatus("error");
             setTimeout(() => setSaveStatus("idle"), 3000);
             alert('Error uploading resume. Please try again.');
+        } finally {
+            setIsUploadingResume(false);
         }
 
         // Clear the input
@@ -879,13 +892,13 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
     ];
 
     return (
-        <div className={`bg-[#0F0F0F] text-white p-3 rounded-lg max-w-md mx-auto border border-[#333] ${className}`}>
+        <div className={`bg-[#0F0F0F] text-white p-3 rounded-lg max-w-md mx-auto ${className}`}>
             {/* Avatar Section */}
             <div className="flex justify-center mb-3">
                 <div className="relative">
                     <button 
                         type="button"
-                        className="relative w-16 h-16 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden hover:opacity-80 transition-all duration-300 focus:outline-none focus:ring focus:ring-white/50 focus:ring-offset-1 focus:ring-offset-[#0F0F0F] shadow-lg"
+                        className="relative w-32 h-32 rounded-full bg-gradient-to-r from-gray-400 to-gray-600 flex items-center justify-center overflow-hidden hover:opacity-80 transition-all duration-300 focus:outline-none focus:ring focus:ring-white/50 focus:ring-offset-1 focus:ring-offset-[#0F0F0F] shadow-lg"
                         onClick={() => document.getElementById('avatar-file')?.click()}
                         aria-label="Change profile picture"
                     >
@@ -978,7 +991,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                         type="text"
                         value={formData.displayName}
                         onChange={(e) => handleInputChange('displayName', e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                        className="w-full px-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
                         placeholder="Display Name"
                     />
                 </div>
@@ -989,9 +1002,9 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                     <textarea
                         value={formData.bio}
                         onChange={handleBioChange}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white resize-none transition-all duration-200 min-h-[2rem] overflow-hidden"
+                        className="w-full px-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white resize-none transition-all duration-200 min-h-[3.5rem] overflow-hidden"
                         placeholder="Tell us about yourself..."
-                        style={{ height: '2rem' }}
+                        style={{ height: '3.5rem' }}
                     />
                    
                 </div>
@@ -999,17 +1012,25 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                 {/* Pronouns */}
                 <div>
                     <label className="block text-xs font-medium mb-0.5 text-white">Pronouns</label>
+                    <div className="relative">
                     <select
                         value={formData.pronouns}
                         onChange={(e) => handleInputChange('pronouns', e.target.value)}
-                        className="w-full px-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white focus:outline-none focus:ring focus:ring-white/50 focus:border-white appearance-none transition-all duration-200"
+                            className="w-full px-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white focus:outline-none focus:border-white appearance-none transition-all duration-200 pr-8 cursor-pointer hover:border-white/70"
                     >
                         {pronounOptions.map((pronoun) => (
-                            <option key={pronoun} value={pronoun} className="bg-[#000000] text-white">
+                                <option key={pronoun} value={pronoun} className="bg-[#000000] text-white py-1">
                                 {pronoun}
                             </option>
                         ))}
                     </select>
+                        {/* Custom dropdown arrow */}
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none">
+                            <svg className="w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Company */}
@@ -1022,7 +1043,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                             type="text"
                             value={formData.company}
                             onChange={(e) => handleInputChange('company', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
                             placeholder="Company"
                         />
                     </div>
@@ -1038,7 +1059,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                             type="text"
                             value={formData.location}
                             onChange={(e) => handleInputChange('location', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
                             placeholder="Location"
                         />
                     </div>
@@ -1055,7 +1076,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                             type="text"
                             value={formData.portfolioSite}
                             onChange={(e) => handleInputChange('portfolioSite', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
                             placeholder="Portfolio Site URL"
                         />
                     </div>
@@ -1071,7 +1092,7 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                             type="text"
                             value={formData.github}
                             onChange={(e) => handleInputChange('github', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
                             placeholder="GitHub Profile URL"
                         />
                     </div>
@@ -1080,15 +1101,63 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                 {/* Socials */}
                 <div>
                     <div className="relative">
-                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                        </svg>
+                        <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 border border-white rounded-full flex items-center justify-center">
+                            <div className="w-1 h-1 bg-white rounded-full"></div>
+                        </div>
                         <input
                             type="text"
                             value={formData.socials}
                             onChange={(e) => handleInputChange('socials', e.target.value)}
-                            className="w-full pl-7 pr-2.5 py-1.5 bg-[#000000] border border-[#1a1a1a] rounded text-xs text-white placeholder-white/50 focus:outline-none focus:ring focus:ring-white/50 focus:border-white transition-all duration-200"
-                            placeholder="Social Media Links"
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
+                            placeholder="LinkedIn Profile"
+                        />
+                    </div>
+                </div>
+
+                {/* Twitter/X */}
+                <div>
+                    <div className="relative">
+                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                        <input
+                            type="text"
+                            value={formData.twitter || ""}
+                            onChange={(e) => handleInputChange('twitter', e.target.value)}
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
+                            placeholder="Twitter/X Profile"
+                        />
+                    </div>
+                </div>
+
+                {/* Instagram */}
+                <div>
+                    <div className="relative">
+                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                        </svg>
+                        <input
+                            type="text"
+                            value={formData.instagram || ""}
+                            onChange={(e) => handleInputChange('instagram', e.target.value)}
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
+                            placeholder="Instagram Profile"
+                        />
+                    </div>
+                </div>
+
+                {/* YouTube */}
+                <div>
+                    <div className="relative">
+                        <svg className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-white/60" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                        </svg>
+                        <input
+                            type="text"
+                            value={formData.youtube || ""}
+                            onChange={(e) => handleInputChange('youtube', e.target.value)}
+                            className="w-full pl-7 pr-2.5 py-1 bg-[#000000] border border-[#1a1a1a] rounded-md text-xs text-white placeholder-white/50 focus:outline-none focus:border-white transition-all duration-200"
+                            placeholder="YouTube Channel"
                         />
                     </div>
                 </div>
@@ -1134,6 +1203,14 @@ const ProfileCard = ({ className = "" }: ProfileCardProps) => {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    ) : isUploadingResume ? (
+                        <div className="bg-[#000000] border border-[#1a1a1a] rounded-lg p-4 text-center">
+                            <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            </div>
+                            <div className="text-xs font-medium text-white mb-1">Uploading resume...</div>
+                            <div className="text-xs text-white/60">Please wait</div>
                         </div>
                     ) : (
                         <div 

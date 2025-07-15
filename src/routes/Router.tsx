@@ -1,7 +1,8 @@
 /* eslint-disable no-restricted-globals */
-import { Navigate, Outlet, Route, Routes, useNavigate, useLocation } from "react-router-dom";
+import { Navigate, Outlet, Route, Routes, useNavigate, useLocation, useParams } from "react-router-dom";
 import { auth } from "../utils/firebase";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
+import { onAuthStateChanged } from "firebase/auth";
 import { Login } from "../pages/auth/Login";
 import { Signup } from "../pages/auth/Signup";
 import JobSearch from "../pages/jobSearch/JobSearch";
@@ -10,18 +11,24 @@ import Messages from "../pages/messages/Messages";
 import Dashboard from "../pages/dashboard";
 import JobDetails from "../DataManegment/JobPreview/JobDetails";
 import PostJobs from "../pages/LoggedIn/MyJobs/PostJobs";
+import JobPostingForm from "../pages/LoggedIn/MyJobs/JobPostingForm/JobPostingForm";
+import DashboardJobDetails from "../pages/LoggedIn/Dashboard/DashboardJobDetails";
+
+// Wrapper component to handle draft editing
+const JobPostingFormWrapper = ({ closeForm, currentUser }: { closeForm: () => void; currentUser: any }) => {
+  const { draftId } = useParams();
+  console.log('JobPostingFormWrapper - draftId:', draftId);
+  console.log('JobPostingFormWrapper - currentUser:', currentUser);
+  return <JobPostingForm closeForm={closeForm} currentUser={currentUser} draftId={draftId} />;
+};
 
 const ProtectedRoute = () => {
     // If user is not authenticated, return user to homepage
     // Otherwise, proceed
-    return auth.currentUser ? (
-        <Outlet />
-    ) : (
-        <Navigate
-            to="/"
-            replace
-        />
-    );
+    if (!auth.currentUser) {
+        return <Navigate to="/" replace />;
+    }
+    return <Outlet />;
 };
 
 const NoNav = () => (
@@ -33,26 +40,42 @@ const NoNav = () => (
 const Router = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [user, setUser] = useState(auth.currentUser);
+
+    // Memoize the closeForm function to prevent infinite re-renders
+    const closeForm = useCallback(() => {
+        navigate('/PostJobs');
+    }, [navigate]);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     useEffect(() => {
         if (
-            auth.currentUser &&
+            user &&
             (location.pathname === "/" ||
                 location.pathname === "/login" ||
                 location.pathname === "/signup" ||
                 location.pathname === "/forgot-password")
-        )
+        ) {
             navigate("/dashboard");
-    }, [navigate, location.pathname]);
+        }
+    }, [navigate, location.pathname, user]);
 
     return (
         <Routes>
             <Route element={<NoNav />}>
-                {/* Unprotected Routes [home, about, privacy, login, signup, forgot password] */}
+                {/* Unprotected Routes [home, about, about, privacy, login, signup, forgot password] */}
                 <Route
                     path="/"
                     element={<Dashboard />}
                 />
+
                 <Route
                     path="/login"
                     element={<Login />}
@@ -80,10 +103,19 @@ const Router = () => {
                     path="/dashboard"
                     element={<Dashboard />}
                 />
-                {/* Add MyJobs routes - handle both URL patterns */}
                 <Route
                     path="/PostJobs"
                     element={<PostJobs />}
+                />
+
+                <Route
+                    path="/job-form"
+                    element={<JobPostingForm closeForm={closeForm} currentUser={user} />}
+                />
+                {/* Only use the wrapper for editing drafts */}
+                <Route
+                    path="/job-posting-form/:draftId"
+                    element={<JobPostingFormWrapper closeForm={closeForm} currentUser={user} />}
                 />
              
                 <Route path="/profile">
@@ -100,7 +132,7 @@ const Router = () => {
 
                 <Route
                     path="*"
-                    element={<h1>404, page not found</h1>}
+                    element={<div>404 - Protected route not found. Current path: {location.pathname}</div>}
                 />
             </Route>
         </Routes>

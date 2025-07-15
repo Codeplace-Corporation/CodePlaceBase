@@ -1,19 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faGavel, faClock, faCalendarAlt, faCogs, faDollarSign, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faTrophy, faClock, faCalendarAlt, faCogs } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface AuctionStepTwoProps {
+interface ChallengeStepTwoProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormData, errors }) => {
+const ChallengeSptfive: React.FC<ChallengeStepTwoProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
-  const [showOpenCalendar, setShowOpenCalendar] = useState(false);
-  const [showCloseCalendar, setShowCloseCalendar] = useState(false);
-  const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
+  const [showStartCalendar, setShowStartCalendar] = useState(false);
+  const [showEndCalendar, setShowEndCalendar] = useState(false);
+
+  // Initialize default values if they don't exist
+  useEffect(() => {
+    const updates: Partial<FormData> = {};
+    
+    // Set default eprojectlength if not set OR if it contains invalid values
+    // Check if the current value is one of the valid duration options
+    const validDurations = [
+      '<1-hour', '1-3-hours', '3-6-hours', '6-12-hours', 
+      '1-day', '2-days', '3-5-days', 
+      '1-week', '2-weeks', 
+      '1-month', '1-2-months', '3-5-months', '6-months-plus'
+    ];
+    
+    if (!formData.eprojectlength || !validDurations.includes(formData.eprojectlength)) {
+      // If eprojectlength is not set or contains invalid value (like 'open-challenge'), reset it
+      updates.eprojectlength = '1-day';
+    }
+    
+    // Set default complexityLevel if not set  
+    if (!formData.complexityLevel) {
+      updates.complexityLevel = 'moderate';
+    }
+    
+    // Apply updates if any defaults needed to be set
+    if (Object.keys(updates).length > 0) {
+      updateFormData(updates);
+    }
+  }, [formData.eprojectlength, formData.complexityLevel, updateFormData]); // Added dependencies to monitor for invalid values
 
   const Tooltip: React.FC<{ id: string; text: string; children: React.ReactNode }> = ({ id, text, children }) => (
     <div className="relative inline-block">
@@ -33,10 +61,13 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
     </div>
   );
 
-  // Get current date in YYYY-MM-DD format
+  // Get current date in YYYY-MM-DD format (local timezone)
   const getCurrentDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get current time in 12-hour format
@@ -46,26 +77,31 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
     const minutes = now.getMinutes();
     const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    return hour12 + ':' + minutes.toString().padStart(2, '0') + ' ' + ampm;
   };
 
-  // Get date with offset (helper for presets)
+  // Get date with offset (helper for presets) - local timezone
   const getDateOffset = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  // Format date for display (e.g., "Mar 18th, 2020")
+  // Format date for display (e.g., "Mar 18th, 2020") - local timezone
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return 'Select Date';
-    const date = new Date(dateString);
+    // Parse the date string as local time to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                   day === 2 || day === 22 ? 'nd' : 
-                   day === 3 || day === 23 ? 'rd' : 'th';
-    return `${months[date.getMonth()]} ${day}${suffix}, ${date.getFullYear()}`;
+    const dayNum = date.getDate();
+    const suffix = dayNum === 1 || dayNum === 21 || dayNum === 31 ? 'st' : 
+                   dayNum === 2 || dayNum === 22 ? 'nd' : 
+                   dayNum === 3 || dayNum === 23 ? 'rd' : 'th';
+    return months[date.getMonth()] + ' ' + dayNum + suffix + ', ' + date.getFullYear();
   };
 
   // Convert 12-hour time to 24-hour for input
@@ -79,7 +115,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
     if (modifier === 'PM') {
       hours = (parseInt(hours, 10) + 12).toString();
     }
-    return `${hours.padStart(2, '0')}:${minutes}`;
+    return hours.padStart(2, '0') + ':' + minutes;
   };
 
   // Convert 24-hour time to 12-hour for display
@@ -89,7 +125,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
     const hour24 = parseInt(hours, 10);
     const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
     const ampm = hour24 >= 12 ? 'PM' : 'AM';
-    return `${hour12}:${minutes} ${ampm}`;
+    return hour12 + ':' + minutes + ' ' + ampm;
   };
 
   // Custom time input component with grouped number boxes
@@ -107,7 +143,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -124,7 +160,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -133,7 +169,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
           <button
             type="button"
             onClick={() => onChange('12:00 PM')}
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-colors"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-green-400 transition-colors"
           >
             PM
           </button>
@@ -158,7 +194,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
         hours24 += 12;
       }
       
-      const time12Result = convertTo12Hour(`${hours24.toString().padStart(2, '0')}:${newMinutes}`);
+      const time12Result = convertTo12Hour(hours24.toString().padStart(2, '0') + ':' + newMinutes);
       onChange(time12Result);
     };
 
@@ -180,7 +216,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
               updateTime(newValue || '1', minutesDisplay);
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20"
           maxLength={2}
           placeholder="12"
         />
@@ -199,7 +235,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
               updateTime(hoursDisplay, newValue.padStart(2, '0'));
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20"
           maxLength={2}
           placeholder="00"
         />
@@ -208,7 +244,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
         <button
           type="button"
           onClick={togglePeriod}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-colors"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-green-400 transition-colors"
         >
           {period}
         </button>
@@ -236,12 +272,12 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
     
     // Empty cells for days before month starts
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
+      days.push(<div key={'empty-' + i} className="w-8 h-8"></div>);
     }
     
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateString = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateString = viewYear + '-' + String(viewMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
       const isSelected = dateString === selectedDate;
       const isToday = day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
       
@@ -252,13 +288,12 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
             onDateSelect(dateString);
             onClose();
           }}
-          className={`w-8 h-8 text-sm rounded hover:bg-white/20 transition-colors ${
-            isSelected 
-              ? 'bg-orange-500 text-white' 
+          className={'w-8 h-8 text-sm rounded hover:bg-white/20 transition-colors ' + 
+            (isSelected 
+              ? 'bg-green-500 text-white' 
               : isToday 
               ? 'bg-white/20 text-white' 
-              : 'text-white/70 hover:text-white'
-          }`}
+              : 'text-white/70 hover:text-white')}
         >
           {day}
         </button>
@@ -328,212 +363,141 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
   };
 
   // Handle price input changes
-  const handleStartingBidChange = (value: string) => {
-    updateFormData({ startingBid: value });
-  };
-
-  const handleBidIncrementChange = (value: string) => {
-    updateFormData({ bidIncrement: value });
+  const handlePrizeChange = (value: string) => {
+    // Allow typing without formatting, but store the raw number
+    updateFormData({ Amount: value });
   };
 
   // Handle blur to format the price
-  const handleStartingBidBlur = () => {
-    if (formData.startingBid) {
-      const formatted = formatPrice(formData.startingBid);
-      updateFormData({ startingBid: formatted });
-    }
-  };
-
-  const handleBidIncrementBlur = () => {
-    if (formData.bidIncrement) {
-      const formatted = formatPrice(formData.bidIncrement);
-      updateFormData({ bidIncrement: formatted });
+  const handlePrizeBlur = () => {
+    if (formData.Amount) {
+      const formatted = formatPrice(formData.Amount);
+      updateFormData({ Amount: formatted });
     }
   };
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {/* Starting Bid & Increment */}
+      {/* Challenge Prize */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faGavel} className="text-orange-400" />
-          Starting Bid & Increment
-          <Tooltip id="starting-bid" text="Set the initial bidding amount and the minimum increment for each new bid.">
+          <FontAwesomeIcon icon={faTrophy} className="text-green-400" />
+          Challenge Prize
+          <Tooltip id="challenge-prize" text="The total amount you'll award to the winner(s) of your challenge.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
-        <div className="grid grid-cols-2 gap-4">
-          {/* Starting Bid */}
-          <div>
-            <label className="block text-white/70 text-xs mb-2">Starting Bid</label>
-            <input
-              type="number"
-              value={formData.startingBid || ''}
-              onChange={(e) => handleStartingBidChange(e.target.value)}
-              onBlur={handleStartingBidBlur}
-              className={`w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-orange-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
-                errors.startingBid ? 'border-red-500' : 'border-white/20'
-              }`}
-              placeholder="e.g., 500.00"
-              min="0"
-              step="0.01"
-            />
-          </div>
-
-          {/* Minimum Bid Increment */}
-          <div>
-            <label className="block text-white/70 text-xs mb-2">Minimum Bid Increment</label>
-            <input
-              type="number"
-              value={formData.bidIncrement || '1.00'}
-              onChange={(e) => handleBidIncrementChange(e.target.value)}
-              onBlur={handleBidIncrementBlur}
-              className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-orange-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-              placeholder="1.00"
-              min="0"
-              step="0.01"
-            />
-          </div>
-        </div>
-        
-        {errors.startingBid && <p className="text-red-400 text-xs mt-1">{errors.startingBid}</p>}
+        <input
+          type="number"
+          value={formData.Amount || ''}
+          onChange={(e) => handlePrizeChange(e.target.value)}
+          onBlur={handlePrizeBlur}
+          className={
+            'w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ' +
+            (errors.Amount ? 'border-red-500' : 'border-white/20')
+          }
+          placeholder="Enter amount (e.g., 1000.00)"
+          min="0"
+          step="0.01"
+        />
+        {errors.Amount && <p className="text-red-400 text-xs mt-1">{errors.Amount}</p>}
       </div>
 
-      {/* Auction Timeline */}
+      {/* Challenge Timeline */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCalendarAlt} className="text-orange-400" />
-          Auction Timeline
-          <Tooltip id="auction-timeline" text="Set when your auction opens for bidding, closes, and when the project must be delivered.">
+          <FontAwesomeIcon icon={faCalendarAlt} className="text-green-400" />
+          Challenge Timeline
+          <Tooltip id="challenge-timeline" text="Set when your challenge starts and expires. Click the date to open calendar, and set the time.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
         <div className="space-y-4">
-          {/* Auction Opens */}
+          {/* Challenge Starts */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Auction Opens</label>
+            <label className="block text-white/70 text-xs mb-2">Challenge Starts</label>
             <div className="inline-flex bg-white/5 border border-white/20 rounded-md overflow-hidden">
               <div 
                 className="relative"
-                onMouseLeave={() => setShowOpenCalendar(false)}
+                onMouseLeave={() => setShowStartCalendar(false)}
               >
                 <button
                   type="button"
-                  onClick={() => setShowOpenCalendar(!showOpenCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  onClick={() => setShowStartCalendar(!showStartCalendar)}
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-green-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
-                  <span className="group-hover:text-orange-300 transition-colors">
-                    {formatDisplayDate(formData.auctionStartTime || getCurrentDate())}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-green-300 text-xs transition-colors" />
+                  <span className="group-hover:text-green-300 transition-colors">
+                    {formatDisplayDate(formData.StartDate || getCurrentDate())}
                   </span>
                 </button>
-                {showOpenCalendar && (
+                {showStartCalendar && (
                   <Calendar
-                    selectedDate={formData.auctionStartTime || getCurrentDate()}
-                    onDateSelect={(date) => updateFormData({ auctionStartTime: date })}
-                    onClose={() => setShowOpenCalendar(false)}
+                    selectedDate={formData.StartDate || getCurrentDate()}
+                    onDateSelect={(date) => updateFormData({ StartDate: date })}
+                    onClose={() => setShowStartCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyStartTime || getCurrentTime()}
-                  onChange={(time) => updateFormData({ bountyStartTime: time })}
+                  value={formData.StartTime || getCurrentTime()}
+                  onChange={(time) => updateFormData({ StartTime: time })}
                 />
               </div>
             </div>
           </div>
 
-          {/* Auction Closes */}
+          {/* Challenge Expires */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Auction Closes</label>
-            <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
-              errors.auctionCloseTime ? 'border-red-500' : 'border-white/20'
-            }`}>
+            <label className="block text-white/70 text-xs mb-2">Challenge Expires</label>
+            <div className={
+              'inline-flex bg-white/5 border rounded-md overflow-hidden ' +
+              (errors.Deadline ? 'border-red-500' : 'border-white/20')
+            }>
               <div 
                 className="relative"
-                onMouseLeave={() => setShowCloseCalendar(false)}
+                onMouseLeave={() => setShowEndCalendar(false)}
               >
                 <button
                   type="button"
-                  onClick={() => setShowCloseCalendar(!showCloseCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  onClick={() => setShowEndCalendar(!showEndCalendar)}
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-green-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
-                  <span className="group-hover:text-orange-300 transition-colors">
-                    {formatDisplayDate(formData.auctionCloseTime || '')}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-green-300 text-xs transition-colors" />
+                  <span className="group-hover:text-green-300 transition-colors">
+                    {formatDisplayDate(formData.Deadline || '')}
                   </span>
                 </button>
-                {showCloseCalendar && (
+                {showEndCalendar && (
                   <Calendar
-                    selectedDate={formData.auctionCloseTime || ''}
-                    onDateSelect={(date) => updateFormData({ auctionCloseTime: date })}
-                    onClose={() => setShowCloseCalendar(false)}
+                    selectedDate={formData.Deadline || ''}
+                    onDateSelect={(date) => updateFormData({ Deadline: date })}
+                    onClose={() => setShowEndCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.auctionEndTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ auctionEndTime: time })}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Project Deadline */}
-          <div>
-            <label className="block text-white/70 text-xs mb-2">Project Deadline</label>
-            <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
-              errors.projectDeadline ? 'border-red-500' : 'border-white/20'
-            }`}>
-              <div 
-                className="relative"
-                onMouseLeave={() => setShowDeadlineCalendar(false)}
-              >
-                <button
-                  type="button"
-                  onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
-                >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
-                  <span className="group-hover:text-orange-300 transition-colors">
-                    {formatDisplayDate(formData.projectDeadline || '')}
-                  </span>
-                </button>
-                {showDeadlineCalendar && (
-                  <Calendar
-                    selectedDate={formData.projectDeadline || ''}
-                    onDateSelect={(date) => updateFormData({ projectDeadline: date })}
-                    onClose={() => setShowDeadlineCalendar(false)}
-                  />
-                )}
-              </div>
-              <div>
-                <CustomTimeInput
-                  value={formData.bountyExpiryTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ bountyExpiryTime: time })}
+                  value={formData.ExpiryTime || '--:-- PM'}
+                  onChange={(time) => updateFormData({ ExpiryTime: time })}
                 />
               </div>
             </div>
           </div>
         </div>
         
-        {(errors.auctionCloseTime || errors.projectDeadline) && (
-          <p className="text-red-400 text-xs mt-1">
-            {errors.auctionCloseTime || errors.projectDeadline}
-          </p>
-        )}
+        {errors.Deadline && <p className="text-red-400 text-xs mt-1">{errors.Deadline}</p>}
       </div>
 
       {/* Estimated Project Length */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faClock} className="text-orange-400" />
+          <FontAwesomeIcon icon={faClock} className="text-green-400" />
           Estimated Project Length
-          <Tooltip id="project-length" text="How long do you expect this project to take once the winning bidder starts working on it?">
+          <Tooltip id="project-length" text="How long do you expect this project to take once a developer starts working on it?">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -546,19 +510,19 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
               max="13"
               step="1"
               value={
-                formData.estimatedProjectLength === '<1-hour' ? '1' :
-                formData.estimatedProjectLength === '1-3-hours' ? '2' :
-                formData.estimatedProjectLength === '3-6-hours' ? '3' :
-                formData.estimatedProjectLength === '6-12-hours' ? '4' :
-                formData.estimatedProjectLength === '1-day' ? '5' :
-                formData.estimatedProjectLength === '2-days' ? '6' :
-                formData.estimatedProjectLength === '3-5-days' ? '7' :
-                formData.estimatedProjectLength === '1-week' ? '8' :
-                formData.estimatedProjectLength === '2-weeks' ? '9' :
-                formData.estimatedProjectLength === '1-month' ? '10' :
-                formData.estimatedProjectLength === '1-2-months' ? '11' :
-                formData.estimatedProjectLength === '3-5-months' ? '12' :
-                formData.estimatedProjectLength === '6-months-plus' ? '13' : '5'
+                formData.eprojectlength === '<1-hour' ? '1' :
+                formData.eprojectlength === '1-3-hours' ? '2' :
+                formData.eprojectlength === '3-6-hours' ? '3' :
+                formData.eprojectlength === '6-12-hours' ? '4' :
+                formData.eprojectlength === '1-day' ? '5' :
+                formData.eprojectlength === '2-days' ? '6' :
+                formData.eprojectlength === '3-5-days' ? '7' :
+                formData.eprojectlength === '1-week' ? '8' :
+                formData.eprojectlength === '2-weeks' ? '9' :
+                formData.eprojectlength === '1-month' ? '10' :
+                formData.eprojectlength === '1-2-months' ? '11' :
+                formData.eprojectlength === '3-5-months' ? '12' :
+                formData.eprojectlength === '6-months-plus' ? '13' : '5'
               }
               onChange={(e) => {
                 const value = e.target.value;
@@ -575,7 +539,7 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
                   value === '10' ? '1-month' :
                   value === '11' ? '1-2-months' :
                   value === '12' ? '3-5-months' : '6-months-plus';
-                updateFormData({ estimatedProjectLength: duration });
+                updateFormData({ eprojectlength: duration });
               }}
               className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer duration-slider"
             />
@@ -598,48 +562,48 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
           
           <div className="text-center">
             <div className="text-lg font-medium text-white">
-              {formData.estimatedProjectLength === '<1-hour' ? '<1 Hour' :
-               formData.estimatedProjectLength === '1-3-hours' ? '1-3 Hours' :
-               formData.estimatedProjectLength === '3-6-hours' ? '3-6 Hours' :
-               formData.estimatedProjectLength === '6-12-hours' ? '6-12 Hours' :
-               formData.estimatedProjectLength === '1-day' ? '1 Day' :
-               formData.estimatedProjectLength === '2-days' ? '2 Days' :
-               formData.estimatedProjectLength === '3-5-days' ? '3-5 Days' :
-               formData.estimatedProjectLength === '1-week' ? '1 Week' :
-               formData.estimatedProjectLength === '2-weeks' ? '2 Weeks' :
-               formData.estimatedProjectLength === '1-month' ? '1 Month' :
-               formData.estimatedProjectLength === '1-2-months' ? '1-2 Months' :
-               formData.estimatedProjectLength === '3-5-months' ? '3-5 Months' :
-               formData.estimatedProjectLength === '6-months-plus' ? '6+ Months' :
+              {formData.eprojectlength === '<1-hour' ? '<1 Hour' :
+               formData.eprojectlength === '1-3-hours' ? '1-3 Hours' :
+               formData.eprojectlength === '3-6-hours' ? '3-6 Hours' :
+               formData.eprojectlength === '6-12-hours' ? '6-12 Hours' :
+               formData.eprojectlength === '1-day' ? '1 Day' :
+               formData.eprojectlength === '2-days' ? '2 Days' :
+               formData.eprojectlength === '3-5-days' ? '3-5 Days' :
+               formData.eprojectlength === '1-week' ? '1 Week' :
+               formData.eprojectlength === '2-weeks' ? '2 Weeks' :
+               formData.eprojectlength === '1-month' ? '1 Month' :
+               formData.eprojectlength === '1-2-months' ? '1-2 Months' :
+               formData.eprojectlength === '3-5-months' ? '3-5 Months' :
+               formData.eprojectlength === '6-months-plus' ? '6+ Months' :
                'Select Duration'}
             </div>
             <div className="text-sm text-white/70">
-              {formData.estimatedProjectLength === '<1-hour' ? 'Quick fixes, small tweaks' :
-               formData.estimatedProjectLength === '1-3-hours' ? 'Minor features, bug fixes' :
-               formData.estimatedProjectLength === '3-6-hours' ? 'Small components, scripts' :
-               formData.estimatedProjectLength === '6-12-hours' ? 'Medium features, integrations' :
-               formData.estimatedProjectLength === '1-day' ? 'Full day project, complete feature' :
-               formData.estimatedProjectLength === '2-days' ? 'Extended feature development' :
-               formData.estimatedProjectLength === '3-5-days' ? 'Multi-component features' :
-               formData.estimatedProjectLength === '1-week' ? 'Small to medium project' :
-               formData.estimatedProjectLength === '2-weeks' ? 'Medium project with testing' :
-               formData.estimatedProjectLength === '1-month' ? 'Large feature or small application' :
-               formData.estimatedProjectLength === '1-2-months' ? 'Medium application development' :
-               formData.estimatedProjectLength === '3-5-months' ? 'Large application or system' :
-               formData.estimatedProjectLength === '6-months-plus' ? 'Enterprise-level project' :
+              {formData.eprojectlength === '<1-hour' ? 'Quick fixes, small tweaks' :
+               formData.eprojectlength === '1-3-hours' ? 'Minor features, bug fixes' :
+               formData.eprojectlength === '3-6-hours' ? 'Small components, scripts' :
+               formData.eprojectlength === '6-12-hours' ? 'Medium features, integrations' :
+               formData.eprojectlength === '1-day' ? 'Full day project, complete feature' :
+               formData.eprojectlength === '2-days' ? 'Extended feature development' :
+               formData.eprojectlength === '3-5-days' ? 'Multi-component features' :
+               formData.eprojectlength === '1-week' ? 'Small to medium project' :
+               formData.eprojectlength === '2-weeks' ? 'Medium project with testing' :
+               formData.eprojectlength === '1-month' ? 'Large feature or small application' :
+               formData.eprojectlength === '1-2-months' ? 'Medium application development' :
+               formData.eprojectlength === '3-5-months' ? 'Large application or system' :
+               formData.eprojectlength === '6-months-plus' ? 'Enterprise-level project' :
                'Choose the expected time to complete this project'}
             </div>
           </div>
         </div>
-        {errors.estimatedProjectLength && <p className="text-red-400 text-xs mt-1">{errors.estimatedProjectLength}</p>}
+        {errors.eprojectlength && <p className="text-red-400 text-xs mt-1">{errors.eprojectlength}</p>}
       </div>
 
       {/* Project Complexity */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCogs} className="text-orange-400" />
+          <FontAwesomeIcon icon={faCogs} className="text-green-400" />
           Project Complexity
-          <Tooltip id="project-complexity" text="How complex is this project? This helps bidders understand the skill level required.">
+          <Tooltip id="project-complexity" text="How complex is this project? This helps developers understand the skill level required.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -721,4 +685,4 @@ const AuctionStepTwo: React.FC<AuctionStepTwoProps> = ({ formData, updateFormDat
   );
 };
 
-export default AuctionStepTwo;
+export default ChallengeSptfive;

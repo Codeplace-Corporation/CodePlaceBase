@@ -16,7 +16,7 @@ const Profile = () => {
                     
                     {/* Main Content - Takes 3 columns */}
                     <div className="lg:col-span-3">
-                        <div className="bg-card rounded-md">
+                        <div className=" rounded-md">
                             <MainContent />
                         </div>
                     </div>

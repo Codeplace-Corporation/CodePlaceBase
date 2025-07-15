@@ -10,6 +10,7 @@ import {
   faCheck,
   faBan,
   faFlag,
+  faCrosshairs,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import React, { useState, ReactNode, useEffect, useRef } from "react";
@@ -39,7 +40,7 @@ interface JobItemProps {
 
 const jobPostTypes = [
   { type: "Auction", icon: faGavel },
-  { type: "Bounty", icon: faGift },
+  { type: "Bounty", icon: faCrosshairs },
   { type: "Contract", icon: faFileContract },
   { type: "Challenge", icon: faTrophy },
 ];
@@ -149,6 +150,51 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
     return jobType ? jobType.icon : faQuestionCircle;
   };
 
+  const getJobTypeGradient = (type: string) => {
+    switch (type) {
+      case "Auction":
+        return "bg-white/5 border-purple-500";
+      case "Bounty":
+        return "bg-white/5 border-blue-500";
+      case "Contract":
+        return "bg-white/5 border-orange-500";
+      case "Challenge":
+        return "bg-white/5 border-white";
+      default:
+        return "bg-white/5 border-gray-600";
+    }
+  };
+
+  const getJobTypeColor = (type: string) => {
+    switch (type) {
+      case "Auction":
+        return "from-orange-500 to-red-500";
+      case "Bounty":
+        return "from-purple-500 to-pink-500";
+      case "Contract":
+        return "from-blue-500 to-cyan-500";
+      case "Challenge":
+        return "from-green-500 to-emerald-500";
+      default:
+        return "from-gray-500 to-gray-600";
+    }
+  };
+
+  const getJobTypeIconColor = (type: string) => {
+    switch (type) {
+      case "Auction":
+        return "text-orange-400";
+      case "Bounty":
+        return "text-purple-400";
+      case "Contract":
+        return "text-blue-400";
+      case "Challenge":
+        return "text-green-400";
+      default:
+        return "text-white";
+    }
+  };
+
   const formatCompensation = (compensation: string) => {
     const amount = parseFloat(compensation.replace(/[^0-9.-]+/g, ""));
     return amount.toFixed(2);
@@ -176,24 +222,24 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
       <div className="w-8 h-8 flex items-center justify-center">
         <FontAwesomeIcon
           icon={getJobTypeIcon(job.selectedJobPostType)}
-          className="text-accent text-2xl"
+          className={`text-2xl ${getJobTypeIconColor(job.selectedJobPostType)}`}
         />
       </div>
       <div className="flex flex-col flex-1 gap-1">
-     <h3 className="text-2xl font-semibold mb-0 mt-0">{job.projectTitle}</h3>
+     <h3 className={`text-2xl font-semibold mb-0 mt-0 bg-gradient-to-r ${getJobTypeColor(job.selectedJobPostType)} bg-clip-text text-transparent`}>{job.projectTitle}</h3>
 
         <div className="flex flex-row items-center gap-1">
-          <p className="text-white/50 text-xs">{job.selectedJobPostType}</p>
-          <p className="text-accent">|</p>
-          <p className="text-white/50 text-xs">{job.projectType}</p>
-          <p className="text-accent">|</p>
-          <p className="text-white/50 text-xs">
+          <p className="text-white/80 text-xs">{job.selectedJobPostType}</p>
+          <p className="text-white/60">|</p>
+          <p className="text-white/80 text-xs">{job.projectType}</p>
+          <p className="text-white/60">|</p>
+          <p className="text-white/80 text-xs">
             {job.tools.map((tool) => tool.name).join(", ")}
           </p>
           {job.tags.length > 0 && (
             <>
-              <p className="text-accent">|</p>
-              <p className="text-white/50 text-xs">{job.tags.join(", ")}</p>
+              <p className="text-white/60">|</p>
+              <p className="text-white/80 text-xs">{job.tags.join(", ")}</p>
             </>
           )}
         </div>
@@ -201,30 +247,30 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
 
       <div className="flex items-center gap-8">
         <div className="min-w-[120px] flex flex-col items-center">
-          <span className="text-white/30 text-[10px] mb-0.5">
+          <span className="text-white/70 text-[10px] mb-0.5">
             {getTimeLabel(job.selectedJobPostType)}
           </span>
-          <span className="text-[#00ff00]">
+          <span className={`bg-gradient-to-r ${getJobTypeColor(job.selectedJobPostType)} bg-clip-text text-transparent font-semibold`}>
             {getTimeRemaining(job) || "Closed"}
           </span>
         </div>
 
         <div className="min-w-[120px] flex flex-col items-center">
-          <span className="text-white/30 text-[10px] mb-0.5">
+          <span className="text-white/70 text-[10px] mb-0.5">
             Estimated Project Length
           </span>
-          <span className="text-white">
+          <span className={`bg-gradient-to-r ${getJobTypeColor(job.selectedJobPostType)} bg-clip-text text-transparent font-semibold`}>
             {formatProjectLength(job.estimatedProjectLength)}
           </span>
         </div>
 
         <div className="flex flex-col items-center min-w-[120px]">
-          <span className="text-white/30 text-[10px] mb-0.5">
+          <span className="text-white/70 text-[10px] mb-0.5">
             Expected Compensation
           </span>
           <div className="flex items-center text-3xl font-bold">
-            <span className="text-[#00ff00]">$</span>
-            <span className="text-white">
+            <span className={`bg-gradient-to-r ${getJobTypeColor(job.selectedJobPostType)} bg-clip-text text-transparent`}>$</span>
+            <span className={`bg-gradient-to-r ${getJobTypeColor(job.selectedJobPostType)} bg-clip-text text-transparent`}>
               {formatCompensation(job.compensation)}
             </span>
           </div>
@@ -240,8 +286,8 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
             icon={isFavorite ? faHeartSolid : faHeartRegular}
             className={`text-xl ${
               isFavorite
-                ? "text-[#00FF00]"
-                : "text-white/50 hover:text-[#00FF00]"
+                ? "text-red-600"
+                : "text-white/70 hover:text-white"
             }`}
           />
         </button>
@@ -252,7 +298,7 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
           >
             <FontAwesomeIcon
               icon={faEllipsisV}
-              className="text-xl text-white/50 hover:text-green-500"
+              className="text-xl text-white/70 hover:text-white"
             />
           </button>
           {showMenu && (
@@ -267,9 +313,9 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
                 >
                   <FontAwesomeIcon
                     icon={faCheck}
-                    className="text-white/50 group-hover:text-green-500 transition-colors"
+                    className="text-white/50 group-hover:text-white transition-colors"
                   />
-                  <span className="group-hover:text-green-500 transition-colors">
+                  <span className="group-hover:text-white transition-colors">
                     Show me more jobs like this
                   </span>
                 </button>
@@ -315,32 +361,32 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
     <div className="text-white relative">
     
       <div className="flex justify-between gap-4">
-        <div className="flex-1 bg-[#0D0D0D] p-4 rounded-lg">
-          <h3 className="text-xl font-bold mt-0 mb-2">Project Overview</h3>
-          <p className="text-base leading-relaxed">{job.projectOverview || "No overview available"}</p>
+        <div className="flex-1 bg-white/5 backdrop-blur-sm p-4 rounded-lg">
+          <h3 className="text-xl font-bold mt-0 mb-2 text-white">Project Overview</h3>
+          <p className="text-base leading-relaxed text-white/90">{job.projectOverview || "No overview available"}</p>
         </div>
-        <div className="w-[40%] bg-[#0D0D0D] p-4 rounded-lg">
+        <div className="w-[40%] bg-white/5 backdrop-blur-sm p-4 rounded-lg">
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="text-xl font-bold mt-0 mb-4">Job Details</h3>
+              <h3 className="text-xl font-bold mt-0 mb-4 text-white">Job Details</h3>
               <div className="space-y-3">
                 <div className="flex items-center">
-                  <span className="w-24 text-white/50">Type:</span>
-                  <span>{job.selectedJobPostType}</span>
+                  <span className="w-24 text-white/70">Type:</span>
+                  <span className="text-white">{job.selectedJobPostType}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-24 text-white/50">Project Type:</span>
-                  <span>{job.projectType}</span>
+                  <span className="w-24 text-white/70">Project Type:</span>
+                  <span className="text-white">{job.projectType}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-24 text-white/50">Duration:</span>
-                  <span>{formatProjectLength(job.estimatedProjectLength)}</span>
+                  <span className="w-24 text-white/70">Duration:</span>
+                  <span className="text-white">{formatProjectLength(job.estimatedProjectLength)}</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="w-24 text-white/50">
+                  <span className="w-24 text-white/70">
                     {getTimeLabel(job.selectedJobPostType)}:
                   </span>
-                  <span className="text-[#00ff00]">
+                  <span className="text-white">
                     {getTimeRemaining(job) || "Closed"}
                   </span>
                 </div>
@@ -348,12 +394,12 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
             </div>
             <div className="space-y-8">
               <div>
-                <h3 className="text-xl font-bold mt-0 mb-4">Project Tags</h3>
+                <h3 className="text-xl font-bold mt-0 mb-4 text-white">Project Tags</h3>
                 <div className="flex flex-wrap gap-2">
                   {job.tags.map((tag, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-[#1A1A1A] rounded-md text-sm"
+                      className="px-3 py-1 bg-white/5 rounded-md text-sm text-white/90"
                     >
                       {tag}
                     </span>
@@ -361,12 +407,12 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
                 </div>
               </div>
               <div>
-                <h3 className="text-xl font-bold mb-4">Required Tools</h3>
+                <h3 className="text-xl font-bold mb-4 text-white">Required Tools</h3>
                 <div className="flex flex-wrap gap-2">
                   {job.tools.map((tool, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-[#1A1A1A] rounded-md text-sm"
+                      className="px-3 py-1 bg-white/5 rounded-md text-sm text-white/90"
                     >
                       {tool.name}
                     </span>
@@ -383,19 +429,19 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
     e.stopPropagation();
     handleFavoriteClick(e);
   }}
-  className={`px-6 py-2 bg-black hover:bg-black/80  rounded-lg transition-colors flex items-center gap-2
-    ${isFavorite ? "text-[#00FF00]" : "text-white/50 hover:text-[#00FF00]"}`}
+  className={`px-6 py-2 bg-white/5 backdrop-blur-sm hover:bg-white/10 rounded-lg transition-colors flex items-center gap-2
+    ${isFavorite ? "text-red-600" : "text-white/70 hover:text-white"}`}
 >
   <FontAwesomeIcon
     icon={isFavorite ? faHeartSolid : faHeartRegular}
-    className="transition-colors"
+    className={`transition-colors ${isFavorite ? "text-red-600" : ""}`}
   />
   <span className="transition-colors">Add to Interested Jobs</span>
 </button>
 
       <button
         onClick={handleApplyNow}
-        className="px-6 py-2 bg-[#00FF00] hover:bg-[#E9E9E9] text-black hover:text-[#00FF00] rounded-lg transition-colors font-medium"
+        className="px-6 py-2 bg-white/80 backdrop-blur-sm hover:bg-white text-black rounded-lg transition-colors font-medium"
       >
         Apply Now
       </button>
@@ -407,11 +453,11 @@ const JobItem: React.FC<JobItemProps> = ({ job, onNavigateToJob }) => {
   return (
     <ExpandableBox
       expandedContent={expandedContent}
-      className={`mx-4 ${
+      className={`mx-4 ${getJobTypeGradient(job.selectedJobPostType)} ${
         isExpanded
-          ? "bg-[rgba(255,255,255,0.1)]"
-          : "bg-[rgba(255,255,255,0.1)] hover:bg-[rgba(255,255,255,0.1)] rounded-lg"
-      } transition-colors`}
+          ? "hover:brightness-95"
+          : "hover:brightness-95 rounded-lg"
+      } transition-all duration-300`}
     >
       {mainContent}
     </ExpandableBox>

@@ -6,6 +6,10 @@ type ModalProps = {
     showFooter?: boolean;
     footer?: React.ReactNode;
     onClose: () => void;
+    showFooterBorder?: boolean;
+    showFooterPadding?: boolean;
+    showBodyPadding?: boolean;
+    showCloseButton?: boolean;
 };
 
 const Modal = ({
@@ -16,6 +20,10 @@ const Modal = ({
     showFooter = true,
     footer,
     onClose,
+    showFooterBorder = true,
+    showFooterPadding = true,
+    showBodyPadding = true,
+    showCloseButton = true,
 }: ModalProps) => {
     return (
         <>
@@ -34,19 +42,21 @@ const Modal = ({
                         {showHeader && (
                             <div className="flex items-start justify-between px-6 pb-4 border-b border-solid border-card-light rounded-t">
                                 <h3>{headerTitle}</h3>
-                                <button
-                                    className="p-1 ml-auto bg-transparent border-0 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                                    onClick={onClose}
-                                >
-                                    <span className="text-sm block outline-none focus:outline-none">
-                                        &times;
-                                    </span>
-                                </button>
+                                {showCloseButton && (
+                                    <button
+                                        className="p-1 ml-auto bg-transparent border-0 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
+                                        onClick={onClose}
+                                    >
+                                        <span className="text-sm block outline-none focus:outline-none">
+                                            &times;
+                                        </span>
+                                    </button>
+                                )}
                             </div>
                         )}
-                        <div className="relative p-6 flex-auto">{body}</div>
+                        <div className={`relative flex-auto ${showBodyPadding ? 'p-6' : ''}`}>{body}</div>
                         {showFooter && (
-                            <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+                            <div className={`flex items-center justify-end rounded-b ${showFooterPadding ? 'p-6' : 'px-6'}`}>
                                 {footer}
                             </div>
                         )}

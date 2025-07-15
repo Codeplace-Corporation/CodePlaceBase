@@ -1,6 +1,9 @@
 const functions = require("firebase-functions");
 const cors = require("cors")({origin: true});
 
+// Import scheduled tasks
+const scheduledTasks = require("./scheduledTasks");
+
 // It's better to use environment variables for API keys
 const stripeApiKey = functions.config().stripe.secret_key;
 const stripe = require("stripe")(stripeApiKey);
@@ -22,18 +25,18 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
               currency: currency || "usd",
               product_data: {
                 name: "Job Posting Fee",
-                description: `Job ID: ${jobId}`,
+                description: `Job ID: ${jobId}`
               },
-              unit_amount: amount || 2000,
+              unit_amount: amount || 2000
             },
-            quantity: 1,
-          },
+            quantity: 1
+          }
         ],
         mode: "payment",
         success_url: "https://codeplace.co/success", // Add a success page
         cancel_url: "https://codeplace.co/cancel", // Add a cancel page
         client_reference_id: jobId,
-        customer_email: userId, // Assuming userId
+        customer_email: userId // Assuming userId
       });
 
       return res.json({id: session.id});
@@ -43,3 +46,8 @@ exports.createCheckoutSession = functions.https.onRequest((req, res) => {
     }
   });
 });
+
+// Export scheduled functions
+exports.scheduledTask = scheduledTasks.scheduledTask;
+exports.dailyAnalytics = scheduledTasks.dailyAnalytics;
+exports.weeklyMaintenance = scheduledTasks.weeklyMaintenance;

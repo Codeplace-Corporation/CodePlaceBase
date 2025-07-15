@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGavel, faCrosshairs, faFileContract, faTrophy } from '@fortawesome/free-solid-svg-icons';
+import { faGavel, faCrosshairs, faFileContract, faTrophy, faRocket } from '@fortawesome/free-solid-svg-icons';
 
 // Import Firebase functions from your existing firebase.ts file
-import { firestore, collection, addDoc } from '../../../firebase'; // Adjust path as needed
+import { firestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, query, where } from '../../../utils/firebase'; // Adjust path as needed
+import { getAuth } from 'firebase/auth';
 
 interface JobType {
   type: string;
@@ -33,11 +34,23 @@ const LandingPageMain: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isMovingJobs, setIsMovingJobs] = useState<boolean>(false);
+  const [moveJobsStatus, setMoveJobsStatus] = useState<string>('');
   
   // Add useLocation hook for URL parameter detection
   const location = useLocation();
+  const auth = getAuth();
 
   const headerText = "Let's Get to Work";
+
+  // Check authentication status
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setIsAuthenticated(!!user);
+    });
+    return () => unsubscribe();
+  }, [auth]);
 
   // Check if we should show the waitlist modal based on URL params
   useEffect(() => {
@@ -64,6 +77,70 @@ const LandingPageMain: React.FC = () => {
 
     return () => clearInterval(typingInterval);
   }, []);
+
+  // Function to move all staged jobs to active jobs
+  const moveStagedJobsToActive = async () => {
+    if (!isAuthenticated) {
+      setMoveJobsStatus('You must be logged in to perform this action.');
+      return;
+    }
+
+    setIsMovingJobs(true);
+    setMoveJobsStatus('Moving staged jobs to active jobs...');
+
+    try {
+      // Get all staged jobs
+      const stagedJobsRef = collection(firestore, 'staged_jobs');
+      const stagedJobsQuery = query(stagedJobsRef, where('status', '==', 'staged'));
+      const stagedJobsSnapshot = await getDocs(stagedJobsQuery);
+
+      if (stagedJobsSnapshot.empty) {
+        setMoveJobsStatus('No staged jobs found to move.');
+        setIsMovingJobs(false);
+        return;
+      }
+
+      let movedCount = 0;
+      let errorCount = 0;
+
+      // Move each staged job to activeJobs collection
+      for (const stagedJobDoc of stagedJobsSnapshot.docs) {
+        try {
+          const jobData = stagedJobDoc.data();
+          
+          // Update the job status to 'active' and add activation timestamp
+          const updatedJobData = {
+            ...jobData,
+            status: 'active',
+            activatedAt: new Date().toISOString(),
+            movedFromStaged: true
+          };
+
+          // Add to activeJobs collection
+          await setDoc(doc(firestore, 'activeJobs', stagedJobDoc.id), updatedJobData);
+          
+          // Delete from staged_jobs collection
+          await deleteDoc(doc(firestore, 'staged_jobs', stagedJobDoc.id));
+          
+          movedCount++;
+        } catch (error) {
+          console.error(`Error moving job ${stagedJobDoc.id}:`, error);
+          errorCount++;
+        }
+      }
+
+      if (errorCount > 0) {
+        setMoveJobsStatus(`Moved ${movedCount} jobs successfully. ${errorCount} jobs failed to move.`);
+      } else {
+        setMoveJobsStatus(`Successfully moved ${movedCount} jobs from staged to active!`);
+      }
+    } catch (error) {
+      console.error('Error moving staged jobs:', error);
+      setMoveJobsStatus('Error moving staged jobs. Please try again.');
+    } finally {
+      setIsMovingJobs(false);
+    }
+  };
 
   // Handle job type selection and hover
   const handleJobTypeClick = (index: number) => {
@@ -711,7 +788,76 @@ const LandingPageMain: React.FC = () => {
             >
               Join Waitlist
             </button>
+
+            {/* Move Staged Jobs Button - Only show for authenticated users */}
+            {isAuthenticated && (
+              <button 
+                style={{
+                  padding: '1rem 2rem',
+                  backgroundColor: '#10a37f',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50px',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  cursor: isMovingJobs ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.3s ease',
+                  minWidth: '200px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  opacity: isMovingJobs ? 0.7 : 1
+                }}
+                onClick={moveStagedJobsToActive}
+                disabled={isMovingJobs}
+                onMouseEnter={(e) => {
+                  if (!isMovingJobs) {
+                    e.currentTarget.style.backgroundColor = '#0d8a6f';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isMovingJobs) {
+                    e.currentTarget.style.backgroundColor = '#10a37f';
+                  }
+                }}
+              >
+                <FontAwesomeIcon icon={faRocket} />
+                {isMovingJobs ? 'Moving Jobs...' : 'Move Staged Jobs to Active'}
+              </button>
+            )}
           </div>
+
+          {/* Status message for job moving */}
+          {moveJobsStatus && (
+            <div style={{
+              textAlign: 'center',
+              marginTop: '1rem',
+              padding: '1rem',
+              borderRadius: '8px',
+              backgroundColor: moveJobsStatus.includes('Error') || moveJobsStatus.includes('failed') 
+                ? 'rgba(239, 68, 68, 0.1)' 
+                : moveJobsStatus.includes('Successfully') 
+                ? 'rgba(34, 197, 94, 0.1)' 
+                : 'rgba(59, 130, 246, 0.1)',
+              color: moveJobsStatus.includes('Error') || moveJobsStatus.includes('failed')
+                ? '#ef4444'
+                : moveJobsStatus.includes('Successfully')
+                ? '#22c55e'
+                : '#3b82f6',
+              border: `1px solid ${
+                moveJobsStatus.includes('Error') || moveJobsStatus.includes('failed')
+                  ? '#ef4444'
+                  : moveJobsStatus.includes('Successfully')
+                  ? '#22c55e'
+                  : '#3b82f6'
+              }`,
+              maxWidth: '600px',
+              margin: '1rem auto 0'
+            }}>
+              {moveJobsStatus}
+            </div>
+          )}
         </div>
       </section>
 

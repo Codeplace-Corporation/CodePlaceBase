@@ -17,13 +17,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface ContractStepThreeProps {
+interface ContractStptwoProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const ContractStepThree: React.FC<ContractStepThreeProps> = ({ formData, updateFormData, errors }) => {
+const ContractStptwo: React.FC<ContractStptwoProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -99,7 +99,8 @@ const ContractStepThree: React.FC<ContractStepThreeProps> = ({ formData, updateF
     }
   };
 
-  const getFileIcon = (fileName: string) => {
+  const getFileIcon = (fileName: string | undefined | null) => {
+    if (!fileName) return faFileAlt;
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'jpg':
@@ -145,7 +146,7 @@ const ContractStepThree: React.FC<ContractStepThreeProps> = ({ formData, updateF
       {/* Full Project Description */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faFileAlt} className="text-blue-400" />
+          <FontAwesomeIcon icon={faFileAlt} className="text-purple-400" />
           Detailed Project Description
           <Tooltip id="project-description" text="Provide a comprehensive description of your project including technical requirements, user stories, acceptance criteria, and any specific implementation details.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
@@ -161,7 +162,7 @@ const ContractStepThree: React.FC<ContractStepThreeProps> = ({ formData, updateF
             setTimeout(autoResizeTextarea, 0);
           }}
           onInput={autoResizeTextarea}
-          className={`w-full px-4 py-3 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-blue-400 resize-none min-h-[200px] ${
+          className={`w-full px-4 py-3 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none min-h-[200px] ${
             errors.projectDescription ? 'border-red-500' : 'border-white/20'
           }`}
           placeholder="Provide detailed information about your project:
@@ -186,7 +187,7 @@ Be as specific as possible to help developers understand exactly what you need..
       {/* GitHub Repository Link */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCodeBranch} className="text-blue-400" />
+          <FontAwesomeIcon icon={faCodeBranch} className="text-purple-400" />
           GitHub Repository (Optional)
           <Tooltip id="github-repo" text="Link to an existing GitHub repository with starter code, examples, or related projects that developers can reference.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
@@ -216,7 +217,7 @@ Be as specific as possible to help developers understand exactly what you need..
                   });
                 }
               }}
-              className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/20 rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-blue-400"
+              className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/20 rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-purple-400"
               placeholder="https://github.com/username/repository"
             />
           </div>
@@ -229,7 +230,7 @@ Be as specific as possible to help developers understand exactly what you need..
       {/* Project Files and Resources */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faUpload} className="text-blue-400" />
+          <FontAwesomeIcon icon={faUpload} className="text-purple-400" />
           Project Files & Resources
           <Tooltip id="project-files" text="Upload design mockups, technical specifications, data files, or any other resources that developers will need to complete the project.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
@@ -241,7 +242,7 @@ Be as specific as possible to help developers understand exactly what you need..
           htmlFor="file-upload"
           className={`border-2 border-dashed rounded-lg transition-all duration-200 min-h-[300px] flex flex-col cursor-pointer relative ${
             dragActive 
-              ? 'border-blue-400 bg-blue-400/10' 
+              ? 'border-purple-400 bg-purple-400/10' 
               : 'border-white/20 hover:border-white/30'
           }`}
           onDragEnter={handleDrag}
@@ -281,12 +282,12 @@ Be as specific as possible to help developers understand exactly what you need..
               {/* Header with upload option */}
               <div className="p-4 border-b border-white/10 flex justify-between items-center py-0">
                 <h3 className="text-white font-medium text-sm flex items-center gap-2">
-                  <FontAwesomeIcon icon={faFolder} className="text-blue-400" />
+                  <FontAwesomeIcon icon={faFolder} className="text-purple-400" />
                   Project Files ({formData.projectFiles.length})
                 </h3>
                 <label
                   htmlFor="file-upload-additional"
-                  className="px-3 bg-blue-500/20 border border-blue-500/30 rounded text-blue-300 hover:bg-blue-500/30 transition-colors cursor-pointer text-xs font-medium flex items-center gap-1"
+                  className="px-3 bg-purple-500/20 border border-purple-500/30 rounded text-purple-300 hover:bg-purple-500/30 transition-colors cursor-pointer text-xs font-medium flex items-center gap-1"
                 >
                   <FontAwesomeIcon icon={faPlus} className="text-xs" />
                   Add More
@@ -305,16 +306,17 @@ Be as specific as possible to help developers understand exactly what you need..
               <div className="flex-1 py-4 px-4">
                 <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30 scrollbar-track-rounded-full scrollbar-thumb-rounded-full">
                   {formData.projectFiles.map((file, index) => {
-                    const isGithubUrl = file.name?.startsWith('github:');
-                    const displayName = isGithubUrl ? file.name.replace('github:', '') : file.name;
+                    const fileName = file.name || 'Unknown File';
+                    const isGithubUrl = fileName.startsWith('github:');
+                    const displayName = isGithubUrl ? fileName.replace('github:', '') : fileName;
                     const fileInfo = isGithubUrl ? 'GitHub Repository' : `${file.type || 'Unknown'} • ${formatFileSize(file.size)}`;
                     
                     return (
                       <div key={index} className="flex items-center gap-3 px-3 bg-white/5 border border-white/10 rounded group hover:bg-white/10 transition-colors">
                         <div className="flex-shrink-0">
                           <FontAwesomeIcon 
-                            icon={isGithubUrl ? faCodeBranch : getFileIcon(file.name)} 
-                            className={`text-sm ${isGithubUrl ? 'text-blue-400' : 'text-gray-400'}`} 
+                            icon={isGithubUrl ? faCodeBranch : getFileIcon(fileName)} 
+                            className={`text-sm ${isGithubUrl ? 'text-purple-400' : 'text-gray-400'}`} 
                           />
                         </div>
                         
@@ -342,12 +344,12 @@ Be as specific as possible to help developers understand exactly what you need..
 
               {/* Drop zone overlay when dragging */}
               {dragActive && (
-                <div className="absolute inset-2 border-2 border-dashed border-blue-400 rounded-lg bg-blue-400/10 flex items-center justify-center">
-                  <div className="text-center">
-                    <FontAwesomeIcon icon={faUpload} className="text-blue-400 text-3xl mb-2" />
-                    <p className="text-blue-400 font-medium">Drop files here to add them</p>
-                  </div>
+                              <div className="absolute inset-2 border-2 border-dashed border-purple-400 rounded-lg bg-purple-400/10 flex items-center justify-center">
+                <div className="text-center">
+                  <FontAwesomeIcon icon={faUpload} className="text-purple-400 text-3xl mb-2" />
+                  <p className="text-purple-400 font-medium">Drop files here to add them</p>
                 </div>
+              </div>
               )}
             </>
           )}
@@ -361,4 +363,4 @@ Be as specific as possible to help developers understand exactly what you need..
   );
 };
 
-export default ContractStepThree;
+export default ContractStptwo;

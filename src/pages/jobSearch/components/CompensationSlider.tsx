@@ -39,7 +39,7 @@ const CompensationSlider: React.FC<CompensationSliderProps> = ({
             {/* slider values */}
             <div className="relative mb-2 flex justify-between">
                 <span
-                    className="absolute bg-[#26262B] text-accent px-1 py-2 rounded-lg border border-accent whitespace-nowrap text-sm"
+                    className="absolute text-accent whitespace-nowrap text-sm"
                     style={{
                         left: calculatePosition(value[0]),
                         bottom: "0px",
@@ -48,7 +48,7 @@ const CompensationSlider: React.FC<CompensationSliderProps> = ({
                     {convertToDisplayValue(value[0])}
                 </span>
                 <span
-                    className="absolute bg-[#26262B] text-accent px-1 py-2 rounded-lg border border-accent whitespace-nowrap text-sm ml-0"
+                    className="absolute text-accent whitespace-nowrap text-sm ml-0"
                     style={{
                         left: calculatePosition(value[1]),
                         bottom: "0px",

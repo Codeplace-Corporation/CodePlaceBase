@@ -8,10 +8,10 @@ const StyledSlider: React.FC<SliderProps> = ({ ...rest }) => {
             styles={{
                 handle: {
                     borderColor: "#32CD32",
-                    backgroundColor: "#121212",
+                    backgroundColor: "#000000",
                 },
-                track: { backgroundColor: "#7d4cdb" },
-                tracks: { backgroundColor: "#7d4cbd" },
+                track: { backgroundColor: "#32CD32" },
+                tracks: { backgroundColor: "#32CD32" },
                 rail: { backgroundColor: "#333333" },
             }}
         />

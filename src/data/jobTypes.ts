@@ -29,6 +29,7 @@ export const categories = [
     "Backend",
     "Fullstack",
     "Bug Fix",
+    "Debugging",
     "Robotics",
     "AI",
     "DevOps",

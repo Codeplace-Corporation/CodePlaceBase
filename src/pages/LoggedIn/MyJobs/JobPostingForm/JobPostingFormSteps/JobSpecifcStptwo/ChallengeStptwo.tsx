@@ -15,21 +15,16 @@ import {
   faFileArchive,
   faCodeBranch
 } from '@fortawesome/free-solid-svg-icons';
-// Define FormData interface locally or import from correct path
-interface FormData {
-  projectDescription?: string;
-  projectFiles?: File[];
-  [key: string]: any;
-}
+import { FormData } from '../../JobPostingForm';
 
-interface ChallengeStepThreeProps {
+interface ChallengeStptwoProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
   setCurrentStep?: React.Dispatch<React.SetStateAction<number>>;
 }
 
-const ChallengeStepThree: React.FC<ChallengeStepThreeProps> = ({ formData, updateFormData, errors }) => {
+const ChallengeStptwo: React.FC<ChallengeStptwoProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -79,7 +74,7 @@ const ChallengeStepThree: React.FC<ChallengeStepThreeProps> = ({ formData, updat
 
   const removeFile = (index: number) => {
     const currentFiles = formData.projectFiles || [];
-    const updated = currentFiles.filter((_: File, i: number) => i !== index);
+    const updated = currentFiles.filter((_, i) => i !== index);
     updateFormData({
       projectFiles: updated
     });
@@ -105,7 +100,8 @@ const ChallengeStepThree: React.FC<ChallengeStepThreeProps> = ({ formData, updat
     }
   };
 
-  const getFileIcon = (fileName: string) => {
+  const getFileIcon = (fileName: string | undefined | null) => {
+    if (!fileName) return faFileAlt;
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'jpg':
@@ -206,10 +202,10 @@ Be as specific as possible to help developers understand exactly what you need..
             </div>
             <input
               type="url"
-              value={formData.projectFiles?.find((file: File) => file.name?.startsWith('github:'))?.name?.replace('github:', '') || ''}
+              value={formData.projectFiles?.find((file: any) => file.name?.startsWith('github:'))?.name?.replace('github:', '') || ''}
               onChange={(e) => {
                 const githubUrl = e.target.value;
-                const currentFiles = formData.projectFiles?.filter((file: File) => !file.name?.startsWith('github:')) || [];
+                const currentFiles = formData.projectFiles?.filter((file: any) => !file.name?.startsWith('github:')) || [];
                 if (githubUrl.trim()) {
                   // Create a pseudo-file object for GitHub URL
                   const githubFile = new File([''], `github:${githubUrl}`, { type: 'application/x-git-url' });
@@ -310,16 +306,22 @@ Be as specific as possible to help developers understand exactly what you need..
               {/* Files List */}
               <div className="flex-1 py-4 px-4">
                 <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30 scrollbar-track-rounded-full scrollbar-thumb-rounded-full">
-                  {formData.projectFiles.map((file: File, index: number) => {
-                    const isGithubUrl = file.name?.startsWith('github:');
-                    const displayName = isGithubUrl ? file.name.replace('github:', '') : file.name;
-                    const fileInfo = isGithubUrl ? 'GitHub Repository' : `${file.type || 'Unknown'} • ${formatFileSize(file.size)}`;
+                  {formData.projectFiles.map((file: any, index: number) => {
+                    const fileName = file.name || 'Unknown File';
+                    const isGithubUrl = fileName.startsWith('github:');
+                    const isPlaceholder = !(file instanceof File) && file.isPlaceholder;
+                    const displayName = isGithubUrl ? fileName.replace('github:', '') : fileName;
+                    const fileInfo = isGithubUrl ? 'GitHub Repository' : 
+                                   isPlaceholder ? 'Placeholder (re-upload needed)' :
+                                   `${file.type || 'Unknown'} • ${file.size && typeof file.size === 'number' ? formatFileSize(file.size) : 'Unknown size'}`;
                     
                     return (
-                      <div key={index} className="flex items-center gap-3 px-3 bg-white/5 border border-white/10 rounded group hover:bg-white/10 transition-colors">
+                      <div key={index} className={`flex items-center gap-3 px-3 border rounded group hover:bg-white/10 transition-colors ${
+                        isPlaceholder ? 'bg-yellow-500/10 border-yellow-500/30' : 'bg-white/5 border-white/10'
+                      }`}>
                         <div className="flex-shrink-0">
                           <FontAwesomeIcon 
-                            icon={isGithubUrl ? faCodeBranch : getFileIcon(file.name)} 
+                            icon={isGithubUrl ? faCodeBranch : getFileIcon(fileName)} 
                             className={`text-sm ${isGithubUrl ? 'text-green-400' : 'text-gray-400'}`} 
                           />
                         </div>
@@ -367,4 +369,4 @@ Be as specific as possible to help developers understand exactly what you need..
   );
 };
 
-export default ChallengeStepThree;
+export default ChallengeStptwo;

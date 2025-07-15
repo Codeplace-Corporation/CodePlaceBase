@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithGoogle } from '../Auth'; // Adjust the path if needed
 import logo from '../assets/logo.png'; // Adjust the path if needed
 import { useSignInModal } from '../context/SignInModalContext'; // Add this import
+import { useUnsavedChanges } from '../context/UnsavedChangesContext';
+import { updateWaitlistStatus } from '../utils/waitlistUtils';
 
 const auth = getAuth();
 
@@ -493,6 +495,7 @@ export default function Navbar() {
   
   // Replace local state with context
   const { showSignInPopup, setShowSignInPopup } = useSignInModal();
+  const { handleNavigationAttempt } = useUnsavedChanges();
   
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -539,9 +542,15 @@ export default function Navbar() {
   // Handle Google sign in
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle();
+      const result = await signInWithGoogle();
+      
+      // Update waitlist status if email exists in waitlist
+      if (result?.user?.email) {
+        await updateWaitlistStatus(result.user.email);
+      }
+      
       setShowSignInPopup(false);
-      navigate('/Dashboard');
+      handleNavigationAttempt('/Dashboard');
     } catch (error) {
       console.error('Sign in error:', error);
     }
@@ -554,7 +563,10 @@ export default function Navbar() {
     setError(null);
 
     try {
-      await signInWithEmailAndPassword(auth, username, password);
+      const userCredential = await signInWithEmailAndPassword(auth, username, password);
+      
+      // Update waitlist status if email exists in waitlist
+      await updateWaitlistStatus(username);
       
       // Clear form
       setUsername('');
@@ -620,6 +632,9 @@ export default function Navbar() {
       console.error('Logout error:', error);
     }
   };
+
+  // Staff authorization check
+  const isStaffMember = user?.email === 'diegorafaelpitt@gmail.com' || user?.email === 'jacobnathanshaprio@gmail.com';
 
   // All your existing styles remain the same...
   const navStyles = {
@@ -952,7 +967,14 @@ export default function Navbar() {
       <nav style={navStyles}>
         <div style={mainContainerStyles}>
           <div style={leftSectionStyles}>
-            <a href={isAuthenticated ? '/LandingPage' : '/'} style={{color: 'inherit', textDecoration: 'none'}}>
+            <a 
+              href={isAuthenticated ? '/LandingPage' : '/'} 
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(isAuthenticated ? '/Dashboard' : '/');
+              }}
+              style={{color: 'inherit', textDecoration: 'none'}}
+            >
               <img src={logo} alt="CodePlace" style={logoStyles} />
             </a>
           </div>
@@ -962,6 +984,10 @@ export default function Navbar() {
               <li>
                 <a 
                   href="/Dashboard" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/Dashboard');
+                  }}
                   style={linkStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -971,7 +997,11 @@ export default function Navbar() {
               </li>
               <li>
                 <a 
-                  href="/FindJobs" 
+                  href="/JobSearch" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/JobSearch');
+                  }}
                   style={linkStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -982,6 +1012,10 @@ export default function Navbar() {
               <li>
                 <a 
                   href="/PostJobs" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/PostJobs');
+                  }}
                   style={linkStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -992,6 +1026,10 @@ export default function Navbar() {
               <li>
                 <a 
                   href="/Teams" 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/Teams');
+                  }}
                   style={linkStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
@@ -999,6 +1037,32 @@ export default function Navbar() {
                   Teams
                 </a>
               </li>
+              {isStaffMember && (
+                <li>
+                  <a 
+                    href="/Staff" 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/Staff');
+                    }}
+                    style={{
+                      ...linkStyles,
+                      color: '#ff6b6b',
+                      fontWeight: 700
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'scale(1.2)';
+                      e.currentTarget.style.color = '#ff5252';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'scale(1)';
+                      e.currentTarget.style.color = '#ff6b6b';
+                    }}
+                  >
+                    Staff
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -1043,7 +1107,7 @@ export default function Navbar() {
                   style={iconStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  onClick={() => window.location.href = '/Messages'}
+                  onClick={() => navigate('/Messages')}
                 >
                   forum
                 </span>
@@ -1053,7 +1117,7 @@ export default function Navbar() {
                   style={iconStyles}
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                  onClick={() => window.location.href = '/Notifications'}
+                  onClick={() => navigate('/Dashboard')}
                 >
                   notifications
                 </span>
@@ -1089,6 +1153,10 @@ export default function Navbar() {
                     <div style={dropdownStyles}>
                       <a 
                         href="/Profile" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/Profile');
+                        }}
                         style={dropdownLinkStyles}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'scale(1.05)';
@@ -1101,6 +1169,10 @@ export default function Navbar() {
                       </a>
                       <a 
                         href="/Settings" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/Profile');
+                        }}
                         style={dropdownLinkStyles}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.transform = 'scale(1.05)';

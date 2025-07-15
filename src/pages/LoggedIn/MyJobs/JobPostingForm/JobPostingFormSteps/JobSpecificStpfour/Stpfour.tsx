@@ -16,15 +16,15 @@ import {
   faStar,
   faBullseye
 } from '@fortawesome/free-solid-svg-icons';
-import { FormData } from '../JobPostingForm';
+import { FormData } from '../../JobPostingForm';
 
-interface StepFourProps {
+interface StpfourProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const StepFour: React.FC<StepFourProps> = ({ formData, updateFormData, errors }) => {
+const Stpfour: React.FC<StpfourProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [deliverableInput, setDeliverableInput] = useState('');
   const [requirementInput, setRequirementInput] = useState('');
@@ -124,7 +124,7 @@ const StepFour: React.FC<StepFourProps> = ({ formData, updateFormData, errors })
         };
       case 'Challenge':
         return {
-          deliverableTitle: 'Submission Requirements',
+          deliverableTitle: 'Project Deliverables',
           deliverableIcon: faUpload,
           deliverableTooltip: 'Specify what participants must submit for their challenge entry. Include file formats, documentation requirements, and submission guidelines.',
           deliverableExample: '"Working prototype with source code", "Demo video (max 3 minutes)", "Technical documentation and setup instructions"',
@@ -369,4 +369,4 @@ const StepFour: React.FC<StepFourProps> = ({ formData, updateFormData, errors })
   );
 };
 
-export default StepFour;
+export default Stpfour;

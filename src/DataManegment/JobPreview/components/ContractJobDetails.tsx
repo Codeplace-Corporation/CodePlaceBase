@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faFileContract,
@@ -8,7 +8,6 @@ import {
   faUser,
   faTag,
   faTools,
-  faArrowLeft,
   faHeart as faHeartSolid,
   faFileText,
   faHandshake,
@@ -21,8 +20,6 @@ import {
   faChartLine,
   faChevronUp,
   faGavel,
-  faTrophy,
-  faMedal,
   faBullseye,
   faFilePdf,
   faFileWord,
@@ -30,9 +27,12 @@ import {
   faFileCode,
   faFolder,
   faFolderOpen,
+  faCrosshairs,
 } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
-import { firestore, collection, addDoc } from '../../../utils/firebase';
+import { firestore } from '../../../utils/firebase';
+import { useAuth } from '../../../context/AuthContext';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface JobData {
   id: string;
@@ -46,6 +46,9 @@ interface JobData {
   projectDescription: string;
   projectOverview?: string;
   applicationsCloseTime?: string;
+  applicationsCloseDate?: string;
+  applicationsOpenDate?: string;
+  applicationsOpenTime?: string;
   createdAt?: any;
   createdBy?: string;
   requirements?: string[];
@@ -66,10 +69,12 @@ interface JobData {
   contractEndTime?: string;
   revisionCost?: string;
   prepaidRevisions?: string;
+  projectDeadline?: string;
   milestones?: Array<{
     title: string;
     amount: number;
     description: string;
+    dueDate?: string;
   }>;
   projectFiles?: Array<{
     name: string;
@@ -87,6 +92,22 @@ interface JobData {
     completedProjects: number;
   }>;
   [key: string]: any;
+}
+
+interface UserProfile {
+  displayName?: string;
+  firstName?: string;
+  lastName?: string;
+  company?: string;
+  location?: string;
+  bio?: string;
+  photoURL?: string;
+  clientRating?: number;
+  projectsPosted?: number;
+  totalSpent?: number;
+  averageProjectValue?: number;
+  verificationStatus?: string;
+  responseTime?: string;
 }
 
 interface ContractJobDetailsProps {
@@ -237,52 +258,58 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
         </div>
       </div>
 
-      {/* Inner container for all bidders */}
-      <div className="bg-gray-800/30 rounded-lg p-1">
-        <div className="space-y-1">
-          {sortedProposals.map((proposal: ProposalData, index: number) => (
-            <div 
-              key={`${proposal.bidderName}-${index}`} 
-              className="flex items-center pl-1 pr-1 hover:bg-white/5 rounded-[1rem] transition-all duration-200 bg-black/40 hover:border-blue-500/30 cursor-pointer"
-              style={{
-                animationDelay: `${index * 50}ms`,
-                animation: sortConfig.key ? 'fadeInSlide 0.3s ease-out forwards' : 'none'
-              }}
-              title={proposal.proposalText.substring(0, 100) + '...'}
-            >
-              <div className="flex items-center gap-1 min-w-0 flex-1">
-                <img 
-                  src={proposal.avatar} 
-                  alt={proposal.bidderName}
-                  className="w-3 lg:w-3.5 h-3 lg:h-3.5 rounded-full bg-gray-600 border border-blue-500/30 flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <h4 className="font-medium text-white text-[0.6rem] lg:text-[0.65rem] truncate">{proposal.bidderName}</h4>
+      {/* Inner container for all proposals */}
+      <div className="bg-gray-800/30 rounded-lg p-1 min-h-[140px] flex items-center justify-center">
+        {sortedProposals.length === 0 ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <span className="text-white/60 text-base font-medium">No proposals yet</span>
+          </div>
+        ) : (
+          <div className="space-y-1 w-full">
+            {sortedProposals.map((proposal: ProposalData, index: number) => (
+              <div 
+                key={`${proposal.bidderName}-${index}`} 
+                className="flex items-center pl-1 pr-1 hover:bg-white/5 rounded-[1rem] transition-all duration-200 bg-black/40 hover:border-blue-500/30 cursor-pointer"
+                style={{
+                  animationDelay: `${index * 50}ms`,
+                  animation: sortConfig.key ? 'fadeInSlide 0.3s ease-out forwards' : 'none'
+                }}
+                title={proposal.proposalText.substring(0, 100) + '...'}
+              >
+                <div className="flex items-center gap-1 min-w-0 flex-1">
+                  <img 
+                    src={proposal.avatar} 
+                    alt={proposal.bidderName}
+                    className="w-3 lg:w-3.5 h-3 lg:h-3.5 rounded-full bg-gray-600 border border-blue-500/30 flex-shrink-0"
+                  />
+                  <div className="min-w-0">
+                    <h4 className="font-medium text-white text-[0.6rem] lg:text-[0.65rem] truncate">{proposal.bidderName}</h4>
+                  </div>
+                </div>
+                
+                <div className="w-12 lg:w-16 -mr-1 lg:-mr-2">
+                  <span 
+                    className={`text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
+                      sortConfig.key === 'rating' ? 'text-blue-300 transform scale-105' : 'text-blue-300'
+                    }`}
+                  >
+                    {proposal.rating}
+                  </span>
+                </div>
+                
+                <div className="w-16 lg:w-20">
+                  <span 
+                    className={`font-semibold text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
+                      sortConfig.key === 'time' ? 'text-orange-300 transform scale-105' : 'text-gray-300'
+                    } ml-1 lg:ml-2`}
+                  >
+                    {getTimeAgo(proposal.submittedAt)}
+                  </span>
                 </div>
               </div>
-              
-              <div className="w-12 lg:w-16 -mr-1 lg:-mr-2">
-                <span 
-                  className={`text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
-                    sortConfig.key === 'rating' ? 'text-blue-300 transform scale-105' : 'text-blue-300'
-                  }`}
-                >
-                  {proposal.rating}
-                </span>
-              </div>
-              
-              <div className="w-16 lg:w-20">
-                <span 
-                  className={`font-semibold text-[0.6rem] lg:text-[0.65rem] transition-all duration-200 ${
-                    sortConfig.key === 'time' ? 'text-orange-300 transform scale-105' : 'text-gray-300'
-                  } ml-1 lg:ml-2`}
-                >
-                  {getTimeAgo(proposal.submittedAt)}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <style>{`
@@ -305,6 +332,17 @@ const SortableProposalList: React.FC<SortableProposalListProps> = ({
 const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
 
+  // Add logging to see what files we're receiving
+  useEffect(() => {
+    console.log('🗂️ WindowsFileExplorer received files:', files);
+    console.log('🗂️ Files length:', files?.length || 0);
+    console.log('🗂️ Files structure:', files?.map(f => ({ 
+      name: f.name || f.fileName, 
+      type: f.type || f.fileType,
+      url: f.url || f.downloadUrl 
+    })));
+  }, [files]);
+
   const toggleFolder = (folderName: string) => {
     const newExpanded = new Set(expandedFolders);
     if (newExpanded.has(folderName)) {
@@ -315,7 +353,8 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
     setExpandedFolders(newExpanded);
   };
 
-  const getWindowsFileIcon = (fileName: string, type?: string) => {
+  const getWindowsFileIcon = (fileName: string | undefined | null, type?: string) => {
+    if (!fileName) return { icon: faFile, color: 'text-gray-400' };
     const extension = fileName.split('.').pop()?.toLowerCase();
     
     switch (extension) {
@@ -348,184 +387,574 @@ const WindowsFileExplorer: React.FC<{ files: any[] }> = ({ files }) => {
       case 'css':
       case 'py':
       case 'java':
+      case 'cpp':
+      case 'c':
+      case 'cs':
         return { icon: faFileCode, color: 'text-cyan-400' };
       default:
         return { icon: faFile, color: 'text-gray-400' };
     }
   };
 
-  // Organize files into folders
-  const organizedFiles = {
-    'Project Documentation': [
-      {
-        name: "project_requirements.pdf",
-        type: "document",
-        size: "2.4 MB",
-        modified: "2025-01-28 14:30",
-        url: "#"
-      },
-      {
-        name: "technical_specifications.pdf",
-        type: "document",
-        size: "1.8 MB",
-        modified: "2025-01-29 09:15",
-        url: "#"
-      }
-    ],
-    'Design Assets': [
-      {
-        name: "wireframes_and_mockups.zip",
-        type: "archive",
-        size: "15.7 MB",
-        modified: "2025-01-30 11:45",
-        url: "#"
-      },
-      {
-        name: "brand_assets.zip",
-        type: "archive",
-        size: "8.2 MB",
-        modified: "2025-01-30 16:20",
-        url: "#"
-      },
-      {
-        name: "logo_variations.png",
-        type: "image",
-        size: "3.1 MB",
-        modified: "2025-01-30 10:30",
-        url: "#"
-      }
-    ],
-    'Reference Materials': [
-      {
-        name: "competitor_analysis.xlsx",
-        type: "spreadsheet",
-        size: "892 KB",
-        modified: "2025-01-27 15:45",
-        url: "#"
-      },
-      {
-        name: "style_guide.pdf",
-        type: "document",
-        size: "4.2 MB",
-        modified: "2025-01-28 13:20",
-        url: "#"
-      }
-    ]
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const formatDate = (dateString: string | Date): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  // Check if GitHub repository is accessible
+  const isGitHubRepoAccessible = async (repoUrl: string): Promise<boolean> => {
+    try {
+      // Extract owner/repo from GitHub URL
+      const match = repoUrl.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      if (!match) return false;
+      
+      const [, owner, repo] = match;
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}`;
+      
+      const response = await fetch(apiUrl);
+      return response.status === 200;
+    } catch (error) {
+      return false;
+    }
+  };
+
+  // GitHub Repository Component
+  const GitHubRepoLink: React.FC<{ repoUrl: string; isPrivate?: boolean }> = ({ repoUrl, isPrivate }) => {
+    const [isAccessible, setIsAccessible] = useState<boolean | null>(null);
+    const [isChecking, setIsChecking] = useState(false);
+
+    useEffect(() => {
+      if (repoUrl && !isPrivate) {
+        setIsChecking(true);
+        isGitHubRepoAccessible(repoUrl).then(accessible => {
+          setIsAccessible(accessible);
+          setIsChecking(false);
+        });
+      }
+    }, [repoUrl, isPrivate]);
+
+    if (!repoUrl) return null;
+
+    // Blur the path after .com/ for private repos
+    const getBlurredRepoUrl = (url: string) => {
+      const match = url.match(/(https:\/\/github\.com\/)(.+)/);
+      if (!match) return url;
+      return match[1] + '<span style="filter: blur(6px);">' + match[2] + '</span>';
+    };
+
+    const getRepoName = (url: string) => {
+      const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)/);
+      return match ? `${match[1]}/${match[2]}` : 'Repository';
+    };
+
+    const handleRepoClick = () => {
+      if (isPrivate) {
+        alert('This repository is private and cannot be accessed publicly.');
+        return;
+      }
+      if (isAccessible === false) {
+        alert('This repository appears to be private or inaccessible.');
+        return;
+      }
+      window.open(repoUrl, '_blank');
+    };
+
+    return (
+      <div className="flex items-center gap-2 px-2 py-1 bg-gray-700/30 rounded-md border border-gray-600/50">
+        <FontAwesomeIcon 
+          icon={faFileCode} 
+          className={`text-sm ${isPrivate ? 'text-red-400' : isAccessible === false ? 'text-orange-400' : 'text-green-400'}`} 
+        />
+        <button
+          onClick={handleRepoClick}
+          disabled={isPrivate || isAccessible === false || isChecking}
+          className={`text-xs font-medium transition-colors ${
+            isPrivate || isAccessible === false 
+              ? 'text-gray-400 cursor-not-allowed' 
+              : 'text-blue-400 hover:text-blue-300 cursor-pointer'
+          }`}
+          title={
+            isPrivate 
+              ? 'Private repository - access restricted' 
+              : isAccessible === false 
+                ? 'Repository is private or inaccessible'
+                : 'Open GitHub repository'
+          }
+          dangerouslySetInnerHTML={isPrivate ? { __html: getBlurredRepoUrl(repoUrl) + ' 🔒' } : undefined}
+        >
+          {!isPrivate && (isChecking ? 'Checking...' : getRepoName(repoUrl))}
+          {isPrivate && ''}
+          {!isPrivate && isAccessible === false && ' 🔒'}
+        </button>
+      </div>
+    );
+  };
+
+  // Organize submitted files into folders based on file type or submission data
+  const organizeSubmittedFiles = (submittedFiles: any[]) => {
+    if (!submittedFiles || submittedFiles.length === 0) {
+      // Return empty objects if no files are provided
+      return { organized: {}, folderMetadata: {} };
+    }
+
+    const organized: { [key: string]: any[] } = {};
+    const folderMetadata: { [key: string]: { githubRepos: Array<{ url: string; isPrivate: boolean; name?: string }> } } = {};
+
+    submittedFiles.forEach(file => {
+      console.log('🔍 Processing file:', file);
+      let category = 'Other Files';
+      let githubRepo: { url: string; isPrivate: boolean; name?: string } | null = null;
+
+      // Handle GitHub repositories stored as pseudo-files (name starts with "github:")
+      if (file.name?.startsWith('github:')) {
+        const repoUrl = file.name.replace('github:', '');
+        console.log('🔗 Found GitHub repo:', repoUrl);
+        
+        githubRepo = { 
+          url: repoUrl, 
+          isPrivate: false, // Default to false, could be enhanced later
+          name: repoUrl.split('/').slice(-2).join('/') // Extract owner/repo from URL
+        };
+        
+        // Use the repository URL/name as the category instead of "Code Files"
+        category = repoUrl;
+      }
+      // Handle direct GitHub repository properties
+      else if (file.githubRepo || file.repositoryUrl) {
+        const repoUrl = file.githubRepo || file.repositoryUrl;
+        const isPrivate = file.isPrivateRepo || file.privateRepository || false;
+        const repoName = file.repoName || file.repositoryName;
+        
+        console.log('🔗 Found GitHub repo (direct):', repoUrl);
+        
+        githubRepo = { url: repoUrl, isPrivate, name: repoName };
+        // Use the repository URL/name as the category
+        category = repoName || repoUrl;
+      }
+      // Regular file processing
+      else if ((file.name || file.fileName) && !file.name?.startsWith('github:')) {
+        // Determine category based on file properties
+        if (file.category) {
+          category = file.category;
+        } else if (file.type || file.fileType) {
+          const fileType = file.type || file.fileType;
+          
+          // Skip GitHub pseudo-files by type
+          if (fileType === 'application/x-git-url') {
+            console.log('🔗 Skipping GitHub pseudo-file by type:', file);
+            return;
+          }
+          
+          if (fileType.includes('image')) category = 'Images';
+          else if (fileType.includes('video')) category = 'Videos';
+          else if (fileType.includes('application/pdf')) category = 'Documents';
+          else if (fileType.includes('text') || fileType.includes('code')) category = 'Code Files';
+          else if (fileType.includes('zip') || fileType.includes('archive')) category = 'Archives';
+        } else {
+          // Categorize by file extension
+          const extension = (file.name || file.fileName || '').split('.').pop()?.toLowerCase();
+          switch (extension) {
+            case 'pdf': case 'doc': case 'docx': category = 'Documents'; break;
+            case 'jpg': case 'jpeg': case 'png': case 'gif': category = 'Images'; break;
+            case 'mp4': case 'avi': case 'mov': category = 'Videos'; break;
+            case 'js': case 'ts': case 'py': case 'java': case 'cpp': case 'html': case 'css': category = 'Code Files'; break;
+            case 'zip': case 'rar': case '7z': category = 'Archives'; break;
+            default: category = 'Other Files';
+          }
+        }
+      }
+
+      // Initialize category if it doesn't exist
+      if (!organized[category]) {
+        organized[category] = [];
+        folderMetadata[category] = { githubRepos: [] };
+      }
+
+      // Add GitHub repo to folder metadata
+      if (githubRepo) {
+        console.log(`📁 Adding GitHub repo to ${category} folder:`, githubRepo);
+        
+        // Check if this repo URL is already added to this category
+        const existingRepo = folderMetadata[category].githubRepos.find(repo => repo.url === githubRepo!.url);
+        if (!existingRepo) {
+          folderMetadata[category].githubRepos.push(githubRepo);
+        }
+        return; // Don't add GitHub repos as files
+      }
+
+      // Add regular files
+      if ((file.name || file.fileName) && !file.name?.startsWith('github:') && file.type !== 'application/x-git-url') {
+        console.log('📁 Processing file for category:', category, file);
+
+        // Normalize file object
+        const normalizedFile = {
+          name: file.name || file.fileName || 'Unknown File',
+          type: file.type || file.fileType || 'unknown',
+          size: file.size ? formatFileSize(file.size) : (file.fileSize || 'Unknown'),
+          modified: file.modified || file.lastModified || file.createdAt || file.uploadedAt || new Date().toISOString(),
+          url: file.url || file.downloadUrl || file.path || '#',
+          bytes: file.size || file.fileSize || 0,
+          id: file.id || file._id,
+          uploadedBy: file.uploadedBy || file.submittedBy,
+          permissions: file.permissions // Assuming permissions are part of the file object
+        };
+
+        organized[category].push(normalizedFile);
+      }
+    });
+
+    console.log('📁 Final organization result:');
+    console.log('  - Folder metadata:', folderMetadata);
+    console.log('  - Organized files:', organized);
+
+    return { organized, folderMetadata };
+  };
+
+  const fileOrganization = organizeSubmittedFiles(files);
+  const organizedFiles = fileOrganization.organized;
+  const folderMetadata = fileOrganization.folderMetadata;
+
   return (
-    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
-      <h2 className="text-lg lg:text-2xl font-bold mb-4 lg:mb-6 flex items-center gap-2">
+    <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-6 pt-2">
+      <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
         <FontAwesomeIcon icon={faFolder} className="text-blue-400" />
-        Project Files & Resources
+        Contract Files & Resources
       </h2>
       
-      {/* Windows-style file explorer */}
-      <div className="bg-gray-900/50 border border-gray-600 rounded-lg overflow-hidden">
-        {/* Header bar */}
-        <div className="bg-gray-800/70 px-2 lg:px-4 py-2 border-b border-gray-600">
-          <div className="flex items-center text-xs text-white/70">
-            <div className="flex-1">Name</div>
-            <div className="w-16 lg:w-20 text-center">Size</div>
-            <div className="w-24 lg:w-32 text-center">Date Modified</div>
-            <div className="w-12 lg:w-16 text-center">Actions</div>
+      {Object.keys(organizedFiles).length === 0 ? (
+        <div className="text-center py-8 text-white/50">
+          <FontAwesomeIcon icon={faFolder} className="text-4xl mb-4" />
+          <p>No files have been submitted yet.</p>
+        </div>
+      ) : (
+        /* Windows-style file explorer */
+        <div className="bg-gray-900/50 border border-gray-600 rounded-lg overflow-hidden">
+          {/* Header bar */}
+          <div className="bg-gray-800/70 px-4 py-2 border-b border-gray-600">
+            <div className="flex items-center text-xs text-white/70">
+              <div className="flex-1">Name</div>
+              <div className="w-20 text-center">Size</div>
+              <div className="w-32 text-center">Date Modified</div>
+              <div className="w-24 text-center">Actions</div>
+            </div>
+          </div>
+          
+          {/* File list */}
+          <div className="max-h-96 overflow-y-auto">
+            {Object.entries(organizedFiles).map(([folderName, folderFiles]) => (
+              <div key={folderName}>
+                {/* Folder header */}
+                <div 
+                  className="flex items-center px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
+                  onClick={() => toggleFolder(folderName)}
+                >
+                  <div className="flex items-center gap-2 flex-1">
+                    {/* Show code brackets for GitHub repo folders, regular folder icon for others */}
+                    {folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 ? (
+                      <span className="text-yellow-400 text-sm font-mono font-bold">
+                        {expandedFolders.has(folderName) ? '</>' : '</>'}
+                      </span>
+                    ) : (
+                      <FontAwesomeIcon 
+                        icon={expandedFolders.has(folderName) ? faFolderOpen : faFolder}
+                        className="text-yellow-400 text-sm" 
+                      />
+                    )}
+                    <span 
+                      className={`text-sm font-medium ${
+                        folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 
+                          ? 'text-blue-400 hover:text-blue-300 cursor-pointer' 
+                          : ''
+                      }`}
+                      onClick={(e) => {
+                        // If it's a GitHub repo folder, open the repo instead of toggling folder
+                        if (folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0) {
+                          e.stopPropagation();
+                          const repo = folderMetadata[folderName].githubRepos[0];
+                          if (!repo.isPrivate) {
+                            window.open(repo.url, '_blank');
+                          } else {
+                            alert('This repository is private and cannot be accessed publicly.');
+                          }
+                        }
+                      }}
+                    >
+                      {(() => {
+                        // If it's a GitHub repo folder, handle private repo blurring
+                        if (folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0) {
+                          const repo = folderMetadata[folderName].githubRepos[0];
+                          if (repo.isPrivate && folderName.includes('.com')) {
+                            const [domain, ...pathParts] = folderName.split('.com');
+                            const path = pathParts.join('.com');
+                            return (
+                              <>
+                                {domain}.com
+                                <span className="blur-sm select-none">{path}</span>
+                                <span className="ml-1 text-red-400">🔒</span>
+                              </>
+                            );
+                          }
+                        }
+                        return folderName;
+                      })()}
+                    </span>
+                    
+                    {/* Don't show GitHubRepoLink since the folder name IS the repo */}
+                  </div>
+                  <div className="w-20 text-center text-xs text-white/50">
+                    {folderFiles.length} items
+                    {folderMetadata && folderMetadata[folderName]?.githubRepos?.length > 0 && 
+                      ` + ${folderMetadata[folderName].githubRepos.length} repo${folderMetadata[folderName].githubRepos.length > 1 ? 's' : ''}`
+                    }
+                  </div>
+                  <div className="w-32 text-center text-xs text-white/50">
+                    Folder
+                  </div>
+                  <div className="w-24"></div>
+                </div>
+                
+                {/* Folder contents */}
+                {expandedFolders.has(folderName) && (
+                  <div className="bg-gray-800/20">
+                    {folderFiles.map((file, index) => {
+                      const fileIcon = getWindowsFileIcon(file.name, file.type);
+                      const isPublic = file.permissions && (file.permissions.visibility === 'public' || file.permissions.viewable);
+                      const isDownloadable = file.permissions && file.permissions.downloadable;
+                      const isViewable = file.permissions && file.permissions.viewable;
+                      const isGithubUrl = file.isGithubUrl || file.name.startsWith('github:');
+                      
+                      return (
+                        <div 
+                          key={`${folderName}-${file.id || index}`}
+                          className={`flex items-center px-8 py-2 hover:bg-blue-600/20 border-b border-gray-700/30 last:border-b-0 ${
+                            file.isClickable !== false ? 'cursor-pointer' : 'cursor-default'
+                          }`}
+                          title={`${file.name}${file.uploadedBy ? ` - Uploaded by: ${file.uploadedBy}` : ''}`}
+                          onClick={() => {
+                            if (file.isClickable !== false && file.url && file.url !== '#') {
+                              window.open(file.url, '_blank');
+                            }
+                          }}
+                        >
+                          <div className="flex items-center gap-2 flex-1">
+                            <FontAwesomeIcon 
+                              icon={isGithubUrl ? faFileCode : fileIcon.icon}
+                              className={isGithubUrl ? 'text-gray-400' : fileIcon.color + ' text-sm'} 
+                            />
+                            <span className={`text-sm ${file.isClickable === false ? 'text-gray-500' : ''}`}>
+                              {file.name}
+                            </span>
+                            {file.uploadedBy && (
+                              <span className="text-xs text-white/40 ml-2">by {file.uploadedBy}</span>
+                            )}
+                          </div>
+                          <div className="w-20 text-center text-xs text-white/70">
+                            {file.size}
+                          </div>
+                          <div className="w-32 text-center text-xs text-white/70">
+                            {formatDate(file.modified)}
+                          </div>
+                          <div className="w-24 text-center flex gap-1 justify-center">
+                            {isPublic ? (
+                              <>
+                                {isViewable && (
+                                  <button 
+                                    className="text-blue-400 hover:text-blue-300 transition-colors p-1"
+                                    title="View file"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (file.url && file.url !== '#') {
+                                        window.open(file.url, '_blank');
+                                      }
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faFile} className="text-xs" />
+                                  </button>
+                                )}
+                                {isDownloadable && (
+                                  <button 
+                                    className="text-green-400 hover:text-green-300 transition-colors p-1"
+                                    title="Download file"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (file.url && file.url !== '#') {
+                                        const link = document.createElement('a');
+                                        link.href = file.url;
+                                        link.download = file.name;
+                                        document.body.appendChild(link);
+                                        link.click();
+                                        document.body.removeChild(link);
+                                      }
+                                    }}
+                                  >
+                                    <FontAwesomeIcon icon={faDownload} className="text-xs" />
+                                  </button>
+                                )}
+                              </>
+                            ) : (
+                              <FontAwesomeIcon icon={faShieldAlt} className="text-xs text-red-400" title="Private file" />
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-        
-        {/* File list */}
-        <div className="max-h-80 lg:max-h-96 overflow-y-auto">
-          {Object.entries(organizedFiles).map(([folderName, folderFiles]) => (
-            <div key={folderName}>
-              {/* Folder header */}
-              <div 
-                className="flex items-center px-2 lg:px-4 py-2 hover:bg-gray-700/30 cursor-pointer border-b border-gray-700/50"
-                onClick={() => toggleFolder(folderName)}
-              >
-                <div className="flex items-center gap-2 flex-1">
-                  <FontAwesomeIcon 
-                    icon={expandedFolders.has(folderName) ? faFolderOpen : faFolder}
-                    className="text-yellow-400 text-xs lg:text-sm" 
-                  />
-                  <span className="text-xs lg:text-sm font-medium">{folderName}</span>
-                </div>
-                <div className="w-16 lg:w-20 text-center text-xs text-white/50">
-                  {folderFiles.length} items
-                </div>
-                <div className="w-24 lg:w-32 text-center text-xs text-white/50">
-                  Folder
-                </div>
-                <div className="w-12 lg:w-16"></div>
-              </div>
-              
-              {/* Folder contents */}
-              {expandedFolders.has(folderName) && (
-                <div className="bg-gray-800/20">
-                  {folderFiles.map((file, index) => {
-                    const fileIcon = getWindowsFileIcon(file.name, file.type);
-                    return (
-                      <div 
-                        key={`${folderName}-${index}`}
-                        className="flex items-center px-4 lg:px-8 py-2 hover:bg-blue-600/20 cursor-pointer border-b border-gray-700/30 last:border-b-0"
-                      >
-                        <div className="flex items-center gap-2 flex-1">
-                          <FontAwesomeIcon 
-                            icon={fileIcon.icon}
-                            className={`${fileIcon.color} text-xs lg:text-sm`} 
-                          />
-                          <span className="text-xs lg:text-sm">{file.name}</span>
-                        </div>
-                        <div className="w-16 lg:w-20 text-center text-xs text-white/70">
-                          {file.size}
-                        </div>
-                        <div className="w-24 lg:w-32 text-center text-xs text-white/70">
-                          {file.modified}
-                        </div>
-                        <div className="w-12 lg:w-16 text-center">
-                          <button 
-                            className="text-blue-400 hover:text-blue-300 transition-colors p-1"
-                            title="Download file"
-                          >
-                            <FontAwesomeIcon icon={faDownload} className="text-xs" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
 const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) => {
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  const [proposalText, setProposalText] = useState<string>('');
+  const { currentUser } = useAuth();
+  const [clientProfile, setClientProfile] = useState<UserProfile | null>(null);
+  const [loadingClient, setLoadingClient] = useState(true);
+  const [isFavorite, setIsFavorite] = useState(false);
 
-  const handleFavoriteClick = (): void => {
+  // Developer Score Calculation Function
+  const getRecommendedDeveloperScore = (jobData: JobData): number => {
+    const complexityBaseScores: { [key: string]: number } = {
+      'easy': 1000,
+      'simple': 1000,
+      'moderate': 1400,
+      'medium': 1400,
+      'complex': 1800,
+      'hard': 1800,
+      'expert': 2200,
+    };
+
+    const getCompensationAdjustment = (compensation: string | number): number => {
+      const numericCompensation = typeof compensation === 'number' 
+        ? compensation 
+        : parseFloat(String(compensation).replace(/[^0-9.-]+/g, "")) || 0;
+      return Math.log10(numericCompensation + 1) * 100;
+    };
+
+    const difficultyOrComplexity = (jobData.difficulty || jobData.complexityLevel || 'simple').toLowerCase();
+    // For contracts, use startingBid as the primary compensation field
+    const finalCompensation = jobData.startingBid || jobData.compensation || 0;
+    const base = complexityBaseScores[difficultyOrComplexity] || complexityBaseScores['simple'];
+    const adjustment = getCompensationAdjustment(finalCompensation);
+    return Math.round(base + adjustment);
+  };
+
+  // Calculate the recommended score
+  const recommendedScore = getRecommendedDeveloperScore(job);
+
+  // ADD COMPREHENSIVE CONSOLE LOGGING
+  useEffect(() => {
+    console.log('='.repeat(80));
+    console.log('🎯 CONTRACT JOB DETAILS - RECEIVED DATA');
+    console.log('='.repeat(80));
+    
+    console.log('📋 Complete Job Object:', job);
+    console.log('');
+    
+    console.log('🔍 KEY FIELDS ANALYSIS:');
+    console.log('- Job ID:', job.id);
+    console.log('- Project Title:', job.projectTitle);
+    console.log('- Selected Job Post Type:', job.selectedJobPostType);
+    console.log('- Estimated Project Length:', job.estimatedProjectLength);
+    console.log('- Compensation:', job.compensation);
+    console.log('- Recommended Score (Calculated):', recommendedScore);
+    console.log('');
+
+    console.log('📝 ALL AVAILABLE PROPERTIES:');
+    Object.keys(job).forEach(key => {
+      const value = job[key];
+      console.log(`- ${key}:`, value);
+    });
+    console.log('');
+    
+    console.log('='.repeat(80));
+  }, [job, recommendedScore]);
+
+  // Fetch client profile (same as Auction)
+  useEffect(() => {
+    const fetchClientProfile = async () => {
+      if (!currentUser?.uid) {
+        setLoadingClient(false);
+        return;
+      }
+      try {
+        const userDocRef = doc(firestore, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists()) {
+          const userData = userDoc.data() as UserProfile;
+          setClientProfile(userData);
+        }
+      } catch (error) {
+        console.error("Error fetching client profile:", error);
+      } finally {
+        setLoadingClient(false);
+      }
+    };
+    fetchClientProfile();
+  }, [currentUser]);
+
+  const getClientDisplayName = (): string => {
+    if (clientProfile) {
+      if (clientProfile.displayName) {
+        return clientProfile.displayName;
+      } else if (clientProfile.firstName && clientProfile.lastName) {
+        return `${clientProfile.firstName} ${clientProfile.lastName}`;
+      } else if (clientProfile.firstName) {
+        return clientProfile.firstName;
+      }
+    }
+    if (currentUser?.displayName) return currentUser.displayName;
+    if (currentUser?.email) return currentUser.email;
+    return currentUser?.uid || 'Unknown Client';
+  };
+
+  const getCreatedAtString = () => {
+    if (job.createdAt) {
+      return formatDate(job.createdAt);
+    }
+    return formatDate(new Date());
+  };
+
+  const handleFavoriteClick = () => {
     setIsFavorite(!isFavorite);
   };
 
-  const handleSubmitProposal = (): void => {
-    console.log("Submitting proposal for contract:", job.id, {
-      proposalText
-    });
-    // Reset form after submission
-    setProposalText('');
+  const handleSubmitProposal = () => {
+    console.log("Submitting proposal for contract:", job.id);
   };
 
-  const formatCompensation = (compensation: string | number): string => {
+  const formatCompensation = (compensation: string | number) => {
     if (typeof compensation === 'number') {
       return compensation.toFixed(2);
     }
+    
+    // Handle milestone-based compensation
+    if (compensation === 'milestones' || compensation === 'milestone') {
+      return 'Milestone-based';
+    }
+    
     const amount = parseFloat(compensation.toString().replace(/[^0-9.-]+/g, ""));
     return isNaN(amount) ? compensation : amount.toFixed(2);
   };
 
-  const formatProjectLength = (length: string): string => {
+  const formatProjectLength = (length: string) => {
     const lengthMap: { [key: string]: string } = {
       "<1hour": "Less than 1 hour",
       "1-3hours": "1-3 hours",
@@ -542,22 +971,100 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
   };
 
   const getTimeRemaining = (): string | null => {
-    if (!job.applicationsCloseTime) return null;
+    // Check if we have separate date and time fields (contract format)
+    let closeDate = job.applicationsCloseDate;
+    let closeTime = job.applicationsCloseTime;
 
-    const end = new Date(job.applicationsCloseTime);
-    const now = new Date();
-    const diff = end.getTime() - now.getTime();
+    // Fallbacks for missing date
+    if (!closeDate) {
+      if (job.contractEndTime) {
+        // Use contractEndTime as the close date (date part only)
+        closeDate = job.contractEndTime.split('T')[0];
+        if (!closeTime && job.contractEndTime.includes('T')) {
+          // Try to extract time from contractEndTime if not set
+          const timePart = job.contractEndTime.split('T')[1]?.slice(0,5);
+          if (timePart) closeTime = timePart;
+        }
+      } else if (job.projectEndTime) {
+        closeDate = job.projectEndTime.split('T')[0];
+        if (!closeTime && job.projectEndTime.includes('T')) {
+          const timePart = job.projectEndTime.split('T')[1]?.slice(0,5);
+          if (timePart) closeTime = timePart;
+        }
+      }
+    }
 
-    if (diff <= 0) return "Applications Closed";
+    if (closeDate && closeTime) {
+      try {
+        // Convert 12-hour time to 24-hour format
+        const convertTo24Hour = (time12: string) => {
+          if (!time12 || time12 === '--:-- PM') return '09:00';
+          const parts = time12.split(' ');
+          if (parts.length === 2) {
+            const [time, modifier] = parts;
+            const timeParts = time.split(':');
+            if (timeParts.length !== 2) return '09:00';
+            let [hours, minutes] = timeParts;
+            let hourNum = parseInt(hours, 10);
+            if (isNaN(hourNum) || isNaN(parseInt(minutes, 10))) return '09:00';
+            if (hourNum === 12) hourNum = 0;
+            if (modifier === 'PM') hourNum += 12;
+            return `${hourNum.toString().padStart(2, '0')}:${minutes}`;
+          } else if (parts.length === 1 && time12.includes(':')) {
+            // Already 24-hour format
+            return time12;
+          }
+          return '09:00';
+        };
+        const time24 = convertTo24Hour(closeTime);
+        const deadlineString = `${closeDate}T${time24}:00`;
+        const end = new Date(deadlineString);
+        const now = new Date();
+        if (isNaN(end.getTime())) {
+          console.error('❌ Invalid date created from:', deadlineString);
+          return "Invalid date";
+        }
+        const diff = end.getTime() - now.getTime();
+        if (diff <= 0) return "Applications Closed";
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        if (days > 0) return `${days}d ${hours}h remaining`;
+        return `${hours}h remaining`;
+      } catch (error) {
+        console.error('❌ Error in getTimeRemaining:', error);
+        return "Error calculating time";
+      }
+    }
 
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-
-    if (days > 0) return `${days}d ${hours}h remaining`;
-    return `${hours}h remaining`;
+    // Fallback to combined applicationsCloseTime field
+    if (job.applicationsCloseTime) {
+      try {
+        // Check if this is just a time string (like "12:00 PM") without a date
+        if (job.applicationsCloseTime.includes(':') && (job.applicationsCloseTime.includes('AM') || job.applicationsCloseTime.includes('PM'))) {
+          // This is just a time, not a full date-time string
+          return "No deadline set";
+        }
+        const end = new Date(job.applicationsCloseTime);
+        const now = new Date();
+        if (isNaN(end.getTime())) {
+          console.error('❌ Invalid applicationsCloseTime:', job.applicationsCloseTime);
+          return "Invalid date";
+        }
+        const diff = end.getTime() - now.getTime();
+        if (diff <= 0) return "Applications Closed";
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        if (days > 0) return `${days}d ${hours}h remaining`;
+        return `${hours}h remaining`;
+      } catch (error) {
+        console.error('❌ Error in getTimeRemaining fallback:', error);
+        return "Error calculating time";
+      }
+    }
+    return null;
   };
 
-  const formatDate = (timestamp: any): string => {
+  const formatDate = (timestamp: any) => {
     if (!timestamp) return "Unknown";
     
     let date: Date;
@@ -578,26 +1085,11 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
     });
   };
 
-  const getFileIcon = (fileType: string) => {
-    switch (fileType.toLowerCase()) {
-      case 'image':
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'gif':
-        return faImage;
-      case 'video':
-      case 'mp4':
-      case 'avi':
-      case 'mov':
-        return faVideo;
-      case 'archive':
-      case 'zip':
-      case 'rar':
-        return faArchive;
-      default:
-        return faFile;
-    }
+  const getDeveloperScoreColor = (score: number) => {
+    if (score >= 900) return 'text-green-400';
+    if (score >= 700) return 'text-yellow-400';
+    if (score >= 500) return 'text-orange-400';
+    return 'text-red-400';
   };
 
   const getTimeAgo = (dateString: string): string => {
@@ -619,7 +1111,7 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
     return 'Just now';
   };
 
-  // Mock data for current proposals
+  // Mock data for current proposals (keep as in Contract)
   const mockProposals: ProposalData[] = job.currentBids?.map(bid => ({
     bidderName: bid.bidderName,
     avatar: bid.avatar,
@@ -670,37 +1162,34 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
     }
   ];
 
-
   const getBudgetRange = () => {
-    if (job.budget) {
-      return `${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}`;
+    if (job.startingBid) {
+      return `$${formatCompensation(job.startingBid)} (fixed)`;
     }
-    return `${formatCompensation(job.compensation)} (fixed)`;
+    if (job.budget) {
+      return `$${job.budget.min?.toLocaleString()} - $${job.budget.max?.toLocaleString()}`;
+    }
+    const formattedCompensation = formatCompensation(job.compensation);
+    return formattedCompensation === 'Milestone-based' 
+      ? `${formattedCompensation} (milestone-based)`
+      : `$${formattedCompensation} (fixed)`;
   };
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-16 md:pt-20 pb-6 md:pb-8">
-        <div className="mb-4 md:mb-6">
-          <button 
-            onClick={onBack}
-            className="flex items-center gap-2 text-white/70 hover:text-[#00FF00] transition-colors mb-4"
-          >
-            <FontAwesomeIcon icon={faArrowLeft} />
-            Back to Job Search
-          </button>
-        </div>
+      <div className="max-w-6xl mx-auto px-6 pt-20 pb-8">
 
-        {/* Contract Job Header */}
+
+        {/* Contract Job Header (like Auction, but blue and faFileContract) */}
         <div className="bg-gradient-to-r from-blue-900/20 to-cyan-900/20 rounded-lg p-4 md:p-6 mb-4 md:mb-6 border-l-4 border-blue-500">
-          <div className="flex flex-col md:flex-row items-start justify-between mb-4 gap-4">
+          <div className="flex flex-col md:flex-row items-start justify-between mb-8 gap-4">
             <div className="flex items-center gap-2 md:gap-4 w-full md:w-auto">
               <div className="w-12 h-12 md:w-16 md:h-16 flex items-center justify-center">
                 <FontAwesomeIcon icon={faFileContract} className="text-blue-400 text-2xl md:text-4xl" />
               </div>
               <div className="flex-1 md:flex-none">
                 <h1 className="text-xl md:text-4xl font-bold mb-2">{job.projectTitle}</h1>
-                <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-white/70 text-sm lg:text-base">
+                <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-white/70 text-sm lg:text-base mt-4">
                   <span className="flex items-center gap-1 bg-blue-500/20 px-2 lg:px-3 py-1 rounded-full text-xs lg:text-sm">
                     <FontAwesomeIcon icon={faFileContract} className="text-xs lg:text-sm" />
                     Contract Project
@@ -743,7 +1232,15 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
                 <span className="text-xs lg:text-sm text-white/70">Compensation</span>
               </div>
               <div className="text-lg lg:text-2xl font-bold text-blue-400">
-                ${formatCompensation(job.compensation)}
+                {job.startingBid ? (
+                  `$${formatCompensation(job.startingBid)}`
+                ) : job.budget ? (
+                  `$${job.budget.min?.toLocaleString()} - $${job.budget.max?.toLocaleString()}`
+                ) : (
+                  formatCompensation(job.compensation) === 'Milestone-based' 
+                    ? formatCompensation(job.compensation)
+                    : `$${formatCompensation(job.compensation)}`
+                )}
               </div>
             </div>
             
@@ -760,10 +1257,52 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
             <div className="bg-[rgba(255,255,255,0.05)] p-3 lg:p-4 rounded-lg">
               <div className="flex items-center gap-2 mb-1">
                 <FontAwesomeIcon icon={faCalendarAlt} className="text-white/70 text-sm lg:text-base" />
-                <span className="text-xs lg:text-sm text-white/70">Apps Close</span>
+                <span className="text-xs lg:text-sm text-white/70">Applications Close</span>
               </div>
               <div className="text-sm lg:text-lg font-semibold text-orange-400">
-                {getTimeRemaining() || "No deadline"}
+                {(() => {
+                  // Check if we have both date and time
+                  if (job.applicationsCloseDate && job.applicationsCloseTime) {
+                    const date = new Date(`${job.applicationsCloseDate}T00:00:00`);
+                    const dateString = date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    return `${dateString} at ${job.applicationsCloseTime}`;
+                  }
+                  
+                  // Check if we only have time (like "12:00 PM")
+                  if (job.applicationsCloseTime && !job.applicationsCloseDate) {
+                    // Use a reasonable default date (7 days from now) when only time is provided
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 7); // 7 days from now
+                    const dateString = defaultDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    return `${dateString} at ${job.applicationsCloseTime}`;
+                  }
+                  
+                  // Check if we have a combined date-time field
+                  if (job.applicationsCloseTime && job.applicationsCloseTime.includes('T')) {
+                    const date = new Date(job.applicationsCloseTime);
+                    if (!isNaN(date.getTime())) {
+                      return date.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      });
+                    }
+                  }
+                  
+                  // Fallback to time remaining calculation
+                  const timeRemaining = getTimeRemaining();
+                  return timeRemaining || "No deadline set";
+                })()}
               </div>
             </div>
             
@@ -823,7 +1362,9 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
               <FontAwesomeIcon icon={faChartLine} className="text-green-400" />
               Recommended Score
             </h3>
-            <div className="text-2xl md:text-3xl font-bold text-green-400">800</div>
+            <div className={'text-2xl md:text-3xl font-bold ' + getDeveloperScoreColor(recommendedScore)}>
+              {recommendedScore}
+            </div>
           </div>
         </div>
 
@@ -888,19 +1429,37 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
 
             {/* Milestones */}
             {job.milestones && job.milestones.length > 0 && (
-              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-0">
-                <h2 className="text-lg lg:text-2xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-purple-400" />
-                  Project Milestones
+              <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 pt-2">
+                <h2 className="text-lg lg:text-2xl font-bold mb-1 flex items-center gap-2">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-400" />
+                  Project Milestones & Payment Schedule
                 </h2>
-                <div className="space-y-3 lg:space-y-4">
+                <div className="text-white/60 text-xs mb-4">
+                  This project will be paid out in stages as each milestone is completed and approved. Each milestone represents a key deliverable or phase of the project.
+                </div>
+                <div className="space-y-1">
                   {job.milestones.map((milestone, index) => (
-                    <div key={index} className="bg-black/30 p-3 lg:p-4 rounded-lg border border-purple-500/30">
-                      <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-semibold text-base lg:text-lg">{milestone.title}</h3>
-                        <span className="text-green-400 font-bold text-sm lg:text-base">${milestone.amount.toLocaleString()}</span>
+                    <div key={index} className="flex items-stretch bg-black/40 rounded-lg border-l-4 border-blue-400 p-0 overflow-hidden min-h-[40px]">
+                      {/* Left accent/icon */}
+                      <div className="flex items-center px-2 py-2 bg-black/30">
+                        <FontAwesomeIcon icon={faFileContract} className="text-blue-400 text-base" />
                       </div>
-                      <p className="text-white/70 text-xs lg:text-sm">{milestone.description}</p>
+                      {/* Main content */}
+                      <div className="flex-1 flex flex-col justify-center px-2 py-1">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5">
+                          <div className="font-semibold text-xs sm:text-sm text-white truncate">{milestone.title || <span className='text-white/40'>No title</span>}</div>
+                          <div className="flex items-center gap-1 mt-0.5 sm:mt-0">
+                            <span className="text-blue-400 font-bold text-sm">{milestone.amount != null ? `${milestone.amount}%` : <span className='text-white/40'>0%</span>}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 mt-0.5 text-xs text-white/60">
+                          <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-400 text-xs" />
+                          {milestone.dueDate ? milestone.dueDate : <span className='text-white/40'>No due date</span>}
+                        </div>
+                        <div className="mt-0.5 text-xs text-white/70 min-h-[1em]">
+                          {milestone.description ? milestone.description : <span className='text-white/40'>No description</span>}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -923,74 +1482,233 @@ const ContractJobDetails: React.FC<ContractJobDetailsProps> = ({ job, onBack }) 
                 <FontAwesomeIcon icon={faHandshake} className="text-blue-400" />
                 Contract Terms
               </h3>
-              <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
-                {job.contractStartTime && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Project Start:</span>
-                    <span className="font-semibold">{formatDate(job.contractStartTime)}</span>
-                  </div>
-                )}
-                {job.contractEndTime && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Project End:</span>
-                    <span className="font-semibold">{formatDate(job.contractEndTime)}</span>
+              <div className="space-y-3 lg:space-y-4 text-xs lg:text-sm">
+                {/* Application Timeline */}
+                {(() => {
+                  // Handle applications open date/time
+                  let openDisplay = null;
+                  if (job.applicationsOpenDate && job.applicationsOpenTime) {
+                    const date = new Date(`${job.applicationsOpenDate}T00:00:00`);
+                    const dateString = date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    openDisplay = `${dateString} at ${job.applicationsOpenTime}`;
+                  } else if (job.applicationsOpenTime) {
+                    // Only time available, use current date
+                    const defaultDate = new Date();
+                    const dateString = defaultDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    openDisplay = `${dateString} at ${job.applicationsOpenTime}`;
+                  }
+                  
+                  return openDisplay && (
+                    <div>
+                      <div className="text-white/50 mb-1">Applications Open:</div>
+                      <div className="font-semibold text-green-400">{openDisplay}</div>
+                    </div>
+                  );
+                })()}
+                
+                {(() => {
+                  // Handle applications close date/time
+                  let closeDisplay = null;
+                  if (job.applicationsCloseDate && job.applicationsCloseTime) {
+                    const date = new Date(`${job.applicationsCloseDate}T00:00:00`);
+                    const dateString = date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    closeDisplay = `${dateString} at ${job.applicationsCloseTime}`;
+                  } else if (job.applicationsCloseTime) {
+                    // Only time available, use default date (7 days from now)
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 7);
+                    const dateString = defaultDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    });
+                    closeDisplay = `${dateString} at ${job.applicationsCloseTime}`;
+                  }
+                  
+                  return closeDisplay && (
+                    <div>
+                      <div className="text-white/50 mb-1">Applications Close:</div>
+                      <div className="font-semibold text-orange-400">{closeDisplay}</div>
+                    </div>
+                  );
+                })()}
+                
+                {job.Deadline && job.ExpiryTime && (
+                  <div>
+                    <div className="text-white/50 mb-1">Project Deadline:</div>
+                    <div className="font-semibold text-red-400">
+                      {(() => {
+                        const date = new Date(`${job.Deadline}T00:00:00`);
+                        const dateString = date.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric',
+                        });
+                        return `${dateString} at ${job.ExpiryTime}`;
+                      })()}
+                    </div>
                   </div>
                 )}
                 
+                {/* Budget Information */}
+                {job.startingBid && (
+                  <div>
+                    <div className="text-white/50 mb-1">Project Budget:</div>
+                    <div className="font-semibold text-green-400">${formatCompensation(job.startingBid)}</div>
+                  </div>
+                )}
+                {job.budget && (
+                  <div>
+                    <div className="text-white/50 mb-1">Budget Range:</div>
+                    <div className="font-semibold text-green-400">${job.budget.min?.toLocaleString()} - ${job.budget.max?.toLocaleString()}</div>
+                  </div>
+                )}
+                
+                {/* Payment Structure */}
+                <div>
+                  <div className="text-white/50 mb-1">Payment Structure:</div>
+                  <div className="font-semibold text-blue-400">
+                    {job.milestones && job.milestones.length > 0 ? 'Milestone-based' : 'Completion-based'}
+                  </div>
+                </div>
+                
+                {/* Milestones Info */}
+                {job.milestones && job.milestones.length > 0 && (
+                  <div>
+                    <div className="text-white/50 mb-1">Total Milestones:</div>
+                    <div className="font-semibold">{job.milestones.length}</div>
+                  </div>
+                )}
+                
+                {/* Revision Policy */}
                 {job.revisionCost && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Revision Cost:</span>
-                    <span className="font-semibold">${job.revisionCost}</span>
+                  <div>
+                    <div className="text-white/50 mb-1">Additional Revisions:</div>
+                    <div className="font-semibold">${job.revisionCost} each</div>
                   </div>
                 )}
                 {job.prepaidRevisions && (
-                  <div className="flex justify-between">
-                    <span className="text-white/50">Included Revisions:</span>
-                    <span className="font-semibold">{job.prepaidRevisions}</span>
+                  <div>
+                    <div className="text-white/50 mb-1">Included Revisions:</div>
+                    <div className="font-semibold">{job.prepaidRevisions}</div>
                   </div>
                 )}
-                <div className="flex justify-between">
-                  <span className="text-white/50">Payment Terms:</span>
-                  <span className="font-semibold">Milestone-based</span>
-                </div>
+                
+                {/* Project Details */}
+                {job.estimatedProjectLength && (
+                  <div>
+                    <div className="text-white/50 mb-1">Estimated Duration:</div>
+                    <div className="font-semibold">{formatProjectLength(job.estimatedProjectLength)}</div>
+                  </div>
+                )}
+                
+                {/* Experience Level */}
+                {job.experienceLevel && (
+                  <div>
+                    <div className="text-white/50 mb-1">Experience Level:</div>
+                    <div className="font-semibold capitalize">{job.experienceLevel}</div>
+                  </div>
+                )}
+                
+                {/* Contract Type */}
+                {job.contractType && (
+                  <div>
+                    <div className="text-white/50 mb-1">Contract Type:</div>
+                    <div className="font-semibold capitalize">{job.contractType}</div>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Client Information */}
-            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1">
-              <h3 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4">Client Information</h3>
-              <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
-                <div className="flex justify-between">
-                  <span className="text-white/50">Client Rating:</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-yellow-400">4.8</span>
-                    <FontAwesomeIcon icon={faMedal} className="text-yellow-400 text-xs" />
+            <div className="bg-[rgba(255,255,255,0.05)] rounded-lg p-3 lg:p-6 pt-1 border border-blue-500/30">
+              <h3 className="text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2">
+                <FontAwesomeIcon icon={faUser} className="text-blue-400" />
+                Client Information
+              </h3>
+              {loadingClient ? (
+                <div className="text-white/60">Loading client info...</div>
+              ) : (
+                <div className="space-y-2 lg:space-y-3 text-xs lg:text-sm">
+                  <div>
+                    <span className="text-white/50">Client Name:</span>
+                    <span className="font-semibold ml-2">{getClientDisplayName()}</span>
+                  </div>
+                  {clientProfile?.company && (
+                    <div>
+                      <span className="text-white/50">Company Name:</span>
+                      <span className="ml-2">{clientProfile.company}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-white/50">Jobs Posted:</span>
+                    <span className="ml-2">{clientProfile?.projectsPosted ?? 'First job'}</span>
+                  </div>
+                  <div>
+                    <span className="text-white/50">Client Rating:</span>
+                    <span className="ml-2">{clientProfile?.clientRating ? `${clientProfile.clientRating} / 5` : 'No rating yet'}</span>
+                  </div>
+                  {clientProfile?.location && (
+                    <div>
+                      <span className="text-white/50">Location:</span>
+                      <span className="ml-2">{clientProfile.location}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-white/50">Remote:</span>
+                    <span className={job.remote ? 'text-green-400 ml-2' : 'text-red-400 ml-2'}>{job.remote ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div>
+                    <span className="text-white/50">Verified:</span>
+                    <span className={currentUser?.emailVerified ? 'text-green-400 ml-2' : 'text-red-400 ml-2'}>{currentUser?.emailVerified ? 'Yes' : 'No'}</span>
+                  </div>
+                  {job.experienceLevel && (
+                    <div>
+                      <span className="text-white/50">Target Level:</span>
+                      <span className="ml-2">{job.experienceLevel}</span>
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-white/50">Job Created At:</span>
+                    <span className="ml-2">{getCreatedAtString()}</span>
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Projects Posted:</span>
-                  <span>23</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Avg. Budget:</span>
-                  <span>$2,800</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Payment Method:</span>
-                  <span className="text-green-400">Verified</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/50">Response Time:</span>
-                  <span>~2 hours</span>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Windows-style Project Files Section */}
-        <div className="mt-4">
-          <WindowsFileExplorer files={[]} />
+        <div className="mt-6">
+          {(() => {
+            const allFiles = [
+              ...(job.projectFiles || []),
+              ...(job.imageFiles || []),
+              ...(job.submittedFiles || []),
+              ...(job.challengeFiles || []),
+              ...(job.files || [])
+            ];
+            console.log('🎯 ContractJobDetails - All collected files:', allFiles);
+            console.log('🎯 Individual arrays:');
+            console.log('  - projectFiles:', job.projectFiles);
+            console.log('  - imageFiles:', job.imageFiles);
+            console.log('  - submittedFiles:', job.submittedFiles);
+            console.log('  - challengeFiles:', job.challengeFiles);
+            console.log('  - files:', job.files);
+            return <WindowsFileExplorer files={allFiles} />;
+          })()}
         </div>
       </div>
     </div>

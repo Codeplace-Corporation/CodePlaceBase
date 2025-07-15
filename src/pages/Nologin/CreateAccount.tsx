@@ -1,8 +1,9 @@
 // Fixed CreateAccount component with syntax errors resolved
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getAuth, createUserWithEmailAndPassword, User, GoogleAuthProvider, signInWithPopup, sendEmailVerification } from 'firebase/auth';
-import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, addDoc, updateDoc, increment } from 'firebase/firestore';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { updateWaitlistStatus } from '../../utils/waitlistUtils';
 
 // Interfaces
 interface FormData {
@@ -20,9 +21,11 @@ interface ValidationErrors {
 
 const CreateAccount: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   // State variables
   const [showPassword, setShowPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState<string | null>(null);
   const [showCountryDropdown, setShowCountryDropdown] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
   const [formData, setFormData] = useState<FormData>({
@@ -81,6 +84,14 @@ const CreateAccount: React.FC = () => {
   ];
 
   // Effects
+  React.useEffect(() => {
+    // Get referral code from URL parameters
+    const ref = searchParams.get('ref');
+    if (ref) {
+      setReferralCode(ref);
+    }
+  }, [searchParams]);
+
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
@@ -166,6 +177,35 @@ const CreateAccount: React.FC = () => {
       document.head.removeChild(style);
     };
   }, []);
+
+  // Track signup function
+  const trackSignup = async (email: string) => {
+    if (!referralCode) return;
+    
+    try {
+      // Record the signup
+      await addDoc(collection(db, 'signups'), {
+        internId: referralCode,
+        email: email,
+        timestamp: new Date(),
+        source: 'website'
+      });
+
+      // Increment the intern's signup count
+      const internsRef = collection(db, 'interns');
+      const internQuery = query(internsRef, where('trackingCode', '==', referralCode));
+      const internSnapshot = await getDocs(internQuery);
+
+      if (!internSnapshot.empty) {
+        const internDoc = internSnapshot.docs[0];
+        await updateDoc(doc(db, 'interns', internDoc.id), {
+          signups: increment(1)
+        });
+      }
+    } catch (error) {
+      console.error('Error tracking signup:', error);
+    }
+  };
 
   // Email verification function
   const sendCustomEmailVerification = async (user: User): Promise<void> => {
@@ -363,6 +403,16 @@ const CreateAccount: React.FC = () => {
         });
       }
 
+      // Update waitlist status if email exists in waitlist
+      if (user.email) {
+        await updateWaitlistStatus(user.email);
+      }
+
+      // Track signup if referral code exists
+      if (user.email) {
+        await trackSignup(user.email);
+      }
+
       console.log('Google sign up successful:', user);
       
       if (user.emailVerified) {
@@ -409,6 +459,13 @@ const CreateAccount: React.FC = () => {
       const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
       
       await saveUserToFirestore(userCredential.user);
+      
+      // Update waitlist status if email exists in waitlist
+      await updateWaitlistStatus(formData.email);
+      
+      // Track signup if referral code exists
+      await trackSignup(formData.email);
+      
       await sendCustomEmailVerification(userCredential.user);
       
       console.log('User created with email verification:', userCredential.user);

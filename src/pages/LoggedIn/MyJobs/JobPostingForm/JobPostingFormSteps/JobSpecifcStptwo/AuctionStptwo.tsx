@@ -17,13 +17,13 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface AuctionStepThreeProps {
+interface AuctionStptwoProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const AuctionStepThree: React.FC<AuctionStepThreeProps> = ({ formData, updateFormData, errors }) => {
+const AuctionStptwo: React.FC<AuctionStptwoProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -99,7 +99,8 @@ const AuctionStepThree: React.FC<AuctionStepThreeProps> = ({ formData, updateFor
     }
   };
 
-  const getFileIcon = (fileName: string) => {
+  const getFileIcon = (fileName: string | undefined | null) => {
+    if (!fileName) return faFileAlt;
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
       case 'jpg':
@@ -305,15 +306,16 @@ Be as specific as possible to help developers understand exactly what you need..
               <div className="flex-1 py-4 px-4">
                 <div className="space-y-1 max-h-64 overflow-y-auto scrollbar-thin scrollbar-track-white/5 scrollbar-thumb-white/20 hover:scrollbar-thumb-white/30 scrollbar-track-rounded-full scrollbar-thumb-rounded-full">
                   {formData.projectFiles.map((file, index) => {
-                    const isGithubUrl = file.name?.startsWith('github:');
-                    const displayName = isGithubUrl ? file.name.replace('github:', '') : file.name;
+                    const fileName = file.name || 'Unknown File';
+                    const isGithubUrl = fileName.startsWith('github:');
+                    const displayName = isGithubUrl ? fileName.replace('github:', '') : fileName;
                     const fileInfo = isGithubUrl ? 'GitHub Repository' : `${file.type || 'Unknown'} • ${formatFileSize(file.size)}`;
                     
                     return (
                       <div key={index} className="flex items-center gap-3 px-3 bg-white/5 border border-white/10 rounded group hover:bg-white/10 transition-colors">
                         <div className="flex-shrink-0">
                           <FontAwesomeIcon 
-                            icon={isGithubUrl ? faCodeBranch : getFileIcon(file.name)} 
+                            icon={isGithubUrl ? faCodeBranch : getFileIcon(fileName)} 
                             className={`text-sm ${isGithubUrl ? 'text-orange-400' : 'text-gray-400'}`} 
                           />
                         </div>
@@ -361,4 +363,4 @@ Be as specific as possible to help developers understand exactly what you need..
   );
 };
 
-export default AuctionStepThree;
+export default AuctionStptwo;

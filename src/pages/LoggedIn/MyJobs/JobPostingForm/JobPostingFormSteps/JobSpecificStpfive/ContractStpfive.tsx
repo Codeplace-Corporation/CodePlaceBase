@@ -1,47 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faTrophy, faClock, faCalendarAlt, faCogs } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faFileContract, faClock, faCalendarAlt, faCogs, faDollarSign, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface ChallengeStepTwoProps {
+interface ContractStpfiveProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFormData, errors }) => {
+const ContractStpfive: React.FC<ContractStpfiveProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
-  const [showStartCalendar, setShowStartCalendar] = useState(false);
-  const [showEndCalendar, setShowEndCalendar] = useState(false);
-
-  // Initialize default values if they don't exist
-  useEffect(() => {
-    const updates: Partial<FormData> = {};
-    
-    // Set default eprojectlength if not set OR if it contains invalid values
-    // Check if the current value is one of the valid duration options
-    const validDurations = [
-      '<1-hour', '1-3-hours', '3-6-hours', '6-12-hours', 
-      '1-day', '2-days', '3-5-days', 
-      '1-week', '2-weeks', 
-      '1-month', '1-2-months', '3-5-months', '6-months-plus'
-    ];
-    
-    if (!formData.eprojectlength || !validDurations.includes(formData.eprojectlength)) {
-      // If eprojectlength is not set or contains invalid value (like 'open-challenge'), reset it
-      updates.eprojectlength = '1-day';
-    }
-    
-    // Set default complexityLevel if not set  
-    if (!formData.complexityLevel) {
-      updates.complexityLevel = 'moderate';
-    }
-    
-    // Apply updates if any defaults needed to be set
-    if (Object.keys(updates).length > 0) {
-      updateFormData(updates);
-    }
-  }, [formData.eprojectlength, formData.complexityLevel, updateFormData]); // Added dependencies to monitor for invalid values
+  const [showOpenCalendar, setShowOpenCalendar] = useState(false);
+  const [showCloseCalendar, setShowCloseCalendar] = useState(false);
+  const [showDeadlineCalendar, setShowDeadlineCalendar] = useState(false);
 
   const Tooltip: React.FC<{ id: string; text: string; children: React.ReactNode }> = ({ id, text, children }) => (
     <div className="relative inline-block">
@@ -61,10 +33,13 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
     </div>
   );
 
-  // Get current date in YYYY-MM-DD format
+  // Get current date in YYYY-MM-DD format (local timezone)
   const getCurrentDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get current time in 12-hour format
@@ -74,26 +49,31 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
     const minutes = now.getMinutes();
     const hour12 = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    return hour12 + ':' + minutes.toString().padStart(2, '0') + ' ' + ampm;
+    return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
-  // Get date with offset (helper for presets)
+  // Get date with offset (helper for presets) - local timezone
   const getDateOffset = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  // Format date for display (e.g., "Mar 18th, 2020")
+  // Format date for display (e.g., "Mar 18th, 2020") - local timezone
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return 'Select Date';
-    const date = new Date(dateString);
+    // Parse the date string as local time to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                   day === 2 || day === 22 ? 'nd' : 
-                   day === 3 || day === 23 ? 'rd' : 'th';
-    return months[date.getMonth()] + ' ' + day + suffix + ', ' + date.getFullYear();
+    const dayNum = date.getDate();
+    const suffix = dayNum === 1 || dayNum === 21 || dayNum === 31 ? 'st' : 
+                   dayNum === 2 || dayNum === 22 ? 'nd' : 
+                   dayNum === 3 || dayNum === 23 ? 'rd' : 'th';
+    return `${months[date.getMonth()]} ${dayNum}${suffix}, ${date.getFullYear()}`;
   };
 
   // Convert 12-hour time to 24-hour for input
@@ -107,7 +87,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
     if (modifier === 'PM') {
       hours = (parseInt(hours, 10) + 12).toString();
     }
-    return hours.padStart(2, '0') + ':' + minutes;
+    return `${hours.padStart(2, '0')}:${minutes}`;
   };
 
   // Convert 24-hour time to 12-hour for display
@@ -117,7 +97,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
     const hour24 = parseInt(hours, 10);
     const hour12 = hour24 === 0 ? 12 : hour24 > 12 ? hour24 - 12 : hour24;
     const ampm = hour24 >= 12 ? 'PM' : 'AM';
-    return hour12 + ':' + minutes + ' ' + ampm;
+    return `${hour12}:${minutes} ${ampm}`;
   };
 
   // Custom time input component with grouped number boxes
@@ -135,7 +115,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -152,7 +132,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -161,7 +141,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
           <button
             type="button"
             onClick={() => onChange('12:00 PM')}
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-green-400 transition-colors"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors"
           >
             PM
           </button>
@@ -186,7 +166,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
         hours24 += 12;
       }
       
-      const time12Result = convertTo12Hour(hours24.toString().padStart(2, '0') + ':' + newMinutes);
+      const time12Result = convertTo12Hour(`${hours24.toString().padStart(2, '0')}:${newMinutes}`);
       onChange(time12Result);
     };
 
@@ -208,7 +188,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
               updateTime(newValue || '1', minutesDisplay);
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20"
           maxLength={2}
           placeholder="12"
         />
@@ -227,7 +207,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
               updateTime(hoursDisplay, newValue.padStart(2, '0'));
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-green-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20"
           maxLength={2}
           placeholder="00"
         />
@@ -236,7 +216,7 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
         <button
           type="button"
           onClick={togglePeriod}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-green-400 transition-colors"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors"
         >
           {period}
         </button>
@@ -264,12 +244,12 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
     
     // Empty cells for days before month starts
     for (let i = 0; i < firstDayOfMonth; i++) {
-      days.push(<div key={'empty-' + i} className="w-8 h-8"></div>);
+      days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
     }
     
     // Days of the month
     for (let day = 1; day <= daysInMonth; day++) {
-      const dateString = viewYear + '-' + String(viewMonth + 1).padStart(2, '0') + '-' + String(day).padStart(2, '0');
+      const dateString = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const isSelected = dateString === selectedDate;
       const isToday = day === today.getDate() && viewMonth === today.getMonth() && viewYear === today.getFullYear();
       
@@ -280,12 +260,13 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
             onDateSelect(dateString);
             onClose();
           }}
-          className={'w-8 h-8 text-sm rounded hover:bg-white/20 transition-colors ' + 
-            (isSelected 
-              ? 'bg-green-500 text-white' 
+          className={`w-8 h-8 text-sm rounded hover:bg-white/20 transition-colors ${
+            isSelected 
+              ? 'bg-blue-500 text-white' 
               : isToday 
               ? 'bg-white/20 text-white' 
-              : 'text-white/70 hover:text-white')}
+              : 'text-white/70 hover:text-white'
+          }`}
         >
           {day}
         </button>
@@ -355,141 +336,179 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
   };
 
   // Handle price input changes
-  const handlePrizeChange = (value: string) => {
-    // Allow typing without formatting, but store the raw number
-    updateFormData({ bountyAmount: value });
+  const handleStartingBidChange = (value: string) => {
+    updateFormData({ startingBid: value });
   };
 
   // Handle blur to format the price
-  const handlePrizeBlur = () => {
-    if (formData.bountyAmount) {
-      const formatted = formatPrice(formData.bountyAmount);
-      updateFormData({ bountyAmount: formatted });
+  const handleStartingBidBlur = () => {
+    if (formData.startingBid) {
+      const formatted = formatPrice(formData.startingBid);
+      updateFormData({ startingBid: formatted });
     }
   };
 
   return (
     <div className="space-y-4 max-w-3xl">
-      {/* Challenge Prize */}
+      {/* Project Budget */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faTrophy} className="text-green-400" />
-          Challenge Prize
-          <Tooltip id="challenge-prize" text="The total amount you'll award to the winner(s) of your challenge.">
+          <FontAwesomeIcon icon={faFileContract} className="text-blue-400" />
+          Project Budget
+          <Tooltip id="project-budget" text="The budget you've allocated for this project. This helps contractors understand your expectations.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
         <input
           type="number"
-          value={formData.bountyAmount || ''}
-          onChange={(e) => handlePrizeChange(e.target.value)}
-          onBlur={handlePrizeBlur}
-          className={
-            'w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ' +
-            (errors.bountyAmount ? 'border-red-500' : 'border-white/20')
-          }
-          placeholder="Enter amount (e.g., 1000.00)"
+          value={formData.startingBid || ''}
+          onChange={(e) => handleStartingBidChange(e.target.value)}
+          onBlur={handleStartingBidBlur}
+          className={`w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-blue-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
+            errors.startingBid ? 'border-red-500' : 'border-white/20'
+          }`}
+          placeholder="Enter project budget (e.g., 2500.00)"
           min="0"
           step="0.01"
         />
-        {errors.bountyAmount && <p className="text-red-400 text-xs mt-1">{errors.bountyAmount}</p>}
+        {errors.startingBid && <p className="text-red-400 text-xs mt-1">{errors.startingBid}</p>}
       </div>
 
-      {/* Challenge Timeline */}
+      {/* Contract Timeline */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCalendarAlt} className="text-green-400" />
-          Challenge Timeline
-          <Tooltip id="challenge-timeline" text="Set when your challenge starts and expires. Click the date to open calendar, and set the time.">
+          <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-400" />
+          Contract Timeline
+          <Tooltip id="contract-timeline" text="Set when applications open, close, and when the project must be delivered.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
         <div className="space-y-4">
-          {/* Challenge Starts */}
+          {/* Applications Open */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Challenge Starts</label>
+            <label className="block text-white/70 text-xs mb-2">Applications Open</label>
             <div className="inline-flex bg-white/5 border border-white/20 rounded-md overflow-hidden">
               <div 
                 className="relative"
-                onMouseLeave={() => setShowStartCalendar(false)}
+                onMouseLeave={() => setShowOpenCalendar(false)}
               >
                 <button
                   type="button"
-                  onClick={() => setShowStartCalendar(!showStartCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-green-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  onClick={() => setShowOpenCalendar(!showOpenCalendar)}
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-green-300 text-xs transition-colors" />
-                  <span className="group-hover:text-green-300 transition-colors">
-                    {formatDisplayDate(formData.bountyStartDate || getCurrentDate())}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
+                  <span className="group-hover:text-blue-300 transition-colors">
+                    {formatDisplayDate(formData.applicationsOpenDate || getCurrentDate())}
                   </span>
                 </button>
-                {showStartCalendar && (
+                {showOpenCalendar && (
                   <Calendar
-                    selectedDate={formData.bountyStartDate || getCurrentDate()}
-                    onDateSelect={(date) => updateFormData({ bountyStartDate: date })}
-                    onClose={() => setShowStartCalendar(false)}
+                    selectedDate={formData.applicationsOpenDate || getCurrentDate()}
+                    onDateSelect={(date) => updateFormData({ applicationsOpenDate: date })}
+                    onClose={() => setShowOpenCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyStartTime || getCurrentTime()}
-                  onChange={(time) => updateFormData({ bountyStartTime: time })}
+                  value={formData.applicationsOpenTime || getCurrentTime()}
+                  onChange={(time) => updateFormData({ applicationsOpenTime: time })}
                 />
               </div>
             </div>
           </div>
 
-          {/* Challenge Expires */}
+          {/* Applications Close */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Challenge Expires</label>
-            <div className={
-              'inline-flex bg-white/5 border rounded-md overflow-hidden ' +
-              (errors.bountyDeadline ? 'border-red-500' : 'border-white/20')
-            }>
+            <label className="block text-white/70 text-xs mb-2">Applications Close</label>
+            <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
+              errors.applicationsCloseDate ? 'border-red-500' : 'border-white/20'
+            }`}>
               <div 
                 className="relative"
-                onMouseLeave={() => setShowEndCalendar(false)}
+                onMouseLeave={() => setShowCloseCalendar(false)}
               >
                 <button
                   type="button"
-                  onClick={() => setShowEndCalendar(!showEndCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-green-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  onClick={() => setShowCloseCalendar(!showCloseCalendar)}
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-green-300 text-xs transition-colors" />
-                  <span className="group-hover:text-green-300 transition-colors">
-                    {formatDisplayDate(formData.bountyDeadline || '')}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
+                  <span className="group-hover:text-blue-300 transition-colors">
+                    {formatDisplayDate(formData.applicationsCloseDate || '')}
                   </span>
                 </button>
-                {showEndCalendar && (
+                {showCloseCalendar && (
                   <Calendar
-                    selectedDate={formData.bountyDeadline || ''}
-                    onDateSelect={(date) => updateFormData({ bountyDeadline: date })}
-                    onClose={() => setShowEndCalendar(false)}
+                    selectedDate={formData.applicationsCloseDate || ''}
+                    onDateSelect={(date) => updateFormData({ applicationsCloseDate: date })}
+                    onClose={() => setShowCloseCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyExpiryTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ bountyExpiryTime: time })}
+                  value={formData.applicationsCloseTime || '--:-- PM'}
+                  onChange={(time) => updateFormData({ applicationsCloseTime: time })}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Project Deadline */}
+          <div>
+            <label className="block text-white/70 text-xs mb-2">Project Deadline</label>
+            <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
+              errors.Deadline ? 'border-red-500' : 'border-white/20'
+            }`}>
+              <div 
+                className="relative"
+                onMouseLeave={() => setShowDeadlineCalendar(false)}
+              >
+                <button
+                  type="button"
+                  onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                >
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
+                  <span className="group-hover:text-blue-300 transition-colors">
+                    {formatDisplayDate(formData.Deadline || '')}
+                  </span>
+                </button>
+                {showDeadlineCalendar && (
+                  <Calendar
+                    selectedDate={formData.Deadline || ''}
+                    onDateSelect={(date) => updateFormData({ Deadline: date })}
+                    onClose={() => setShowDeadlineCalendar(false)}
+                  />
+                )}
+              </div>
+              <div>
+                <CustomTimeInput
+                  value={formData.ExpiryTime || '--:-- PM'}
+                  onChange={(time) => updateFormData({ ExpiryTime: time })}
                 />
               </div>
             </div>
           </div>
         </div>
         
-        {errors.bountyDeadline && <p className="text-red-400 text-xs mt-1">{errors.bountyDeadline}</p>}
+        {(errors.applicationsCloseDate || errors.Deadline) && (
+          <p className="text-red-400 text-xs mt-1">
+            {errors.applicationsCloseDate || errors.Deadline}
+          </p>
+        )}
       </div>
 
       {/* Estimated Project Length */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faClock} className="text-green-400" />
+          <FontAwesomeIcon icon={faClock} className="text-blue-400" />
           Estimated Project Length
-          <Tooltip id="project-length" text="How long do you expect this project to take once a developer starts working on it?">
+          <Tooltip id="project-length" text="How long do you expect this project to take once the selected contractor starts working on it?">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -593,9 +612,9 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
       {/* Project Complexity */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCogs} className="text-green-400" />
+          <FontAwesomeIcon icon={faCogs} className="text-blue-400" />
           Project Complexity
-          <Tooltip id="project-complexity" text="How complex is this project? This helps developers understand the skill level required.">
+          <Tooltip id="project-complexity" text="How complex is this project? This helps contractors understand the skill level required.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -677,4 +696,4 @@ const ChallengeStepTwo: React.FC<ChallengeStepTwoProps> = ({ formData, updateFor
   );
 };
 
-export default ChallengeStepTwo;
+export default ContractStpfive;

@@ -10,13 +10,14 @@ import {
   faInfoCircle,
   faChevronDown,
   faChevronUp,
+  faCrosshairs,
 } from '@fortawesome/free-solid-svg-icons';
-import { FormData } from '../JobPostingForm';
+import { FormData } from '../../JobPostingForm';
 
 // Import categories from external file
-import { JOB_CATEGORIES } from './Components/JobCategoryList';
+import { JOB_CATEGORIES } from '../Components/JobCategoryList';
 
-interface StepOneProps {
+interface StponeProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
@@ -25,7 +26,7 @@ interface StepOneProps {
 const JOB_POST_TYPES = [
   { 
     type: 'Bounty', 
-    icon: faBullseye, 
+    icon: faCrosshairs, 
     color: 'text-purple-400',
     tooltip: 'Set a fixed reward for completing specific tasks or features. Developers work to claim the bounty upon successful delivery.'
   },
@@ -53,7 +54,7 @@ const PROJECT_CATEGORIES = JOB_CATEGORIES.filter((category, index, self) =>
   category && typeof category === 'string' && self.indexOf(category) === index
 ).sort();
 
-const StepOne: React.FC<StepOneProps> = ({ formData, updateFormData, errors }) => {
+const Stpone: React.FC<StponeProps> = ({ formData, updateFormData, errors }) => {
   const [tagInput, setTagInput] = useState('');
   const [toolInput, setToolInput] = useState('');
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
@@ -390,15 +391,15 @@ const StepOne: React.FC<StepOneProps> = ({ formData, updateFormData, errors }) =
                 {formData.selectedJobPostType === 'Bounty' ? (
                   <>
                     <div
-                      onClick={() => updateFormData({ JobSubType: 'Open Bountyty' })}
+                      onClick={() => updateFormData({ JobSubType: 'Open Bounty' })}
                       className={`p-3 rounded-lg border-2 cursor-pointer transition-all duration-200 hover:scale-102 ${
-                        formData.JobSubType === 'Open Bountyty'
+                        formData.JobSubType === 'Open Bounty'
                           ? 'border-purple-400 bg-purple-500/10'
                           : 'border-gray-500/40 bg-transparent hover:border-gray-400/60'
                       }`}
                     >
                       <h4 className={`font-medium text-sm mb-1 transition-colors duration-200 ${
-                        formData.JobSubType === 'Open Bountyty' ? 'text-purple-300' : 'text-white'
+                        formData.JobSubType === 'Open Bounty' ? 'text-purple-300' : 'text-white'
                       }`}>Open Bounty</h4>
                       <p className="text-xs text-white/70">Public & visible to all developers</p>
                     </div>
@@ -746,4 +747,4 @@ const StepOne: React.FC<StepOneProps> = ({ formData, updateFormData, errors }) =
   );
 };
 
-export default StepOne;
+export default Stpone;

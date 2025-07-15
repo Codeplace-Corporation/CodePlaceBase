@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faFileContract, faClock, faCalendarAlt, faCogs, faDollarSign, faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faGavel, faClock, faCalendarAlt, faCogs, faDollarSign, faChartLine } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface ContractStepTwoProps {
+interface AuctionStpfiveProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormData, errors }) => {
+const AuctionStpfive: React.FC<AuctionStpfiveProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [showOpenCalendar, setShowOpenCalendar] = useState(false);
   const [showCloseCalendar, setShowCloseCalendar] = useState(false);
@@ -33,10 +33,13 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
     </div>
   );
 
-  // Get current date in YYYY-MM-DD format
+  // Get current date in YYYY-MM-DD format (local timezone)
   const getCurrentDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get current time in 12-hour format
@@ -49,23 +52,44 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
     return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
-  // Get date with offset (helper for presets)
+  // Get date with offset (helper for presets) - local timezone
   const getDateOffset = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  // Format date for display (e.g., "Mar 18th, 2020")
+  // Format date for display (e.g., "Mar 18th, 2020") - local timezone
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return 'Select Date';
-    const date = new Date(dateString);
+    
+    // Handle ISO string format (e.g., "2024-01-15T10:30:00")
+    if (dateString.includes('T')) {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return 'Select Date';
+      
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const dayNum = date.getDate();
+      const suffix = dayNum === 1 || dayNum === 21 || dayNum === 31 ? 'st' : 
+                     dayNum === 2 || dayNum === 22 ? 'nd' : 
+                     dayNum === 3 || dayNum === 23 ? 'rd' : 'th';
+      return `${months[date.getMonth()]} ${dayNum}${suffix}, ${date.getFullYear()}`;
+    }
+    
+    // Handle YYYY-MM-DD format
+    const [year, month, day] = dateString.split('-').map(Number);
+    if (isNaN(year) || isNaN(month) || isNaN(day)) return 'Select Date';
+    
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                   day === 2 || day === 22 ? 'nd' : 
-                   day === 3 || day === 23 ? 'rd' : 'th';
-    return `${months[date.getMonth()]} ${day}${suffix}, ${date.getFullYear()}`;
+    const dayNum = date.getDate();
+    const suffix = dayNum === 1 || dayNum === 21 || dayNum === 31 ? 'st' : 
+                   dayNum === 2 || dayNum === 22 ? 'nd' : 
+                   dayNum === 3 || dayNum === 23 ? 'rd' : 'th';
+    return `${months[date.getMonth()]} ${dayNum}${suffix}, ${date.getFullYear()}`;
   };
 
   // Convert 12-hour time to 24-hour for input
@@ -107,7 +131,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -124,7 +148,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
               setTimeout(() => (e.target as HTMLInputElement).select(), 0);
             }}
             readOnly
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20 cursor-pointer"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white/50 text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20 cursor-pointer"
             maxLength={2}
             placeholder="--"
           />
@@ -133,7 +157,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
           <button
             type="button"
             onClick={() => onChange('12:00 PM')}
-            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors"
+            className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-colors"
           >
             PM
           </button>
@@ -180,7 +204,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
               updateTime(newValue || '1', minutesDisplay);
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20"
           maxLength={2}
           placeholder="12"
         />
@@ -199,7 +223,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
               updateTime(hoursDisplay, newValue.padStart(2, '0'));
             }
           }}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-400 focus:bg-white/20"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-sm focus:outline-none focus:ring-1 focus:ring-orange-400 focus:bg-white/20"
           maxLength={2}
           placeholder="00"
         />
@@ -208,7 +232,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
         <button
           type="button"
           onClick={togglePeriod}
-          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-blue-400 transition-colors"
+          className="w-8 h-6 text-center bg-white/10 border border-white/30 rounded text-white text-xs hover:bg-white/20 focus:outline-none focus:ring-1 focus:ring-orange-400 transition-colors"
         >
           {period}
         </button>
@@ -254,7 +278,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
           }}
           className={`w-8 h-8 text-sm rounded hover:bg-white/20 transition-colors ${
             isSelected 
-              ? 'bg-blue-500 text-white' 
+              ? 'bg-orange-500 text-white' 
               : isToday 
               ? 'bg-white/20 text-white' 
               : 'text-white/70 hover:text-white'
@@ -304,8 +328,8 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
           </div>
           
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day) => (
-              <div key={day} className="w-8 h-8 text-xs text-white/60 flex items-center justify-center font-medium">
+            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+              <div key={`day-header-${index}`} className="w-8 h-8 text-xs text-white/60 flex items-center justify-center font-medium">
                 {day}
               </div>
             ))}
@@ -332,6 +356,10 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
     updateFormData({ startingBid: value });
   };
 
+  const handleBidIncrementChange = (value: string) => {
+    updateFormData({ bidIncrement: value });
+  };
+
   // Handle blur to format the price
   const handleStartingBidBlur = () => {
     if (formData.startingBid) {
@@ -340,47 +368,76 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
     }
   };
 
+  const handleBidIncrementBlur = () => {
+    if (formData.bidIncrement) {
+      const formatted = formatPrice(formData.bidIncrement);
+      updateFormData({ bidIncrement: formatted });
+    }
+  };
+
   return (
     <div className="space-y-4 max-w-3xl">
-      {/* Project Budget */}
+      {/* Starting Bid & Increment */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faFileContract} className="text-blue-400" />
-          Project Budget
-          <Tooltip id="project-budget" text="The budget you've allocated for this project. This helps contractors understand your expectations.">
+          <FontAwesomeIcon icon={faGavel} className="text-orange-400" />
+          Starting Bid & Increment
+          <Tooltip id="starting-bid" text="Set the initial bidding amount and the minimum increment for each new bid.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
-        <input
-          type="number"
-          value={formData.startingBid || ''}
-          onChange={(e) => handleStartingBidChange(e.target.value)}
-          onBlur={handleStartingBidBlur}
-          className={`w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-blue-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
-            errors.startingBid ? 'border-red-500' : 'border-white/20'
-          }`}
-          placeholder="Enter project budget (e.g., 2500.00)"
-          min="0"
-          step="0.01"
-        />
+        <div className="grid grid-cols-2 gap-4">
+          {/* Starting Bid */}
+          <div>
+            <label className="block text-white/70 text-xs mb-2">Starting Bid</label>
+            <input
+              type="number"
+              value={formData.startingBid || ''}
+              onChange={(e) => handleStartingBidChange(e.target.value)}
+              onBlur={handleStartingBidBlur}
+              className={`w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-orange-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
+                errors.startingBid ? 'border-red-500' : 'border-white/20'
+              }`}
+              placeholder="e.g., 500.00"
+              min="0"
+              step="0.01"
+            />
+          </div>
+
+          {/* Minimum Bid Increment */}
+          <div>
+            <label className="block text-white/70 text-xs mb-2">Minimum Bid Increment</label>
+            <input
+              type="number"
+              value={formData.bidIncrement || '1.00'}
+              onChange={(e) => handleBidIncrementChange(e.target.value)}
+              onBlur={handleBidIncrementBlur}
+              className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-orange-400 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+              placeholder="1.00"
+              min="0"
+              step="0.01"
+            />
+          </div>
+        </div>
+        
         {errors.startingBid && <p className="text-red-400 text-xs mt-1">{errors.startingBid}</p>}
       </div>
 
-      {/* Contract Timeline */}
+      {/* Auction Timeline */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCalendarAlt} className="text-blue-400" />
-          Contract Timeline
-          <Tooltip id="contract-timeline" text="Set when applications open, close, and when the project must be delivered.">
+          <FontAwesomeIcon icon={faCalendarAlt} className="text-orange-400" />
+          Auction Timeline
+          <Tooltip id="auction-timeline" text="Set when your auction opens for bidding, closes, and when the project must be delivered.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
         
         <div className="space-y-4">
-          {/* Applications Open */}
+          {/* Auction Opens */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Applications Open</label>
+            <label className="block text-white/70 text-xs mb-2">Auction Opens</label>
             <div className="inline-flex bg-white/5 border border-white/20 rounded-md overflow-hidden">
               <div 
                 className="relative"
@@ -389,35 +446,79 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
                 <button
                   type="button"
                   onClick={() => setShowOpenCalendar(!showOpenCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
-                  <span className="group-hover:text-blue-300 transition-colors">
-                    {formatDisplayDate(formData.applicationsOpenTime || getCurrentDate())}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
+                  <span className="group-hover:text-orange-300 transition-colors">
+                    {formatDisplayDate(
+                      formData.auctionStartTime && formData.auctionStartTime.includes('T') 
+                        ? formData.auctionStartTime.split('T')[0] 
+                        : formData.auctionStartTime || getCurrentDate()
+                    )}
                   </span>
                 </button>
                 {showOpenCalendar && (
                   <Calendar
-                    selectedDate={formData.applicationsOpenTime || getCurrentDate()}
-                    onDateSelect={(date) => updateFormData({ applicationsOpenTime: date })}
+                    selectedDate={
+                      formData.auctionStartTime && formData.auctionStartTime.includes('T') 
+                        ? formData.auctionStartTime.split('T')[0] 
+                        : formData.auctionStartTime || getCurrentDate()
+                    }
+                    onDateSelect={(date) => {
+                      // Combine date with time to create full ISO string
+                      const time = formData.StartTime || getCurrentTime();
+                      
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${date}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ auctionStartTime: isoString });
+                      } else {
+                        // Fallback: just update the date
+                        updateFormData({ auctionStartTime: date });
+                      }
+                    }}
                     onClose={() => setShowOpenCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyStartTime || getCurrentTime()}
-                  onChange={(time) => updateFormData({ bountyStartTime: time })}
+                  value={formData.StartTime || getCurrentTime()}
+                  onChange={(time) => {
+                    updateFormData({ StartTime: time });
+                    // Also update auctionStartTime if we have a date
+                    if (formData.auctionStartTime && formData.auctionStartTime.includes('T')) {
+                      const date = formData.auctionStartTime.split('T')[0];
+                      
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${date}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ auctionStartTime: isoString });
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Applications Close */}
+          {/* Auction Closes */}
           <div>
-            <label className="block text-white/70 text-xs mb-2">Applications Close</label>
+            <label className="block text-white/70 text-xs mb-2">Auction Closes</label>
             <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
-              errors.applicationsCloseTime ? 'border-red-500' : 'border-white/20'
+              errors.auctionEndDate ? 'border-red-500' : 'border-white/20'
             }`}>
               <div 
                 className="relative"
@@ -426,25 +527,66 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
                 <button
                   type="button"
                   onClick={() => setShowCloseCalendar(!showCloseCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
-                  <span className="group-hover:text-blue-300 transition-colors">
-                    {formatDisplayDate(formData.applicationsCloseTime || '')}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
+                  <span className="group-hover:text-orange-300 transition-colors">
+                    {formatDisplayDate(formData.auctionEndDate || '')}
                   </span>
                 </button>
                 {showCloseCalendar && (
                   <Calendar
-                    selectedDate={formData.applicationsCloseTime || ''}
-                    onDateSelect={(date) => updateFormData({ applicationsCloseTime: date })}
+                    selectedDate={formData.auctionEndDate || ''}
+                    onDateSelect={(date) => {
+                      // Combine date with time to create full ISO string for auction end
+                      const time = formData.auctionEndTime || '--:-- PM';
+                      if (time === '--:-- PM') {
+                        updateFormData({ auctionEndDate: date });
+                        return;
+                      }
+                      
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${date}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ 
+                          auctionEndDate: date,
+                          auctionEndTime: isoString 
+                        });
+                      } else {
+                        // Fallback: just update the date
+                        updateFormData({ auctionEndDate: date });
+                      }
+                    }}
                     onClose={() => setShowCloseCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.contractEndTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ contractEndTime: time })}
+                  value={formData.auctionEndTime || '--:-- PM'}
+                  onChange={(time) => {
+                    updateFormData({ auctionEndTime: time });
+                    // Also update auctionEndTime as ISO string if we have a date
+                    if (formData.auctionEndDate && time !== '--:-- PM') {
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${formData.auctionEndDate}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ auctionEndTime: isoString });
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
@@ -454,7 +596,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
           <div>
             <label className="block text-white/70 text-xs mb-2">Project Deadline</label>
             <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
-              errors.projectDeadline ? 'border-red-500' : 'border-white/20'
+              errors.Deadline ? 'border-red-500' : 'border-white/20'
             }`}>
               <div 
                 className="relative"
@@ -463,34 +605,75 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
                 <button
                   type="button"
                   onClick={() => setShowDeadlineCalendar(!showDeadlineCalendar)}
-                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-blue-400 transition-colors whitespace-nowrap border-r border-white/20 group"
+                  className="flex items-center gap-2 px-3 py-2 text-white text-sm hover:text-orange-400 transition-colors whitespace-nowrap border-r border-white/20 group"
                 >
-                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-blue-300 text-xs transition-colors" />
-                  <span className="group-hover:text-blue-300 transition-colors">
-                    {formatDisplayDate(formData.projectDeadline || '')}
+                  <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-orange-300 text-xs transition-colors" />
+                  <span className="group-hover:text-orange-300 transition-colors">
+                    {formatDisplayDate(formData.Deadline || '')}
                   </span>
                 </button>
                 {showDeadlineCalendar && (
                   <Calendar
-                    selectedDate={formData.projectDeadline || ''}
-                    onDateSelect={(date) => updateFormData({ projectDeadline: date })}
+                    selectedDate={formData.Deadline || ''}
+                    onDateSelect={(date) => {
+                      // Combine date with time to create full ISO string for project deadline
+                      const time = formData.ExpiryTime || '--:-- PM';
+                      if (time === '--:-- PM') {
+                        updateFormData({ Deadline: date });
+                        return;
+                      }
+                      
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${date}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ 
+                          Deadline: date,
+                          projectDeadline: isoString 
+                        });
+                      } else {
+                        // Fallback: just update the date
+                        updateFormData({ Deadline: date });
+                      }
+                    }}
                     onClose={() => setShowDeadlineCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyExpiryTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ bountyExpiryTime: time })}
+                  value={formData.ExpiryTime || '--:-- PM'}
+                  onChange={(time) => {
+                    updateFormData({ ExpiryTime: time });
+                    // Also update projectDeadline as ISO string if we have a date
+                    if (formData.Deadline && time !== '--:-- PM') {
+                      // Parse time in format "HH:MM AM/PM"
+                      const timeMatch = time.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/);
+                      if (timeMatch) {
+                        const [, hour12, minute12, period] = timeMatch;
+                        let hour24 = parseInt(hour12);
+                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+                        
+                        const isoString = `${formData.Deadline}T${hour24.toString().padStart(2, '0')}:${minute12}:00`;
+                        updateFormData({ projectDeadline: isoString });
+                      }
+                    }
+                  }}
                 />
               </div>
             </div>
           </div>
         </div>
         
-        {(errors.applicationsCloseTime || errors.projectDeadline) && (
+        {(errors.auctionEndDate || errors.Deadline) && (
           <p className="text-red-400 text-xs mt-1">
-            {errors.applicationsCloseTime || errors.projectDeadline}
+            {errors.auctionEndDate || errors.Deadline}
           </p>
         )}
       </div>
@@ -498,9 +681,9 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
       {/* Estimated Project Length */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faClock} className="text-blue-400" />
+          <FontAwesomeIcon icon={faClock} className="text-orange-400" />
           Estimated Project Length
-          <Tooltip id="project-length" text="How long do you expect this project to take once the selected contractor starts working on it?">
+          <Tooltip id="project-length" text="How long do you expect this project to take once the winning bidder starts working on it?">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -513,19 +696,19 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
               max="13"
               step="1"
               value={
-                formData.estimatedProjectLength === '<1-hour' ? '1' :
-                formData.estimatedProjectLength === '1-3-hours' ? '2' :
-                formData.estimatedProjectLength === '3-6-hours' ? '3' :
-                formData.estimatedProjectLength === '6-12-hours' ? '4' :
-                formData.estimatedProjectLength === '1-day' ? '5' :
-                formData.estimatedProjectLength === '2-days' ? '6' :
-                formData.estimatedProjectLength === '3-5-days' ? '7' :
-                formData.estimatedProjectLength === '1-week' ? '8' :
-                formData.estimatedProjectLength === '2-weeks' ? '9' :
-                formData.estimatedProjectLength === '1-month' ? '10' :
-                formData.estimatedProjectLength === '1-2-months' ? '11' :
-                formData.estimatedProjectLength === '3-5-months' ? '12' :
-                formData.estimatedProjectLength === '6-months-plus' ? '13' : '5'
+                formData.eprojectlength === '<1-hour' ? '1' :
+                formData.eprojectlength === '1-3-hours' ? '2' :
+                formData.eprojectlength === '3-6-hours' ? '3' :
+                formData.eprojectlength === '6-12-hours' ? '4' :
+                formData.eprojectlength === '1-day' ? '5' :
+                formData.eprojectlength === '2-days' ? '6' :
+                formData.eprojectlength === '3-5-days' ? '7' :
+                formData.eprojectlength === '1-week' ? '8' :
+                formData.eprojectlength === '2-weeks' ? '9' :
+                formData.eprojectlength === '1-month' ? '10' :
+                formData.eprojectlength === '1-2-months' ? '11' :
+                formData.eprojectlength === '3-5-months' ? '12' :
+                formData.eprojectlength === '6-months-plus' ? '13' : '5'
               }
               onChange={(e) => {
                 const value = e.target.value;
@@ -542,7 +725,7 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
                   value === '10' ? '1-month' :
                   value === '11' ? '1-2-months' :
                   value === '12' ? '3-5-months' : '6-months-plus';
-                updateFormData({ estimatedProjectLength: duration });
+                updateFormData({ eprojectlength: duration });
               }}
               className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer duration-slider"
             />
@@ -565,48 +748,48 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
           
           <div className="text-center">
             <div className="text-lg font-medium text-white">
-              {formData.estimatedProjectLength === '<1-hour' ? '<1 Hour' :
-               formData.estimatedProjectLength === '1-3-hours' ? '1-3 Hours' :
-               formData.estimatedProjectLength === '3-6-hours' ? '3-6 Hours' :
-               formData.estimatedProjectLength === '6-12-hours' ? '6-12 Hours' :
-               formData.estimatedProjectLength === '1-day' ? '1 Day' :
-               formData.estimatedProjectLength === '2-days' ? '2 Days' :
-               formData.estimatedProjectLength === '3-5-days' ? '3-5 Days' :
-               formData.estimatedProjectLength === '1-week' ? '1 Week' :
-               formData.estimatedProjectLength === '2-weeks' ? '2 Weeks' :
-               formData.estimatedProjectLength === '1-month' ? '1 Month' :
-               formData.estimatedProjectLength === '1-2-months' ? '1-2 Months' :
-               formData.estimatedProjectLength === '3-5-months' ? '3-5 Months' :
-               formData.estimatedProjectLength === '6-months-plus' ? '6+ Months' :
+              {formData.eprojectlength === '<1-hour' ? '<1 Hour' :
+               formData.eprojectlength === '1-3-hours' ? '1-3 Hours' :
+               formData.eprojectlength === '3-6-hours' ? '3-6 Hours' :
+               formData.eprojectlength === '6-12-hours' ? '6-12 Hours' :
+               formData.eprojectlength === '1-day' ? '1 Day' :
+               formData.eprojectlength === '2-days' ? '2 Days' :
+               formData.eprojectlength === '3-5-days' ? '3-5 Days' :
+               formData.eprojectlength === '1-week' ? '1 Week' :
+               formData.eprojectlength === '2-weeks' ? '2 Weeks' :
+               formData.eprojectlength === '1-month' ? '1 Month' :
+               formData.eprojectlength === '1-2-months' ? '1-2 Months' :
+               formData.eprojectlength === '3-5-months' ? '3-5 Months' :
+               formData.eprojectlength === '6-months-plus' ? '6+ Months' :
                'Select Duration'}
             </div>
             <div className="text-sm text-white/70">
-              {formData.estimatedProjectLength === '<1-hour' ? 'Quick fixes, small tweaks' :
-               formData.estimatedProjectLength === '1-3-hours' ? 'Minor features, bug fixes' :
-               formData.estimatedProjectLength === '3-6-hours' ? 'Small components, scripts' :
-               formData.estimatedProjectLength === '6-12-hours' ? 'Medium features, integrations' :
-               formData.estimatedProjectLength === '1-day' ? 'Full day project, complete feature' :
-               formData.estimatedProjectLength === '2-days' ? 'Extended feature development' :
-               formData.estimatedProjectLength === '3-5-days' ? 'Multi-component features' :
-               formData.estimatedProjectLength === '1-week' ? 'Small to medium project' :
-               formData.estimatedProjectLength === '2-weeks' ? 'Medium project with testing' :
-               formData.estimatedProjectLength === '1-month' ? 'Large feature or small application' :
-               formData.estimatedProjectLength === '1-2-months' ? 'Medium application development' :
-               formData.estimatedProjectLength === '3-5-months' ? 'Large application or system' :
-               formData.estimatedProjectLength === '6-months-plus' ? 'Enterprise-level project' :
+              {formData.eprojectlength === '<1-hour' ? 'Quick fixes, small tweaks' :
+               formData.eprojectlength === '1-3-hours' ? 'Minor features, bug fixes' :
+               formData.eprojectlength === '3-6-hours' ? 'Small components, scripts' :
+               formData.eprojectlength === '6-12-hours' ? 'Medium features, integrations' :
+               formData.eprojectlength === '1-day' ? 'Full day project, complete feature' :
+               formData.eprojectlength === '2-days' ? 'Extended feature development' :
+               formData.eprojectlength === '3-5-days' ? 'Multi-component features' :
+               formData.eprojectlength === '1-week' ? 'Small to medium project' :
+               formData.eprojectlength === '2-weeks' ? 'Medium project with testing' :
+               formData.eprojectlength === '1-month' ? 'Large feature or small application' :
+               formData.eprojectlength === '1-2-months' ? 'Medium application development' :
+               formData.eprojectlength === '3-5-months' ? 'Large application or system' :
+               formData.eprojectlength === '6-months-plus' ? 'Enterprise-level project' :
                'Choose the expected time to complete this project'}
             </div>
           </div>
         </div>
-        {errors.estimatedProjectLength && <p className="text-red-400 text-xs mt-1">{errors.estimatedProjectLength}</p>}
+        {errors.eprojectlength && <p className="text-red-400 text-xs mt-1">{errors.eprojectlength}</p>}
       </div>
 
       {/* Project Complexity */}
       <div>
         <label className="block text-white font-medium mb-2 text-sm flex items-center gap-2">
-          <FontAwesomeIcon icon={faCogs} className="text-blue-400" />
+          <FontAwesomeIcon icon={faCogs} className="text-orange-400" />
           Project Complexity
-          <Tooltip id="project-complexity" text="How complex is this project? This helps contractors understand the skill level required.">
+          <Tooltip id="project-complexity" text="How complex is this project? This helps bidders understand the skill level required.">
             <FontAwesomeIcon icon={faInfoCircle} className="text-white/50 text-xs hover:text-white/80" />
           </Tooltip>
         </label>
@@ -688,4 +871,4 @@ const ContractStepTwo: React.FC<ContractStepTwoProps> = ({ formData, updateFormD
   );
 };
 
-export default ContractStepTwo;
+export default AuctionStpfive;

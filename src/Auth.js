@@ -17,6 +17,8 @@ const signInWithGoogle = async () => {
     email: user.email,
     photoURL: user.photoURL,
   }, { merge: true });
+
+  return result; // Return the result so we can access user email
 };
 
 // Listen for auth state changes

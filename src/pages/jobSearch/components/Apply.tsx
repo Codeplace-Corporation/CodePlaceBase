@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
     faGavel, 
-    faGift, 
+    faCrosshairs, 
     faFileContract, 
     faTrophy, 
     faQuestionCircle,
@@ -30,7 +30,7 @@ interface Job {
 
 const jobPostTypes = [
     { type: "Auction", icon: faGavel },
-    { type: "Bounty", icon: faGift },
+    { type: "Bounty", icon: faCrosshairs },
     { type: "Contract", icon: faFileContract },
     { type: "Challenge", icon: faTrophy },
 ];
@@ -77,7 +77,7 @@ const Apply: React.FC = () => {
     };
 
     return (
-        <div className="text-white">
+        <div className="min-h-screen bg-black text-white">
             {/* Header */}
             <div className="flex items-center mb-8">
                 <button 
@@ -90,7 +90,7 @@ const Apply: React.FC = () => {
             </div>
 
             {/* Job Details */}
-            <div className="grid grid-cols-3 gap-8 mb-8 bg-[rgba(255,255,255,0.1)] p-6 rounded-lg">
+            <div className="grid grid-cols-3 gap-8 mb-8 bg-white/5 border border-white/10 p-6 rounded-lg">
                 <div>
                     <h2 className="text-2xl font-bold flex items-center gap-3 mb-4">
                         <FontAwesomeIcon 
@@ -110,21 +110,21 @@ const Apply: React.FC = () => {
                         <div className="space-y-3">
                             <div className="flex items-center">
                                 <span className="w-32 text-white/50">Type:</span>
-                                <span>{job.selectedJobPostType}</span>
+                                <span className="text-white">{job.selectedJobPostType}</span>
                             </div>
                             <div className="flex items-center">
                                 <span className="w-32 text-white/50">Project Type:</span>
-                                <span>{job.projectType}</span>
+                                <span className="text-white">{job.projectType}</span>
                             </div>
                             <div className="flex items-center">
                                 <span className="w-32 text-white/50">Duration:</span>
-                                <span>{formatProjectLength(job.estimatedProjectLength)}</span>
+                                <span className="text-white">{formatProjectLength(job.estimatedProjectLength)}</span>
                             </div>
                             <div className="flex items-center">
                                 <span className="w-32 text-white/50">Compensation:</span>
                                 <span className="flex items-center">
-                                    <span className="text-[#00ff00]">$</span>
-                                    <span>{job.compensation}</span>
+                                    <span className="text-accent">$</span>
+                                    <span className="text-white">{job.compensation}</span>
                                 </span>
                             </div>
                         </div>
@@ -138,7 +138,7 @@ const Apply: React.FC = () => {
                             {job.tools.map((tool: Tool, index: number) => (
                                 <span 
                                     key={index}
-                                    className="px-3 py-1 bg-[#0D0D0D] rounded-md text-sm"
+                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-md text-sm text-white/80"
                                 >
                                     {tool.name}
                                 </span>
@@ -152,7 +152,7 @@ const Apply: React.FC = () => {
                             {job.tags.map((tag: string, index: number) => (
                                 <span 
                                     key={index}
-                                    className="px-3 py-1 bg-[#0D0D0D] rounded-md text-sm"
+                                    className="px-3 py-1 bg-white/5 border border-white/10 rounded-md text-sm text-white/80"
                                 >
                                     {tag}
                                 </span>
@@ -163,7 +163,7 @@ const Apply: React.FC = () => {
             </div>
 
             {/* Application Form Section */}
-            <div className="bg-[rgba(255,255,255,0.1)] p-6 rounded-lg">
+            <div className="bg-white/5 border border-white/10 p-6 rounded-lg">
                 <h2 className="text-2xl font-bold mb-6">Your Application</h2>
                 {/* Add your application form here */}
                 <div className="flex justify-end mt-6">

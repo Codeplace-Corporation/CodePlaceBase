@@ -9,6 +9,7 @@ import {
     updateProfile,
 } from "firebase/auth";
 import { auth, googleProvider } from "../utils/firebase";
+import { updateWaitlistStatus } from "../utils/waitlistUtils";
 
 interface AuthContextProps {
     currentUser: User | null;
@@ -56,20 +57,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         password: string,
         displayName: string,
     ) => {
-        await createUserWithEmailAndPassword(auth, email, password)
-            .then(
-                async (credential) =>
-                    await updateProfile(credential.user, {
-                        displayName: displayName,
-                    }),
-            )
-            .catch((e) => {
-                throw e;
-            });
+        const credential = await createUserWithEmailAndPassword(auth, email, password);
+        
+        // Update user profile with display name
+        await updateProfile(credential.user, {
+            displayName: displayName,
+        });
+
+        // Update waitlist status if email exists in waitlist
+        await updateWaitlistStatus(email);
     };
 
     const loginWithGoogle = async () => {
-        await signInWithPopup(auth, googleProvider);
+        const result = await signInWithPopup(auth, googleProvider);
+        
+        // Update waitlist status if email exists in waitlist
+        if (result.user.email) {
+            await updateWaitlistStatus(result.user.email);
+        }
     };
 
     const logout = async () => {

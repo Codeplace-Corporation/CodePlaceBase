@@ -22,7 +22,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({ label, children }) => {
                 {label}
                 <FontAwesomeIcon
                     icon={faChevronRight}
-                    className={`ml-1 text-accent transition ease-linear transform ${
+                    className={`ml-1 text-white transition ease-linear transform ${
                         isHovered && "rotate-90"
                     }`}
                 />
@@ -31,7 +31,7 @@ const DropdownButton: React.FC<DropdownButtonProps> = ({ label, children }) => {
                 <div
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
-                    className="absolute p-3 bg-[#151518] rounded shadow-lg z-50"
+                    className="absolute p-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-lg shadow-lg z-50"
                 >
                     {children}
                 </div>

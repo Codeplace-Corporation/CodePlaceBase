@@ -3,13 +3,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faInfoCircle, faDollarSign, faClock, faCalendarAlt, faCogs } from '@fortawesome/free-solid-svg-icons';
 import { FormData } from '../../JobPostingForm';
 
-interface BountyStepTwoProps {
+interface BountyStpfiveProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
 }
 
-const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData, errors }) => {
+const BountyStpfive: React.FC<BountyStpfiveProps> = ({ formData, updateFormData, errors }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   const [showStartCalendar, setShowStartCalendar] = useState(false);
   const [showEndCalendar, setShowEndCalendar] = useState(false);
@@ -32,10 +32,13 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
     </div>
   );
 
-  // Get current date in YYYY-MM-DD format
+  // Get current date in YYYY-MM-DD format (local timezone)
   const getCurrentDate = () => {
     const today = new Date();
-    return today.toISOString().split('T')[0];
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   // Get current time in 12-hour format
@@ -48,23 +51,28 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
     return `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
   };
 
-  // Get date with offset (helper for presets)
+  // Get date with offset (helper for presets) - local timezone
   const getDateOffset = (days: number) => {
     const date = new Date();
     date.setDate(date.getDate() + days);
-    return date.toISOString().split('T')[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
-  // Format date for display (e.g., "Mar 18th, 2020")
+  // Format date for display (e.g., "Mar 18th, 2020") - local timezone
   const formatDisplayDate = (dateString: string) => {
     if (!dateString) return 'Select Date';
-    const date = new Date(dateString);
+    // Parse the date string as local time to avoid timezone issues
+    const [year, month, day] = dateString.split('-').map(Number);
+    const date = new Date(year, month - 1, day); // month is 0-indexed
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getDate();
-    const suffix = day === 1 || day === 21 || day === 31 ? 'st' : 
-                   day === 2 || day === 22 ? 'nd' : 
-                   day === 3 || day === 23 ? 'rd' : 'th';
-    return `${months[date.getMonth()]} ${day}${suffix}, ${date.getFullYear()}`;
+    const dayNum = date.getDate();
+    const suffix = dayNum === 1 || dayNum === 21 || dayNum === 31 ? 'st' : 
+                   dayNum === 2 || dayNum === 22 ? 'nd' : 
+                   dayNum === 3 || dayNum === 23 ? 'rd' : 'th';
+    return `${months[date.getMonth()]} ${dayNum}${suffix}, ${date.getFullYear()}`;
   };
 
   // Convert 12-hour time to 24-hour for input
@@ -329,14 +337,14 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
   // Handle price input changes
   const handlePriceChange = (value: string) => {
     // Allow typing without formatting, but store the raw number
-    updateFormData({ bountyAmount: value });
+    updateFormData({ Amount: value });
   };
 
   // Handle blur to format the price
   const handlePriceBlur = () => {
-    if (formData.bountyAmount) {
-      const formatted = formatPrice(formData.bountyAmount);
-      updateFormData({ bountyAmount: formatted });
+    if (formData.Amount) {
+      const formatted = formatPrice(formData.Amount);
+      updateFormData({ Amount: formatted });
     }
   };
 
@@ -354,17 +362,17 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
         
         <input
           type="number"
-          value={formData.bountyAmount || ''}
+          value={formData.Amount || ''}
           onChange={(e) => handlePriceChange(e.target.value)}
           onBlur={handlePriceBlur}
           className={`w-full px-3 py-2 bg-white/5 border rounded-md text-white text-sm placeholder-white/50 focus:outline-none focus:ring-1 focus:ring-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${
-            errors.bountyAmount ? 'border-red-500' : 'border-white/20'
+            errors.Amount ? 'border-red-500' : 'border-white/20'
           }`}
           placeholder="Enter amount (e.g., 1000.00)"
           min="0"
           step="0.01"
         />
-        {errors.bountyAmount && <p className="text-red-400 text-xs mt-1">{errors.bountyAmount}</p>}
+        {errors.Amount && <p className="text-red-400 text-xs mt-1">{errors.Amount}</p>}
       </div>
 
       {/* Bounty Timeline */}
@@ -393,21 +401,21 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
                 >
                   <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-purple-300 text-xs transition-colors" />
                   <span className="group-hover:text-purple-300 transition-colors">
-                    {formatDisplayDate(formData.bountyStartDate || getCurrentDate())}
+                    {formatDisplayDate(formData.StartDate || getCurrentDate())}
                   </span>
                 </button>
                 {showStartCalendar && (
                   <Calendar
-                    selectedDate={formData.bountyStartDate || getCurrentDate()}
-                    onDateSelect={(date) => updateFormData({ bountyStartDate: date })}
+                    selectedDate={formData.StartDate || getCurrentDate()}
+                    onDateSelect={(date) => updateFormData({ StartDate: date })}
                     onClose={() => setShowStartCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyStartTime || getCurrentTime()}
-                  onChange={(time) => updateFormData({ bountyStartTime: time })}
+                  value={formData.StartTime || getCurrentTime()}
+                  onChange={(time) => updateFormData({ StartTime: time })}
                 />
               </div>
             </div>
@@ -417,7 +425,7 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
           <div>
             <label className="block text-white/70 text-xs mb-2">Bounty Expires</label>
             <div className={`inline-flex bg-white/5 border rounded-md overflow-hidden ${
-              errors.bountyDeadline ? 'border-red-500' : 'border-white/20'
+              errors.Deadline ? 'border-red-500' : 'border-white/20'
             }`}>
               <div 
                 className="relative"
@@ -430,28 +438,28 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
                 >
                   <FontAwesomeIcon icon={faCalendarAlt} className="text-white group-hover:text-purple-300 text-xs transition-colors" />
                   <span className="group-hover:text-purple-300 transition-colors">
-                    {formatDisplayDate(formData.bountyDeadline || '')}
+                    {formatDisplayDate(formData.Deadline || '')}
                   </span>
                 </button>
                 {showEndCalendar && (
                   <Calendar
-                    selectedDate={formData.bountyDeadline || ''}
-                    onDateSelect={(date) => updateFormData({ bountyDeadline: date })}
+                    selectedDate={formData.Deadline || ''}
+                    onDateSelect={(date) => updateFormData({ Deadline: date })}
                     onClose={() => setShowEndCalendar(false)}
                   />
                 )}
               </div>
               <div>
                 <CustomTimeInput
-                  value={formData.bountyExpiryTime || '--:-- PM'}
-                  onChange={(time) => updateFormData({ bountyExpiryTime: time })}
+                  value={formData.ExpiryTime || '--:-- PM'}
+                  onChange={(time) => updateFormData({ ExpiryTime: time })}
                 />
               </div>
             </div>
           </div>
         </div>
         
-        {errors.bountyDeadline && <p className="text-red-400 text-xs mt-1">{errors.bountyDeadline}</p>}
+        {errors.Deadline && <p className="text-red-400 text-xs mt-1">{errors.Deadline}</p>}
       </div>
 
       {/* Estimated Project Length */}
@@ -472,19 +480,19 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
               max="13"
               step="1"
               value={
-                formData.estimatedProjectLength === '<1-hour' ? '1' :
-                formData.estimatedProjectLength === '1-3-hours' ? '2' :
-                formData.estimatedProjectLength === '3-6-hours' ? '3' :
-                formData.estimatedProjectLength === '6-12-hours' ? '4' :
-                formData.estimatedProjectLength === '1-day' ? '5' :
-                formData.estimatedProjectLength === '2-days' ? '6' :
-                formData.estimatedProjectLength === '3-5-days' ? '7' :
-                formData.estimatedProjectLength === '1-week' ? '8' :
-                formData.estimatedProjectLength === '2-weeks' ? '9' :
-                formData.estimatedProjectLength === '1-month' ? '10' :
-                formData.estimatedProjectLength === '1-2-months' ? '11' :
-                formData.estimatedProjectLength === '3-5-months' ? '12' :
-                formData.estimatedProjectLength === '6-months-plus' ? '13' : '5'
+                formData.eprojectlength === '<1-hour' ? '1' :
+                formData.eprojectlength === '1-3-hours' ? '2' :
+                formData.eprojectlength === '3-6-hours' ? '3' :
+                formData.eprojectlength === '6-12-hours' ? '4' :
+                formData.eprojectlength === '1-day' ? '5' :
+                formData.eprojectlength === '2-days' ? '6' :
+                formData.eprojectlength === '3-5-days' ? '7' :
+                formData.eprojectlength === '1-week' ? '8' :
+                formData.eprojectlength === '2-weeks' ? '9' :
+                formData.eprojectlength === '1-month' ? '10' :
+                formData.eprojectlength === '1-2-months' ? '11' :
+                formData.eprojectlength === '3-5-months' ? '12' :
+                formData.eprojectlength === '6-months-plus' ? '13' : '5'
               }
               onChange={(e) => {
                 const value = e.target.value;
@@ -501,7 +509,7 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
                   value === '10' ? '1-month' :
                   value === '11' ? '1-2-months' :
                   value === '12' ? '3-5-months' : '6-months-plus';
-                updateFormData({ estimatedProjectLength: duration });
+                updateFormData({ eprojectlength: duration });
               }}
               className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer duration-slider"
             />
@@ -524,40 +532,40 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
           
           <div className="text-center">
             <div className="text-lg font-medium text-white">
-              {formData.estimatedProjectLength === '<1-hour' ? '<1 Hour' :
-               formData.estimatedProjectLength === '1-3-hours' ? '1-3 Hours' :
-               formData.estimatedProjectLength === '3-6-hours' ? '3-6 Hours' :
-               formData.estimatedProjectLength === '6-12-hours' ? '6-12 Hours' :
-               formData.estimatedProjectLength === '1-day' ? '1 Day' :
-               formData.estimatedProjectLength === '2-days' ? '2 Days' :
-               formData.estimatedProjectLength === '3-5-days' ? '3-5 Days' :
-               formData.estimatedProjectLength === '1-week' ? '1 Week' :
-               formData.estimatedProjectLength === '2-weeks' ? '2 Weeks' :
-               formData.estimatedProjectLength === '1-month' ? '1 Month' :
-               formData.estimatedProjectLength === '1-2-months' ? '1-2 Months' :
-               formData.estimatedProjectLength === '3-5-months' ? '3-5 Months' :
-               formData.estimatedProjectLength === '6-months-plus' ? '6+ Months' :
+              {formData.eprojectlength === '<1-hour' ? '<1 Hour' :
+               formData.eprojectlength === '1-3-hours' ? '1-3 Hours' :
+               formData.eprojectlength === '3-6-hours' ? '3-6 Hours' :
+               formData.eprojectlength === '6-12-hours' ? '6-12 Hours' :
+               formData.eprojectlength === '1-day' ? '1 Day' :
+               formData.eprojectlength === '2-days' ? '2 Days' :
+               formData.eprojectlength === '3-5-days' ? '3-5 Days' :
+               formData.eprojectlength === '1-week' ? '1 Week' :
+               formData.eprojectlength === '2-weeks' ? '2 Weeks' :
+               formData.eprojectlength === '1-month' ? '1 Month' :
+               formData.eprojectlength === '1-2-months' ? '1-2 Months' :
+               formData.eprojectlength === '3-5-months' ? '3-5 Months' :
+               formData.eprojectlength === '6-months-plus' ? '6+ Months' :
                'Select Duration'}
             </div>
             <div className="text-sm text-white/70">
-              {formData.estimatedProjectLength === '<1-hour' ? 'Quick fixes, small tweaks' :
-               formData.estimatedProjectLength === '1-3-hours' ? 'Minor features, bug fixes' :
-               formData.estimatedProjectLength === '3-6-hours' ? 'Small components, scripts' :
-               formData.estimatedProjectLength === '6-12-hours' ? 'Medium features, integrations' :
-               formData.estimatedProjectLength === '1-day' ? 'Full day project, complete feature' :
-               formData.estimatedProjectLength === '2-days' ? 'Extended feature development' :
-               formData.estimatedProjectLength === '3-5-days' ? 'Multi-component features' :
-               formData.estimatedProjectLength === '1-week' ? 'Small to medium project' :
-               formData.estimatedProjectLength === '2-weeks' ? 'Medium project with testing' :
-               formData.estimatedProjectLength === '1-month' ? 'Large feature or small application' :
-               formData.estimatedProjectLength === '1-2-months' ? 'Medium application development' :
-               formData.estimatedProjectLength === '3-5-months' ? 'Large application or system' :
-               formData.estimatedProjectLength === '6-months-plus' ? 'Enterprise-level project' :
+              {formData.eprojectlength === '<1-hour' ? 'Quick fixes, small tweaks' :
+               formData.eprojectlength === '1-3-hours' ? 'Minor features, bug fixes' :
+               formData.eprojectlength === '3-6-hours' ? 'Small components, scripts' :
+               formData.eprojectlength === '6-12-hours' ? 'Medium features, integrations' :
+               formData.eprojectlength === '1-day' ? 'Full day project, complete feature' :
+               formData.eprojectlength === '2-days' ? 'Extended feature development' :
+               formData.eprojectlength === '3-5-days' ? 'Multi-component features' :
+               formData.eprojectlength === '1-week' ? 'Small to medium project' :
+               formData.eprojectlength === '2-weeks' ? 'Medium project with testing' :
+               formData.eprojectlength === '1-month' ? 'Large feature or small application' :
+               formData.eprojectlength === '1-2-months' ? 'Medium application development' :
+               formData.eprojectlength === '3-5-months' ? 'Large application or system' :
+               formData.eprojectlength === '6-months-plus' ? 'Enterprise-level project' :
                'Choose the expected time to complete this project'}
             </div>
           </div>
         </div>
-        {errors.estimatedProjectLength && <p className="text-red-400 text-xs mt-1">{errors.estimatedProjectLength}</p>}
+        {errors.eprojectlength && <p className="text-red-400 text-xs mt-1">{errors.eprojectlength}</p>}
       </div>
 
       {/* Project Complexity */}
@@ -647,4 +655,4 @@ const BountyStepTwo: React.FC<BountyStepTwoProps> = ({ formData, updateFormData,
   );
 };
 
-export default BountyStepTwo;
+export default BountyStpfive;

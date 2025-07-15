@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getStorage } from "firebase/storage";
-import { getFirestore, collection, addDoc } from "firebase/firestore"; // Updated to include addDoc
+import { getFirestore, collection, addDoc, getDocs, doc, setDoc, deleteDoc, query, where } from "firebase/firestore"; // Updated to include all needed functions
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
@@ -32,4 +32,10 @@ export {
     googleProvider,
     collection,
     addDoc,
-}; // Export collection and addDoc
+    getDocs,
+    doc,
+    setDoc,
+    deleteDoc,
+    query,
+    where,
+}; // Export all needed functions

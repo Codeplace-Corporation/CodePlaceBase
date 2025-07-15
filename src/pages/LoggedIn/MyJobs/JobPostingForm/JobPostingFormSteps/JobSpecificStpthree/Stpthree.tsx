@@ -1,4 +1,4 @@
-// StepSix.tsx - Fixed version with proper state persistence
+// StepThree.tsx - File Access and Permissions
 
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -17,9 +17,9 @@ import {
   faGlobe,
   faCheck
 } from '@fortawesome/free-solid-svg-icons';
-import { FormData } from '../JobPostingForm';
+import { FormData } from '../../JobPostingForm';
 
-interface StepSixProps {
+interface StpthreeProps {
   formData: FormData;
   updateFormData: (updates: Partial<FormData>) => void;
   errors: Record<string, string>;
@@ -34,16 +34,20 @@ interface FilePermission {
   isLocked: boolean;
 }
 
-const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isSubmitting, setCurrentStep }) => {
+const Stpthree: React.FC<StpthreeProps> = ({ formData, updateFormData, errors, isSubmitting, setCurrentStep }) => {
   const [hoveredTooltip, setHoveredTooltip] = useState<string | null>(null);
   
   // Check if this is an open bounty or challenge
   const isOpenType = formData.JobSubType === 'open-bounty' || formData.JobSubType === 'open-challenge';
   
-  // FIXED: Initialize state from existing formData.projectFilesPreview if available
+  // Initialize state from existing formData.projectFilesPreview if available
   const [filePermissions, setFilePermissions] = useState<FilePermission[]>(() => {
     const projectFiles = formData.projectFiles || [];
     const existingPreview = formData.projectFilesPreview || [];
+    
+    console.log('🔍 Step 3 - Initializing file permissions');
+    console.log('🔍 Project files:', projectFiles);
+    console.log('🔍 Existing preview:', existingPreview);
     
     return projectFiles.map((file, index) => {
       // Check if we have existing permissions for this file
@@ -51,41 +55,108 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
         preview.name === file.name && preview.type === file.type
       );
       
+      console.log(`🔍 File ${index}:`, {
+        fileName: file.name,
+        fileType: file.type,
+        existingPermission: existingPermission,
+        existingPermissions: existingPermission?.permissions
+      });
+      
+      // If we have existing permissions, use them; otherwise default based on job type
+      let isLocked = !isOpenType; // Default: locked for non-open types, unlocked for open types
+      
+      if (existingPermission && existingPermission.permissions) {
+        // Use the actual saved permission
+        // Check for 'placeholder' which means no specific permission was set, so use default
+        if (existingPermission.permissions.visibility === 'placeholder') {
+          isLocked = !isOpenType; // Use default based on job type
+          console.log(`🔍 File ${index} has placeholder permission, using default for ${isOpenType ? 'open' : 'closed'} type, isLocked: ${isLocked}`);
+        } else {
+          isLocked = existingPermission.permissions.visibility === 'participants-only';
+          console.log(`🔍 File ${index} using existing permission:`, {
+            visibility: existingPermission.permissions.visibility,
+            isLocked: isLocked
+          });
+        }
+      } else {
+        console.log(`🔍 File ${index} using default permission for ${isOpenType ? 'open' : 'closed'} type, isLocked: ${isLocked}`);
+      }
+      
       return {
         fileIndex: index,
         fileName: file.name,
         fileType: file.type || 'unknown',
-        // Use existing permission state if available, otherwise default
-        isLocked: existingPermission 
-          ? existingPermission.permissions?.visibility === 'participants-only'
-          : !isOpenType // Open types are unlocked (public), others are locked by default
+        isLocked: isLocked
       };
     });
   });
 
-  // FIXED: Update file permissions when formData changes (e.g., new files added)
+  // Update file permissions when formData changes (e.g., new files added or draft loaded)
   useEffect(() => {
     const projectFiles = formData.projectFiles || [];
     const existingPreview = formData.projectFilesPreview || [];
     
-    // Only update if the number of files has changed
-    if (projectFiles.length !== filePermissions.length) {
+    console.log('🔍 Step 3 - useEffect triggered for file permissions update');
+    console.log('🔍 Current projectFiles length:', projectFiles.length);
+    console.log('🔍 Current filePermissions length:', filePermissions.length);
+    console.log('🔍 Existing preview:', existingPreview);
+    
+    // Update if the number of files has changed OR if projectFilesPreview has changed (draft loaded)
+    const shouldUpdate = projectFiles.length !== filePermissions.length || 
+                        existingPreview.some((preview, index) => {
+                          const currentFile = projectFiles[index];
+                          return !currentFile || 
+                                 preview.name !== currentFile.name || 
+                                 preview.type !== currentFile.type ||
+                                 preview.permissions?.visibility !== (filePermissions[index]?.isLocked ? 'participants-only' : 'public');
+                        });
+    
+    if (shouldUpdate) {
+      console.log('🔍 Updating file permissions due to file count or preview change');
+      
       setFilePermissions(projectFiles.map((file, index) => {
         const existingPermission = existingPreview.find(preview => 
           preview.name === file.name && preview.type === file.type
         );
         
+        console.log(`🔍 Update - File ${index}:`, {
+          fileName: file.name,
+          fileType: file.type,
+          existingPermission: existingPermission,
+          existingPermissions: existingPermission?.permissions
+        });
+        
+        // If we have existing permissions, use them; otherwise default based on job type
+        let isLocked = !isOpenType; // Default: locked for non-open types, unlocked for open types
+        
+        if (existingPermission && existingPermission.permissions) {
+          // Use the actual saved permission
+          // Check for 'placeholder' which means no specific permission was set, so use default
+          if (existingPermission.permissions.visibility === 'placeholder') {
+            isLocked = !isOpenType; // Use default based on job type
+            console.log(`🔍 Update - File ${index} has placeholder permission, using default for ${isOpenType ? 'open' : 'closed'} type, isLocked: ${isLocked}`);
+          } else {
+            isLocked = existingPermission.permissions.visibility === 'participants-only';
+            console.log(`🔍 Update - File ${index} using existing permission:`, {
+              visibility: existingPermission.permissions.visibility,
+              isLocked: isLocked
+            });
+          }
+        } else {
+          console.log(`🔍 Update - File ${index} using default permission for ${isOpenType ? 'open' : 'closed'} type, isLocked: ${isLocked}`);
+        }
+        
         return {
           fileIndex: index,
           fileName: file.name,
           fileType: file.type || 'unknown',
-          isLocked: existingPermission 
-            ? existingPermission.permissions?.visibility === 'participants-only'
-            : !isOpenType
+          isLocked: isLocked
         };
       }));
+    } else {
+      console.log('🔍 No file count or preview change, skipping permission update');
     }
-  }, [formData.projectFiles, isOpenType]); // Removed filePermissions from dependencies to avoid infinite loop
+  }, [formData.projectFiles, formData.projectFilesPreview, isOpenType, filePermissions.length]); // Added filePermissions.length to prevent infinite loops
 
   const Tooltip: React.FC<{ id: string; text: string; children: React.ReactNode }> = ({ id, text, children }) => (
     <div className="relative inline-block">
@@ -122,8 +193,9 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
   };
 
   const colors = getJobTypeColors();
-
-  const getFileIcon = (fileName: string) => {
+  
+  const getFileIcon = (fileName: string | undefined | null) => {
+    if (!fileName) return faFileAlt;
     if (fileName.startsWith('github:')) {
       return faCodeBranch;
     }
@@ -159,6 +231,8 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
         return faFileAlt;
     }
   };
+
+
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -199,21 +273,37 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
     }
   }, [isOpenType]);
 
-  // FIXED: Save permissions to form data when permissions change with proper debouncing
+  // Save permissions to form data when permissions change with proper debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       updateFormData({ 
         projectFilesPreview: filePermissions.map(perm => {
           const projectFile = formData.projectFiles?.[perm.fileIndex];
+          const isPublic = !perm.isLocked;
+          
+          // Check if projectFile is a valid File object and not a pseudo-file (like GitHub URLs)
+          const isValidFile = projectFile && 
+            projectFile instanceof File && 
+            !projectFile.name?.startsWith('github:') &&
+            projectFile.size !== undefined &&
+            projectFile.size > 0;
+          
           return {
             name: perm.fileName,
             type: perm.fileType,
-            size: projectFile ? formatFileSize(projectFile.size) : '0',
-            url: projectFile ? URL.createObjectURL(projectFile) : '',
+            size: isValidFile ? formatFileSize(projectFile.size) : '0',
+            url: isValidFile ? (() => {
+              try {
+                return URL.createObjectURL(projectFile);
+              } catch (error) {
+                console.warn('Failed to create object URL for file:', projectFile);
+                return '';
+              }
+            })() : '',
             permissions: {
-              visibility: perm.isLocked ? 'participants-only' : 'public',
-              downloadable: true,
-              viewable: true
+              visibility: isPublic ? 'public' : 'participants-only',
+              downloadable: isPublic, // Only downloadable if public
+              viewable: isPublic // Only viewable if public
             }
           };
         })
@@ -223,12 +313,6 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
     return () => clearTimeout(timeoutId);
   }, [filePermissions, updateFormData, formData.projectFiles]);
 
-  // FIXED: Add debug logging to track state changes
-  useEffect(() => {
-    console.log('StepSix: File permissions state updated:', filePermissions);
-    console.log('StepSix: FormData projectFilesPreview:', formData.projectFilesPreview);
-  }, [filePermissions, formData.projectFilesPreview]);
-
   if (!formData.projectFiles || formData.projectFiles.length === 0) {
     return (
       <div className="space-y-6 max-w-4xl">
@@ -236,7 +320,7 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
           <FontAwesomeIcon icon={faFileAlt} className={`${colors.primary} text-6xl mb-4`} />
           <h3 className="text-xl font-medium text-white mb-2">No Project Files</h3>
           <p className="text-white/60">
-            No files were uploaded in Step 3. File permissions can only be configured for uploaded files.
+            No files were uploaded in Step 2. File permissions can only be configured for uploaded files.
           </p>
         </div>
       </div>
@@ -282,13 +366,14 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
         <div className="space-y-2">
           {filePermissions.map((permission) => {
             const file = formData.projectFiles![permission.fileIndex];
-            const isGithubUrl = permission.fileName.startsWith('github:');
-            const displayName = isGithubUrl ? permission.fileName.replace('github:', '') : permission.fileName;
+            const fileName = permission.fileName || 'Unknown File';
+            const isGithubUrl = fileName.startsWith('github:');
+            const displayName = isGithubUrl ? fileName.replace('github:', '') : fileName;
             
             return (
               <div key={permission.fileIndex} className="flex items-center gap-4 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                 <FontAwesomeIcon 
-                  icon={getFileIcon(permission.fileName)} 
+                  icon={getFileIcon(fileName)} 
                   className="text-green-400 text-lg"
                 />
                 <div className="flex-1 min-w-0">
@@ -337,17 +422,17 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
         <div className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg">
           <div className="w-8 h-8 rounded-full bg-green-500/20 border-2 border-green-500/40 flex items-center justify-center">
             <FontAwesomeIcon icon={faLockOpen} className="text-green-400 text-xs" />
-          </div>
+            </div>
           <div>
             <h4 className="text-white font-medium text-sm">Public</h4>
             <p className="text-white/60 text-xs">Anyone can access</p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg">
           <div className="w-8 h-8 rounded-full bg-white/10 border-2 border-white/20 flex items-center justify-center">
             <FontAwesomeIcon icon={faLock} className="text-white/70 text-xs" />
-          </div>
+            </div>
           <div>
             <h4 className="text-white font-medium text-sm">Private</h4>
             <p className="text-white/60 text-xs">Participants only</p>
@@ -364,26 +449,27 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
           <FontAwesomeIcon icon={faLockOpen} />
           Unlock All Files
         </button>
-        <button
+            <button
           onClick={() => toggleAllFiles(true)}
           className="px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-white text-sm transition-colors flex items-center gap-2"
-        >
+            >
           <FontAwesomeIcon icon={faLock} />
           Lock All Files
-        </button>
-      </div>
+            </button>
+          </div>
 
       {/* File List */}
       <div className="space-y-2">
         {filePermissions.map((permission) => {
           const file = formData.projectFiles![permission.fileIndex];
-          const isGithubUrl = permission.fileName.startsWith('github:');
-          const displayName = isGithubUrl ? permission.fileName.replace('github:', '') : permission.fileName;
+          const fileName = permission.fileName || 'Unknown File';
+          const isGithubUrl = fileName.startsWith('github:');
+          const displayName = isGithubUrl ? fileName.replace('github:', '') : fileName;
           
           return (
             <div key={permission.fileIndex} className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
               <FontAwesomeIcon 
-                icon={getFileIcon(permission.fileName)} 
+                icon={getFileIcon(fileName)} 
                 className={`${colors.primary} text-sm`}
               />
               
@@ -393,10 +479,10 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
                   <span className="text-white/60 text-xs">
                     {isGithubUrl ? '(GitHub Repository)' : `(${formatFileSize(file.size)})`}
                   </span>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3">
+                      </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
                 <div className="text-right">
                   <div className={`text-sm font-medium transition-all duration-300 ${permission.isLocked ? 'text-white/70' : 'text-green-300'}`}>
                     {permission.isLocked ? 'Participants Only' : 'Public'}
@@ -428,7 +514,7 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
             </div>
           );
         })}
-      </div>
+          </div>
 
       {isSubmitting && (
         <div className="text-center py-4">
@@ -439,4 +525,4 @@ const StepSix: React.FC<StepSixProps> = ({ formData, updateFormData, errors, isS
   );
 };
 
-export default StepSix;
+export default Stpthree;
